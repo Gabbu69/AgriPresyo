@@ -87,7 +87,7 @@ export const MOCK_CROPS: Crop[] = [
     change24h: -1.5,
     history: generateHistory(130),
     demand: 'Medium',
-    icon: '🍊',
+    icon: '🍈',
     weightPerUnit: 1.2,
     vendors: [
       { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 125, stock: 100 },

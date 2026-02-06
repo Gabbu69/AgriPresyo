@@ -51,59 +51,12 @@ import { UserRole, Currency, Crop, BudgetListItem, Vendor } from './types';
 import { MOCK_CROPS, USD_PHP_RATE } from './constants';
 
 const Logo = ({ size = 64, className = "" }: { size?: number, className?: string }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 100 100" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    {/* Outer Circle */}
-    <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="2.5" />
-    
-    {/* Rising Graph Line */}
-    <path 
-      d="M20 55 L35 45 L50 50 L75 35 L85 30 L80 30 M85 30 L85 35" 
-      stroke="currentColor" 
-      strokeWidth="3.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-    />
-    <path d="M85 30 L78 32 M85 30 L83 37" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-
-    {/* Plant Stem & Leaves */}
-    <path 
-      d="M50 80 V45" 
-      stroke="currentColor" 
-      strokeWidth="3.5" 
-      strokeLinecap="round" 
-    />
-    <path 
-      d="M50 45 C50 45 40 30 35 32 C30 34 35 45 50 45 Z" 
-      fill="currentColor" 
-    />
-    <path 
-      d="M50 45 C50 45 60 25 70 28 C80 31 65 45 50 45 Z" 
-      fill="currentColor" 
-    />
-
-    {/* Circuit Roots */}
-    <path d="M50 65 L40 75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="40" cy="75" r="2" fill="currentColor" />
-    
-    <path d="M50 70 L35 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="35" cy="70" r="2" fill="currentColor" />
-    
-    <path d="M50 75 L60 80" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="60" cy="80" r="2" fill="currentColor" />
-
-    <path d="M50 80 L55 85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="55" cy="85" r="2" fill="currentColor" />
-    
-    <path d="M50 80 L45 88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="45" cy="88" r="2" fill="currentColor" />
-  </svg>
+  <img 
+    src="/AgriPresyo Logo.jpg" 
+    alt="AgriPresyo"
+    style={{ width: size, height: size }}
+    className={`object-contain rounded-2xl ${className}`}
+  />
 );
 
 const formatPrice = (price: number, currency: Currency) => {
