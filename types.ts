@@ -23,6 +23,7 @@ export interface Vendor {
   price: number;
   stock: number; // in kg
   isHot?: boolean;
+  listingName?: string; // optional vendor-specific display name for a crop listing
 }
 
 export interface Crop {

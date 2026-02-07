@@ -4,10 +4,22 @@ import { Crop } from './types';
 export const USD_PHP_RATE = 56;
 
 const generateHistory = (base: number) => {
-  return Array.from({ length: 14 }, (_, i) => ({
-    date: `2024-05-${(i + 1).toString().padStart(2, '0')}`,
-    price: base + Math.random() * (base * 0.15) - (base * 0.07),
-  }));
+  const start = new Date(2024, 0, 1); // Jan 1, 2024
+  const end = new Date(2026, 11, 31); // Dec 31, 2026
+  const dayStep = 7; // weekly points
+  const data: { date: string; price: number }[] = [];
+  let idx = 0;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + dayStep)) {
+    // mild seasonality (annual) plus some slower trend and noise
+    const monthsFromStart = (d.getFullYear() - start.getFullYear()) * 12 + d.getMonth() - start.getMonth();
+    const seasonal = Math.sin((monthsFromStart / 12) * Math.PI * 2) * 0.06; // annual seasonality ±6%
+    const trend = Math.sin(idx / 200) * 0.02; // slow oscillation ±2%
+    const noise = (Math.random() - 0.5) * 0.08; // random noise up to ±8%
+    const price = Math.round((base * (1 + seasonal + trend + noise)) * 100) / 100;
+    data.push({ date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`, price });
+    idx += 1;
+  }
+  return data;
 };
 
 /**

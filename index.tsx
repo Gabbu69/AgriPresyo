@@ -45,6 +45,7 @@ import {
   Area,
   XAxis,
   LineChart,
+  CartesianGrid,
   Line
 } from 'recharts';
 import { UserRole, Currency, Crop, BudgetListItem, Vendor } from './types';
@@ -195,6 +196,8 @@ const App = () => {
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
   const [shopFilter, setShopFilter] = useState<'All' | 'Fruit' | 'Vegetable'>('All');
+  const [volatilityTimeRange, setVolatilityTimeRange] = useState<'weekly' | 'monthly'>('monthly');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('');
   
   // Global Market State
   const [crops, setCrops] = useState<Crop[]>(MOCK_CROPS);
@@ -252,6 +255,41 @@ const App = () => {
 
     return { topGainer, expFruits, cheapFruits, expVeggies, cheapVeggies };
   }, [crops]);
+
+  const aggregateVolatilityData = useMemo(() => {
+    if (!crops[0]?.history) return { data: [], stats: null };
+    const history = crops[0].history;
+
+    // Monthly aggregation only
+    const months: { [key: string]: { prices: number[] } } = {};
+    history.forEach(point => {
+      const date = new Date(point.date);
+      const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (!months[monthYear]) months[monthYear] = { prices: [] };
+      months[monthYear].prices.push(point.price);
+    });
+
+    const data = Object.entries(months)
+      .sort((a, b) => new Date(a[0] + ' 1').getTime() - new Date(b[0] + ' 1').getTime())
+      .map(([key, data]) => {
+        const avg = Math.round((data.prices.reduce((a, b) => a + b) / data.prices.length) * 100) / 100;
+        const change = data.prices.length > 1
+          ? Math.round(((data.prices[data.prices.length - 1] - data.prices[0]) / data.prices[0]) * 10000) / 100
+          : 0;
+        return {
+          date: key,
+          fullKey: key,
+          price: avg,
+          min: Math.min(...data.prices),
+          max: Math.max(...data.prices),
+          change,
+          count: data.prices.length
+        };
+      });
+
+    const selectedData = data.find(d => d.fullKey === selectedPeriod);
+    return { data, stats: selectedData };
+  }, [crops, selectedPeriod]);
 
   const [isAddCropModalOpen, setIsAddCropModalOpen] = useState(false);
   const [editingInventoryCrop, setEditingInventoryCrop] = useState<Crop | null>(null);
@@ -340,19 +378,22 @@ const App = () => {
     }));
   };
 
-  const handleAddCropToVendor = (cropId: string, price: number, stock: number) => {
+  
+
+  const handleAddCropToVendor = (cropId: string, price: number, stock: number, listingName?: string) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
         if (c.vendors.some(v => v.id === adminVendorId)) return c;
         const newEntry: Vendor = {
-          id: adminVendorId, 
-          name: 'Personal Market Node', 
-          rating: 5.0, 
-          reviewCount: 1, 
-          specialty: vendorShopType === 'Fruit' ? 'Premium Fruit Hub' : 'Highland Veggie Outlet', 
-          price, 
-          stock, 
-          isHot: true
+          id: adminVendorId,
+          name: 'Personal Market Node',
+          rating: 5.0,
+          reviewCount: 1,
+          specialty: vendorShopType === 'Fruit' ? 'Premium Fruit Hub' : 'Highland Veggie Outlet',
+          price,
+          stock,
+          isHot: true,
+          listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
         };
         return { ...c, vendors: [...c.vendors, newEntry] };
       }
@@ -392,6 +433,17 @@ const App = () => {
     }));
   };
 
+  const handleUpdateVendorListing = (cropId: string, newPrice: number, newStock: number, newListingName?: string) => {
+    setCrops(prev => prev.map(c => {
+      if (c.id === cropId) {
+        const updatedVendors = c.vendors.map(v => v.id === adminVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName } : v);
+        return { ...c, vendors: updatedVendors };
+      }
+      return c;
+    }));
+    setEditingInventoryCrop(null);
+  };
+
   const renderConsumerView = () => (
     <div className="space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -413,7 +465,7 @@ const App = () => {
                 onClick={() => setActiveCategory(cat)}
                 className={`whitespace-nowrap px-4 py-2 rounded-xl border text-sm font-bold transition-all ${activeCategory === cat ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
               >
-                {cat}s
+                {cat === 'All' ? 'All' : `${cat}s`}
               </button>
             ))}
           </div>
@@ -642,7 +694,7 @@ const App = () => {
               onClick={() => setShopFilter(f as any)}
               className={`px-6 py-2 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${shopFilter === f ? 'bg-zinc-800 text-white shadow-xl border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
-              {f}s
+              {f === 'All' ? 'All' : `${f}s`}
             </button>
           ))}
         </div>
@@ -705,7 +757,6 @@ const App = () => {
                 <h4 className="font-black text-white text-sm">{crop.name}</h4>
               </div>
             </div>
-            <p className={`font-mono text-lg font-bold ${color === 'yellow' ? 'text-white' : 'text-green-400'}`}>{formatPrice(crop.currentPrice, currency)}</p>
           </div>
         ))}
       </div>
@@ -747,24 +798,65 @@ const App = () => {
       </div>
 
       <div className="bg-zinc-900/30 p-10 rounded-[40px] border border-zinc-800 shadow-xl">
-        <div className="flex items-center gap-4 mb-8">
-           <BarChart3 className="text-green-500" size={24} />
-           <h3 className="text-2xl font-black tracking-tighter">Aggregate Market Volatility</h3>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-4">
+             <BarChart3 className="text-green-500" size={24} />
+             <h3 className="text-2xl font-black tracking-tighter">Aggregate Market Volatility</h3>
+          </div>
+          <div className="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 shadow-inner">
+            <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-zinc-800 text-green-500 shadow-xl">Monthly</div>
+          </div>
         </div>
-        <div className="h-80">
+        <div className="h-80 mb-8">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={crops[0]?.history || []}>
+            <LineChart data={aggregateVolatilityData.data}>
               <defs>
                 <linearGradient id="aggGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <Tooltip contentStyle={{ backgroundColor: '#09090b', borderRadius: '20px', border: '1px solid #27272a', fontFamily: 'Inter' }} />
-              <Area type="monotone" dataKey="price" stroke="#22c55e" strokeWidth={4} fill="url(#aggGradient)" dot={false} />
-            </AreaChart>
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#c7c7cc' }} angle={-45} height={80} interval={0} />
+              <YAxis tick={{ fontSize: 12, fill: '#c7c7cc' }} />
+              <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#09090b', borderRadius: '12px', border: '1px solid #27272a', fontFamily: 'Inter', padding: '10px' }}
+                formatter={(value: any) => [`₱${value}`, 'Avg']}
+                labelFormatter={(label: any) => `Period: ${label}`}
+              />
+              <Line
+                type="monotone"
+                dataKey="price"
+                stroke="#22c55e"
+                strokeWidth={3}
+                dot={{ fill: '#22c55e', r: 4 }}
+                activeDot={{ r: 7 }}
+                onClick={(d: any) => { if (d && d.payload) setSelectedPeriod(d.payload.fullKey || d.payload.date || ''); }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
+        
+        {aggregateVolatilityData.stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+              <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Period</p>
+              <p className="text-2xl font-black text-white">{aggregateVolatilityData.stats.date}</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+              <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Average Price</p>
+              <p className="text-2xl font-mono font-black text-green-400">₱{aggregateVolatilityData.stats.price}</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+              <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Price Range</p>
+              <p className="text-sm font-mono text-white">₱{aggregateVolatilityData.stats.min} - ₱{aggregateVolatilityData.stats.max}</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+              <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Change</p>
+              <p className={`text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}{aggregateVolatilityData.stats.change}%</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -847,7 +939,7 @@ const App = () => {
                         {crop.icon}
                       </div>
                       <div>
-                        <h3 className="text-3xl font-black text-white group-hover:text-green-400 transition-colors">{crop.name}</h3>
+                        <h3 className="text-3xl font-black text-white group-hover:text-green-400 transition-colors">{myEntry.listingName || crop.name}</h3>
                         <div className="flex gap-3 mt-2">
                           <span className="px-4 py-1.5 rounded-xl bg-zinc-800 text-[10px] font-black text-zinc-500 uppercase tracking-widest">{crop.category}</span>
                           <span className="px-4 py-1.5 rounded-xl bg-green-400/10 text-[10px] font-black text-green-400 uppercase tracking-widest">Terminal Active</span>
@@ -1005,7 +1097,7 @@ const App = () => {
                       <div className="flex items-center gap-6">
                         <span className="text-5xl group-hover:scale-110 transition-transform">{crop.icon}</span>
                         <div>
-                          <p className="font-black text-2xl text-white tracking-tight">{crop.name}</p>
+                          <p className="font-black text-2xl text-white tracking-tight">{crop.vendors.find((v:any) => v.id === selectedVendor.id)?.listingName || crop.name}</p>
                           <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Weight Index: {crop.weightPerUnit}kg/unit</p>
                         </div>
                       </div>
@@ -1054,9 +1146,12 @@ const App = () => {
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center font-black text-zinc-600 group-hover:text-green-500">{v.name[0]}</div>
                           <div>
-                            <p className="font-black text-white text-md leading-none mb-1">{v.name}</p>
-                            <div className="flex items-center gap-1 text-[10px] text-yellow-500 uppercase font-black tracking-tight">
-                               <Star size={10} fill="currentColor" /> {v.rating} <span className="text-zinc-700 ml-1">({v.reviewCount})</span>
+                            <p className="font-black text-white text-md leading-none mb-1">{v.listingName || selectedCrop.name}</p>
+                            <div className="flex items-center gap-2 text-[10px] text-zinc-600 uppercase font-bold tracking-tight">
+                               <span>{v.name}</span>
+                               <span className="flex items-center gap-1 text-yellow-500">
+                                 <Star size={10} fill="currentColor" /> {v.rating} <span className="text-zinc-700">({v.reviewCount})</span>
+                               </span>
                             </div>
                           </div>
                         </div>
@@ -1087,13 +1182,21 @@ const App = () => {
                       {crops
                         .filter(c => vendorShopType === 'Fruit' ? c.category === 'Fruit' : c.category !== 'Fruit')
                         .map(c => (
-                        <button key={c.id} onClick={() => setSelectedCrop(c)} className={`p-4 rounded-[24px] border transition-all ${selectedCrop?.id === c.id ? 'bg-green-500 border-green-400 text-black shadow-xl shadow-green-400/20' : 'bg-zinc-950 border-zinc-800 hover:border-zinc-600'}`}>
+                        <button key={c.id} onClick={() => {
+                          setSelectedCrop(c);
+                          const nameInput = document.getElementById('admin-name') as HTMLInputElement;
+                          if (nameInput) nameInput.value = c.name;
+                        }} className={`p-4 rounded-[24px] border transition-all ${selectedCrop?.id === c.id ? 'bg-green-500 border-green-400 text-black shadow-xl shadow-green-400/20' : 'bg-zinc-950 border-zinc-800 hover:border-zinc-600'}`}>
                           <span className="text-3xl block">{c.icon}</span>
                         </button>
                       ))}
                     </div>
                  </div>
                  <div className="grid grid-cols-2 gap-6">
+                   <div className="space-y-2 col-span-2">
+                      <label className="text-[10px] font-black text-zinc-600 uppercase ml-2 tracking-widest">Listing Name (Optional)</label>
+                      <input id="admin-name" type="text" placeholder="Custom name for this listing" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+                   </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-zinc-600 uppercase ml-2 tracking-widest">Ask Index (₱)</label>
                       <input id="admin-p" type="number" placeholder="0.00" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-green-500 focus:border-green-400/50 shadow-inner" />
@@ -1105,9 +1208,20 @@ const App = () => {
                  </div>
               </div>
               <button onClick={() => {
-                const p = Number((document.getElementById('admin-p') as HTMLInputElement).value);
-                const s = Number((document.getElementById('admin-s') as HTMLInputElement).value);
-                if (selectedCrop && p && s) handleAddCropToVendor(selectedCrop.id, p, s);
+                const nameInput = document.getElementById('admin-name') as HTMLInputElement;
+                const priceInput = document.getElementById('admin-p') as HTMLInputElement;
+                const stockInput = document.getElementById('admin-s') as HTMLInputElement;
+                const name = nameInput.value.trim();
+                const p = Number(priceInput.value);
+                const s = Number(stockInput.value);
+                if (selectedCrop && p > 0 && s > 0) {
+                  handleAddCropToVendor(selectedCrop.id, p, s, name || selectedCrop.name);
+                  // Reset form
+                  nameInput.value = '';
+                  priceInput.value = '';
+                  stockInput.value = '';
+                  setSelectedCrop(null);
+                }
               }} className="w-full bg-green-500 text-black py-6 rounded-[28px] font-black uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-green-400/20">Execute Listing</button>
             </div>
           </div>
@@ -1126,6 +1240,10 @@ const App = () => {
                 <p className="text-zinc-600 text-xs font-black uppercase tracking-[0.3em] mt-2">Adjusting terminal parameters</p>
              </div>
              <div className="grid grid-cols-2 gap-6 text-left">
+               <div className="space-y-2 col-span-2">
+                 <label className="text-[10px] font-black text-zinc-600 uppercase ml-3 tracking-widest">Listing Name</label>
+                 <input id="upd-name" type="text" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.listingName || editingInventoryCrop.name} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+               </div>
                <div className="space-y-2">
                  <label className="text-[10px] font-black text-zinc-600 uppercase ml-3 tracking-widest">Ask Index</label>
                  <input id="upd-p" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.price} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-green-400 focus:border-green-400/50 shadow-inner" />
@@ -1137,10 +1255,10 @@ const App = () => {
              </div>
              <div className="flex gap-4 pt-4">
               <button onClick={() => {
+                  const name = (document.getElementById('upd-name') as HTMLInputElement).value;
                   const p = Number((document.getElementById('upd-p') as HTMLInputElement).value);
                   const s = Number((document.getElementById('upd-s') as HTMLInputElement).value);
-                  handleUpdatePrice(editingInventoryCrop.id, p);
-                  handleUpdateStock(editingInventoryCrop.id, s);
+                  handleUpdateVendorListing(editingInventoryCrop.id, p, s, name);
               }} className="flex-1 bg-green-500 text-black py-5 rounded-[28px] font-black uppercase tracking-widest transition-all shadow-xl hover:scale-105 active:scale-95 shadow-green-500/10">Commit Asset</button>
               <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-800 text-zinc-500 py-5 rounded-[28px] font-black uppercase transition-colors hover:text-white">Discard</button>
              </div>
