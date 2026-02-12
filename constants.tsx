@@ -27,7 +27,7 @@ const generateHistory = (base: number) => {
  * SHOP DIRECTORY:
  * 
  * FRUIT SPECIALISTS (v_fruit_1-4)
- * VEGETABLE/SPICE/ROOT SPECIALISTS (v_veg_1-4)
+ * VEGETABLE SPECIALISTS (v_veg_1-4)
  */
 
 export const MOCK_CROPS: Crop[] = [
@@ -122,6 +122,66 @@ export const MOCK_CROPS: Crop[] = [
       { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 155, stock: 200 }
     ]
   },
+  {
+    id: 'banana-lakatan',
+    name: 'Lakatan Banana',
+    category: 'Fruit',
+    currentPrice: 80,
+    change24h: 2.1,
+    history: generateHistory(80),
+    demand: 'High',
+    icon: '🍌',
+    weightPerUnit: 0.15,
+    vendors: [
+      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 75, stock: 500 },
+      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 85, stock: 400 }
+    ]
+  },
+  {
+    id: 'calamansi',
+    name: 'Calamansi',
+    category: 'Fruit',
+    currentPrice: 100,
+    change24h: -3.1,
+    history: generateHistory(100),
+    demand: 'High',
+    icon: '🍋',
+    weightPerUnit: 0.03,
+    vendors: [
+      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 95, stock: 600 },
+      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 108, stock: 350 }
+    ]
+  },
+  {
+    id: 'papaya',
+    name: 'Solo Papaya',
+    category: 'Fruit',
+    currentPrice: 60,
+    change24h: 1.5,
+    history: generateHistory(60),
+    demand: 'Medium',
+    icon: '🍑',
+    weightPerUnit: 1.0,
+    vendors: [
+      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 55, stock: 250 },
+      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 65, stock: 180 }
+    ]
+  },
+  {
+    id: 'coconut',
+    name: 'Buko (Young Coconut)',
+    category: 'Fruit',
+    currentPrice: 35,
+    change24h: 0.5,
+    history: generateHistory(35),
+    demand: 'High',
+    icon: '🥥',
+    weightPerUnit: 1.5,
+    vendors: [
+      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 30, stock: 400, isHot: true },
+      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 38, stock: 300 }
+    ]
+  },
 
   // --- VEGETABLES ---
   {
@@ -162,7 +222,7 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 1.1,
     history: generateHistory(55),
     demand: 'High',
-    icon: '🥒',
+    icon: '🫛',
     weightPerUnit: 0.02,
     vendors: [
       { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 50, stock: 800 },
@@ -184,12 +244,72 @@ export const MOCK_CROPS: Crop[] = [
       { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 95, stock: 1000 }
     ]
   },
+  {
+    id: 'kangkong',
+    name: 'Kangkong (Water Spinach)',
+    category: 'Vegetable',
+    currentPrice: 30,
+    change24h: 0.4,
+    history: generateHistory(30),
+    demand: 'High',
+    icon: '🥬',
+    weightPerUnit: 0.15,
+    vendors: [
+      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 25, stock: 1500 },
+      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 35, stock: 1200 }
+    ]
+  },
+  {
+    id: 'ampalaya',
+    name: 'Ampalaya (Bitter Gourd)',
+    category: 'Vegetable',
+    currentPrice: 120,
+    change24h: 6.7,
+    history: generateHistory(120),
+    demand: 'Medium',
+    icon: '🥒',
+    weightPerUnit: 0.2,
+    vendors: [
+      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 115, stock: 400 },
+      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 125, stock: 350 }
+    ]
+  },
+  {
+    id: 'sitaw',
+    name: 'Sitaw (String Beans)',
+    category: 'Vegetable',
+    currentPrice: 75,
+    change24h: -1.8,
+    history: generateHistory(75),
+    demand: 'High',
+    icon: '🫘',
+    weightPerUnit: 0.05,
+    vendors: [
+      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 70, stock: 900 },
+      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 80, stock: 700 }
+    ]
+  },
+  {
+    id: 'pechay',
+    name: 'Pechay (Bok Choy)',
+    category: 'Vegetable',
+    currentPrice: 45,
+    change24h: 2.3,
+    history: generateHistory(45),
+    demand: 'High',
+    icon: '🥬',
+    weightPerUnit: 0.2,
+    vendors: [
+      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 40, stock: 1000 },
+      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 50, stock: 800 }
+    ]
+  },
 
-  // --- SPICES ---
+  // --- VEGETABLES (continued: spices & aromatics) ---
   {
     id: 'garlic-ilocos',
     name: 'Ilocos Garlic',
-    category: 'Spice',
+    category: 'Vegetable',
     currentPrice: 180,
     change24h: 2.5,
     history: generateHistory(180),
@@ -204,7 +324,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'onion-red',
     name: 'Red Onion',
-    category: 'Spice',
+    category: 'Vegetable',
     currentPrice: 160,
     change24h: -15.4,
     history: generateHistory(160),
@@ -219,7 +339,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'ginger',
     name: 'Yellow Ginger',
-    category: 'Spice',
+    category: 'Vegetable',
     currentPrice: 110,
     change24h: 4.8,
     history: generateHistory(110),
@@ -234,7 +354,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'chili-labuyo',
     name: 'Siling Labuyo',
-    category: 'Spice',
+    category: 'Vegetable',
     currentPrice: 350,
     change24h: 18.2,
     history: generateHistory(350),
@@ -246,12 +366,27 @@ export const MOCK_CROPS: Crop[] = [
       { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 370, stock: 30 }
     ]
   },
+  {
+    id: 'lemongrass',
+    name: 'Tanglad (Lemongrass)',
+    category: 'Vegetable',
+    currentPrice: 25,
+    change24h: 0.9,
+    history: generateHistory(25),
+    demand: 'Medium',
+    icon: '🌿',
+    weightPerUnit: 0.05,
+    vendors: [
+      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 22, stock: 2000 },
+      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 28, stock: 1500 }
+    ]
+  },
 
-  // --- ROOTS ---
+  // --- VEGETABLES (continued: roots & tubers) ---
   {
     id: 'potato-baguio',
     name: 'Granola Potato',
-    category: 'Root',
+    category: 'Vegetable',
     currentPrice: 95,
     change24h: -2.1,
     history: generateHistory(95),
@@ -266,7 +401,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'carrots-premium',
     name: 'Highland Carrots',
-    category: 'Root',
+    category: 'Vegetable',
     currentPrice: 110,
     change24h: 5.6,
     history: generateHistory(110),
@@ -281,7 +416,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'sweet-potato',
     name: 'Yellow Kamote',
-    category: 'Root',
+    category: 'Vegetable',
     currentPrice: 55,
     change24h: 0.8,
     history: generateHistory(55),
@@ -301,7 +436,7 @@ export const MOCK_CROPS: Crop[] = [
     change24h: -1.2,
     history: generateHistory(40),
     demand: 'Low',
-    icon: '🪵',
+    icon: '🥔',
     weightPerUnit: 0.8,
     vendors: [
       { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 38, stock: 5000 },
@@ -316,11 +451,26 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 3.4,
     history: generateHistory(75),
     demand: 'Medium',
-    icon: '🪴',
+    icon: '🍠',
     weightPerUnit: 0.4,
     vendors: [
       { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 70, stock: 1500 },
       { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 80, stock: 800 }
+    ]
+  },
+  {
+    id: 'ube',
+    name: 'Ube (Purple Yam)',
+    category: 'Root',
+    currentPrice: 140,
+    change24h: 7.3,
+    history: generateHistory(140),
+    demand: 'High',
+    icon: '🍠',
+    weightPerUnit: 0.5,
+    vendors: [
+      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 135, stock: 600, isHot: true },
+      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 145, stock: 450 }
     ]
   }
 ];
