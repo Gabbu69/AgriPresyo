@@ -4,10 +4,8 @@ export enum UserRole {
   VENDOR = 'VENDOR'
 }
 
-export enum Currency {
-  PHP = 'PHP',
-  USD = 'USD'
-}
+
+
 
 export interface PricePoint {
   date: string;

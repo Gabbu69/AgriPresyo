@@ -1,7 +1,8 @@
 
 import { Crop } from './types';
 
-export const USD_PHP_RATE = 56;
+
+
 
 const generateHistory = (base: number) => {
   const start = new Date(2024, 0, 1); // Jan 1, 2024
