@@ -714,51 +714,51 @@ const App = () => {
     const favoriteCrops = crops.filter(c => favorites.includes(c.id));
 
     return (
-      <div className="space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
+      <div className="space-y-6 sm:space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <input
                 type="text"
-                placeholder="Search markets (Onions, Mangoes, Chili...)"
-                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-100 transition-all text-lg shadow-xl"
+                placeholder="Search markets..."
+                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-4 sm:pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-100 transition-all text-sm sm:text-lg shadow-xl"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-3 pb-2">
+            <div className="flex flex-wrap gap-2 sm:gap-3 pb-2">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-xl border text-sm font-bold transition-all ${activeCategory === cat ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                  className={`whitespace-nowrap px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border text-xs sm:text-sm font-bold transition-all ${activeCategory === cat ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
                 >
                   {cat === 'All' ? 'All' : `${cat}s`}
                 </button>
               ))}
-              <div className="flex items-center gap-1 ml-auto">
-                <ArrowUpDown size={14} className="text-zinc-600" />
+              <div className="flex items-center gap-1 bg-zinc-900/80 p-1 rounded-xl border border-zinc-800 shadow-inner overflow-x-auto scrollbar-hide ml-auto">
                 {[
-                  { key: 'default', label: 'Default' },
-                  { key: 'price-asc', label: 'Price ↑' },
-                  { key: 'price-desc', label: 'Price ↓' },
-                  { key: 'demand', label: 'Demand' },
-                  { key: 'trending', label: 'Trending' },
+                  { key: 'default', label: 'All', icon: <ArrowUpDown size={12} /> },
+                  { key: 'price-asc', label: '₱↑', icon: <ChevronUp size={12} /> },
+                  { key: 'price-desc', label: '₱↓', icon: <ChevronDown size={12} /> },
+                  { key: 'demand', label: 'Hot', icon: <Zap size={12} /> },
+                  { key: 'trending', label: 'Top', icon: <TrendingUp size={12} /> },
                 ].map(s => (
                   <button
                     key={s.key}
                     onClick={() => setSortBy(s.key as any)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${sortBy === s.key ? 'bg-green-400/20 text-green-400 border border-green-400/30' : 'text-zinc-600 hover:text-zinc-400'}`}
+                    className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${sortBy === s.key ? 'bg-green-400 text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60'}`}
                   >
-                    {s.label}
+                    {s.icon}
+                    <span>{s.label}</span>
                   </button>
                 ))}
               </div>
             </div>
           </div>
           <div
-            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
             onClick={() => analyticsData.topGainer && setSelectedCrop(analyticsData.topGainer)}
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
@@ -768,7 +768,7 @@ const App = () => {
               <span className="text-green-400 font-bold text-xs uppercase tracking-widest">Market Top Gainer</span>
             </div>
             <div className="mt-4 relative z-10">
-              <h4 className="text-3xl font-black text-white">{analyticsData.topGainer?.name || 'Loading...'}</h4>
+              <h4 className="text-xl sm:text-3xl font-black text-white">{analyticsData.topGainer?.name || 'Loading...'}</h4>
               <div className="flex items-center gap-2">
                 {analyticsData.topGainer && <CropIcon crop={analyticsData.topGainer} size="lg" />}
                 <p className="text-green-400 font-mono font-bold text-xl">+{analyticsData.topGainer?.change24h}%</p>
@@ -785,11 +785,11 @@ const App = () => {
               My Watchlist
               <span className="text-sm font-mono text-zinc-600 ml-2">{favoriteCrops.length} items</span>
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {favoriteCrops.map(crop => (
                 <div
                   key={`fav-${crop.id}`}
-                  className="min-w-[200px] bg-zinc-900 border border-red-400/20 rounded-2xl p-4 cursor-pointer hover:border-red-400/40 transition-all shadow-lg flex-shrink-0"
+                  className="min-w-[160px] sm:min-w-[200px] bg-zinc-900 border border-red-400/20 rounded-2xl p-3 sm:p-4 cursor-pointer hover:border-red-400/40 transition-all shadow-lg flex-shrink-0"
                   onClick={() => setSelectedCrop(crop)}
                 >
                   <div className="flex items-center gap-3 mb-2">
@@ -821,7 +821,7 @@ const App = () => {
               return (
                 <div
                   key={crop.id}
-                  className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:bg-zinc-800/80 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
+                  className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-800/80 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
                   onClick={() => setSelectedCrop(crop)}
                 >
                   {/* Seasonal badge */}
@@ -871,7 +871,7 @@ const App = () => {
 
         {/* Budget Recommendations */}
         {budgetItems.length === 0 && (
-          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-3xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-2xl bg-green-400/10 border border-green-400/20">
                 <Calculator className="text-green-400" size={24} />
@@ -881,11 +881,11 @@ const App = () => {
                 <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Best Value Picks Within ₱{budgetLimit}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {[...crops].sort((a, b) => a.currentPrice - b.currentPrice).slice(0, 4).map(crop => (
                 <div
                   key={`suggest-${crop.id}`}
-                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 hover:border-green-400/30 transition-colors cursor-pointer group"
+                  className="bg-zinc-900 border border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:border-green-400/30 transition-colors cursor-pointer group"
                   onClick={() => { addToBudget(crop.id); }}
                 >
                   <div className="flex items-center gap-3 mb-2">
@@ -904,19 +904,19 @@ const App = () => {
   };
 
   const renderCalculatorWidget = () => (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-[40px] p-10 shadow-2xl relative overflow-hidden mt-12 mb-20 border-t-green-400/30">
+    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl sm:rounded-[40px] p-4 sm:p-6 lg:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12 mb-16 sm:mb-20 border-t-green-400/30">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400/50 to-transparent"></div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-8 mb-6 sm:mb-10">
         <div>
           <div className="flex items-center gap-4 mb-2">
             <div className="bg-green-400 p-2 rounded-xl">
               <Calculator className="text-black" size={28} />
             </div>
-            <h2 className="text-3xl font-black">Smart Asset Projection</h2>
+            <h2 className="text-xl sm:text-3xl font-black">Smart Asset Projection</h2>
           </div>
           <p className="text-zinc-500 font-medium">Auto-calculating unit weight vs market index values</p>
         </div>
-        <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-3xl border border-zinc-800 shadow-inner">
+        <div className="flex items-center gap-3 sm:gap-4 bg-zinc-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-800 shadow-inner">
           <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Liquidity:</span>
           <input
             type="number"
@@ -929,7 +929,7 @@ const App = () => {
       </div>
 
       {budgetItems.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed border-zinc-800 rounded-[32px] bg-zinc-900/10">
+        <div className="text-center py-12 sm:py-20 border-2 border-dashed border-zinc-800 rounded-2xl sm:rounded-[32px] bg-zinc-900/10">
           <Package className="mx-auto text-zinc-800 mb-6" size={64} />
           <p className="text-zinc-400 text-xl font-black uppercase tracking-tighter">No Active Trades</p>
           <p className="text-zinc-600 text-sm mt-2">Select produce from market to begin calculating</p>
@@ -941,28 +941,28 @@ const App = () => {
               const crop = crops.find(c => c.id === item.cropId)!;
               const weight = item.quantity * crop.weightPerUnit;
               return (
-                <div key={item.cropId} className="flex items-center justify-between bg-zinc-900/50 hover:bg-zinc-900 p-5 rounded-3xl border border-zinc-800 transition-colors group">
-                  <div className="flex items-center gap-6">
-                    <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
+                <div key={item.cropId} className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-900/50 hover:bg-zinc-900 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-zinc-800 transition-colors group gap-4">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
                     <div>
-                      <h4 className="font-black text-xl text-white">{crop.name}</h4>
+                      <h4 className="font-black text-base sm:text-xl text-white">{crop.name}</h4>
                       <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
-                        <span>Qty: {item.quantity} units</span>
+                        <span>Qty: {item.quantity}</span>
                         <span>≈ {weight.toFixed(2)}kg</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-3 bg-zinc-950 p-2 rounded-2xl border border-zinc-800">
-                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity - 1)} className="p-2 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"><Minus size={18} /></button>
-                      <span className="w-12 text-center text-lg font-black font-mono text-white">{item.quantity}</span>
-                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity + 1)} className="p-2 hover:bg-green-400/10 hover:text-green-400 transition-all rounded-lg"><Plus size={18} /></button>
+                  <div className="flex items-center gap-3 sm:gap-8 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-2 sm:gap-3 bg-zinc-950 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-800">
+                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity - 1)} className="p-1.5 sm:p-2 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"><Minus size={16} /></button>
+                      <span className="w-8 sm:w-12 text-center text-sm sm:text-lg font-black font-mono text-white">{item.quantity}</span>
+                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity + 1)} className="p-1.5 sm:p-2 hover:bg-green-400/10 hover:text-green-400 transition-all rounded-lg"><Plus size={16} /></button>
                     </div>
-                    <div className="text-right w-32">
-                      <p className="font-mono text-2xl font-bold text-white">{formatPrice(weight * crop.currentPrice)}</p>
+                    <div className="text-right flex-1 sm:w-32 sm:flex-none">
+                      <p className="font-mono text-lg sm:text-2xl font-bold text-white">{formatPrice(weight * crop.currentPrice)}</p>
                     </div>
-                    <button onClick={() => removeFromBudget(item.cropId)} className="text-zinc-700 hover:text-red-500 transition-all p-3">
-                      <Trash2 size={24} />
+                    <button onClick={() => removeFromBudget(item.cropId)} className="text-zinc-700 hover:text-red-500 transition-all p-2 sm:p-3">
+                      <Trash2 size={20} />
                     </button>
                   </div>
                 </div>
@@ -970,16 +970,16 @@ const App = () => {
             })}
           </div>
 
-          <div className="bg-zinc-900 p-8 rounded-[32px] border border-zinc-800 mt-10">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[32px] border border-zinc-800 mt-6 sm:mt-10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10">
               <div className="text-center md:text-left flex-1">
                 <p className="text-xs text-zinc-500 uppercase font-black tracking-widest mb-2">Total Projected Commitment</p>
                 <div className="flex items-baseline gap-4">
-                  <span className="text-2xl font-black text-zinc-500 font-mono">{budgetStats.totalWeight.toFixed(2)}kg</span>
-                  <span className="text-6xl font-black font-mono text-white tracking-tighter">{formatPrice(budgetStats.totalCost)}</span>
+                  <span className="text-lg sm:text-2xl font-black text-zinc-500 font-mono">{budgetStats.totalWeight.toFixed(2)}kg</span>
+                  <span className="text-3xl sm:text-4xl lg:text-6xl font-black font-mono text-white tracking-tighter">{formatPrice(budgetStats.totalCost)}</span>
                 </div>
               </div>
-              <div className="w-full max-w-lg bg-zinc-950 p-6 rounded-3xl border border-zinc-800">
+              <div className="w-full max-w-lg bg-zinc-950 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-zinc-800">
                 <div className="flex justify-between text-xs font-black uppercase mb-3">
                   <span className="text-zinc-500">Inventory Liquidity Used</span>
                   <span className={budgetStats.totalCost > budgetLimit ? 'text-red-500' : 'text-green-400'}>{Math.round((budgetStats.totalCost / budgetLimit) * 100)}%</span>
@@ -1003,18 +1003,18 @@ const App = () => {
 
   const ShopCard = ({ vendor, icon: Icon }: { vendor: any, icon: any, key?: any }) => (
     <div
-      className="bg-zinc-900 border border-zinc-800 rounded-[36px] p-8 hover:bg-zinc-800/50 hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between h-full shadow-2xl"
+      className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-[36px] p-4 sm:p-6 lg:p-8 hover:bg-zinc-800/50 hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between h-full shadow-2xl"
       onClick={() => setSelectedVendor(vendor)}
     >
       <div>
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-4 sm:mb-8">
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-[28px] bg-zinc-950 flex items-center justify-center font-black text-3xl text-zinc-600 group-hover:bg-green-500 group-hover:text-black transition-all border border-zinc-800 group-hover:border-transparent">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-[28px] bg-zinc-950 flex items-center justify-center font-black text-xl sm:text-3xl text-zinc-600 group-hover:bg-green-500 group-hover:text-black transition-all border border-zinc-800 group-hover:border-transparent">
               {vendor.name[0]}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-2xl font-black text-white group-hover:text-green-500 transition-colors">{vendor.name}</h3>
+                <h3 className="text-lg sm:text-2xl font-black text-white group-hover:text-green-500 transition-colors">{vendor.name}</h3>
                 {vendor.isHot && <ShieldCheck size={20} className="text-green-500" />}
               </div>
               <div className="flex items-center gap-1 text-yellow-500">
@@ -1039,7 +1039,7 @@ const App = () => {
           )}
         </div>
       </div>
-      <div className="mt-8 flex items-center justify-between border-t border-zinc-800 pt-6">
+      <div className="mt-4 sm:mt-8 flex items-center justify-between border-t border-zinc-800 pt-4 sm:pt-6">
         <Icon size={24} className="text-zinc-700 group-hover:text-green-500/50 transition-colors" />
         <button className="flex items-center gap-2 text-green-500 font-black text-xs uppercase tracking-[0.2em] group-hover:gap-4 transition-all">
           Connect Terminal <ArrowRight size={14} />
@@ -1052,15 +1052,15 @@ const App = () => {
     <div className="space-y-16 pb-32 lg:pb-12 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-5xl font-black tracking-tighter">Market Nodes</h2>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Market Nodes</h2>
           <p className="text-zinc-500 text-lg mt-2 font-medium">Connect to specialized produce terminals</p>
         </div>
-        <div className="flex gap-3 bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 shadow-inner">
+        <div className="flex gap-2 sm:gap-3 bg-zinc-900 p-1 sm:p-1.5 rounded-2xl border border-zinc-800 shadow-inner">
           {['All', 'Fruit', 'Vegetable'].map(f => (
             <button
               key={f}
               onClick={() => setShopFilter(f as any)}
-              className={`px-6 py-2 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${shopFilter === f ? 'bg-zinc-800 text-white shadow-xl border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+              className={`px-3 sm:px-6 py-2 rounded-xl text-[10px] sm:text-xs font-black transition-all uppercase tracking-widest ${shopFilter === f ? 'bg-zinc-800 text-white shadow-xl border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               {f === 'All' ? 'All' : `${f}s`}
             </button>
@@ -1075,11 +1075,11 @@ const App = () => {
               <ShoppingBag size={32} className="text-orange-400" />
             </div>
             <div>
-              <h3 className="text-3xl font-black uppercase tracking-tighter">Fruit Nodes</h3>
+              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter">Fruit Nodes</h3>
               <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest">Strict Fruit Specialization</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
             {fruitVendors.map(v => <ShopCard key={v.id} vendor={v} icon={ShoppingBag} />)}
           </div>
         </section>
@@ -1092,11 +1092,11 @@ const App = () => {
               <Leaf size={32} className="text-green-500" />
             </div>
             <div>
-              <h3 className="text-3xl font-black uppercase tracking-tighter">Vegetable & Spice Nodes</h3>
+              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter">Vegetable & Spice Nodes</h3>
               <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest">High-Intensity Greens & Aromatics</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
             {vegetableVendors.map(v => <ShopCard key={v.id} vendor={v} icon={Store} />)}
           </div>
         </section>
@@ -1105,7 +1105,7 @@ const App = () => {
   );
 
   const RankingCard = ({ title, items, color, subtitle, onCropClick }: { title: string, items: Crop[], color: string, subtitle: string, onCropClick?: (crop: Crop) => void }) => (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-[40px] p-8 shadow-2xl flex flex-col">
+    <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl sm:rounded-[40px] p-4 sm:p-6 lg:p-8 shadow-2xl flex flex-col">
       <div className="flex items-center gap-4 mb-8">
         <div className={`p-3 rounded-2xl border ${color === 'yellow' ? 'bg-yellow-400/20 border-yellow-400/30' : 'bg-green-400/20 border-green-400/30'}`}>
           {color === 'yellow' ? <Trophy className="text-yellow-400" size={28} /> : <Award className="text-green-500" size={28} />}
@@ -1138,11 +1138,11 @@ const App = () => {
   const renderAnalyticsDashboard = () => (
     <div className="space-y-16 animate-in fade-in duration-700 pb-20">
       <div>
-        <h2 className="text-5xl font-black tracking-tighter">Market Leaderboards</h2>
+        <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Market Leaderboards</h2>
         <p className="text-zinc-500 text-lg mt-2 font-medium">Real-time asset rankings segmented by category</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <RankingCard
           title="Premium Fruits"
           subtitle="Highest Ask Index"
@@ -1173,7 +1173,7 @@ const App = () => {
         />
       </div>
 
-      <div className="bg-zinc-900/30 p-10 rounded-[40px] border border-zinc-800 shadow-xl">
+      <div className="bg-zinc-900/30 p-4 sm:p-6 lg:p-10 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
             <BarChart3 className="text-green-500" size={24} />
@@ -1214,22 +1214,22 @@ const App = () => {
         </div>
 
         {aggregateVolatilityData.stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-zinc-950 border border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
               <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Period</p>
-              <p className="text-2xl font-black text-white">{aggregateVolatilityData.stats.date}</p>
+              <p className="text-lg sm:text-2xl font-black text-white">{aggregateVolatilityData.stats.date}</p>
             </div>
-            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+            <div className="bg-zinc-950 border border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
               <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Average Price</p>
-              <p className="text-2xl font-mono font-black text-green-400">₱{aggregateVolatilityData.stats.price}</p>
+              <p className="text-lg sm:text-2xl font-mono font-black text-green-400">₱{aggregateVolatilityData.stats.price}</p>
             </div>
-            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+            <div className="bg-zinc-950 border border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
               <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Price Range</p>
               <p className="text-sm font-mono text-white">₱{aggregateVolatilityData.stats.min} - ₱{aggregateVolatilityData.stats.max}</p>
             </div>
-            <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-[24px] shadow-lg">
+            <div className="bg-zinc-950 border border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
               <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-2">Change</p>
-              <p className={`text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}{aggregateVolatilityData.stats.change}%</p>
+              <p className={`text-lg sm:text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}{aggregateVolatilityData.stats.change}%</p>
             </div>
           </div>
         )}
@@ -1239,8 +1239,8 @@ const App = () => {
 
   const renderVendorView = () => (
     <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div className="bg-zinc-900 p-8 rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+        <div className="bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-between">
           <div>
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Node Specialization</p>
             <div className="flex items-center gap-4">
@@ -1248,7 +1248,7 @@ const App = () => {
                 {vendorShopType === 'Fruit' ? <ShoppingBag className="text-orange-400" size={32} /> : <Leaf className="text-green-500" size={32} />}
               </div>
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter">{vendorShopType} Merchant</h3>
+                <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter">{vendorShopType} Merchant</h3>
                 <p className="text-zinc-600 text-xs font-bold">Trading {vendorShopType}s strictly</p>
               </div>
             </div>
@@ -1269,7 +1269,7 @@ const App = () => {
           </div>
         </div>
 
-        <div className="bg-zinc-900 p-8 rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-center">
+        <div className="bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-center">
           <Zap className="text-yellow-400 absolute top-8 right-8 group-hover:scale-150 transition-transform duration-500 opacity-20" size={64} />
           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Market Demand Signal</p>
           {(() => {
@@ -1279,17 +1279,17 @@ const App = () => {
             const signalLabel = avgChange >= 3 ? 'Optimal Liquidity Period' : avgChange >= 0 ? 'Stable Market Conditions' : 'Caution: Declining Prices';
             return (
               <>
-                <div className={`text-5xl font-black tracking-tighter ${signalColor}`}>{signal}</div>
+                <div className={`text-3xl sm:text-5xl font-black tracking-tighter ${signalColor}`}>{signal}</div>
                 <p className={`${signalColor} font-bold text-xs tracking-widest uppercase mt-2`}>{signalLabel}</p>
               </>
             );
           })()}
         </div>
 
-        <div className="bg-zinc-900 p-8 rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-center">
+        <div className="bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-center">
           <Package className="text-blue-400 absolute top-8 right-8 group-hover:scale-150 transition-transform duration-500 opacity-20" size={64} />
           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Node Aggregate</p>
-          <div className="text-5xl font-black text-white tracking-tighter">
+          <div className="text-3xl sm:text-5xl font-black text-white tracking-tighter">
             {vendorInventory.reduce((acc, c) => acc + (c.vendors.find(v => v.id === adminVendorId)?.stock || 0), 0).toLocaleString()}
             <span className="text-lg text-zinc-600 font-mono uppercase ml-3 tracking-normal">kg</span>
           </div>
@@ -1313,20 +1313,20 @@ const App = () => {
         });
 
         return (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="bg-zinc-900 p-4 sm:p-6 rounded-2xl sm:rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
               <DollarSign className="text-green-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
               <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Portfolio Value</p>
-              <p className="text-3xl font-black font-mono text-green-400 tracking-tight">{formatPrice(portfolioValue)}</p>
+              <p className="text-xl sm:text-3xl font-black font-mono text-green-400 tracking-tight">{formatPrice(portfolioValue)}</p>
               <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Price × Stock</p>
             </div>
-            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+            <div className="bg-zinc-900 p-4 sm:p-6 rounded-2xl sm:rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
               <Package className="text-blue-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
               <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Active Listings</p>
               <p className="text-3xl font-black font-mono text-white tracking-tight">{activeListings}</p>
               <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Products Live</p>
             </div>
-            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+            <div className="bg-zinc-900 p-4 sm:p-6 rounded-2xl sm:rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
               <Star className="text-yellow-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
               <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Average Rating</p>
               <div className="flex items-center gap-2">
@@ -1351,7 +1351,7 @@ const App = () => {
 
       {/* Price Comparison Table */}
       {vendorInventory.length > 0 && (
-        <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+        <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-blue-400/10 border border-blue-400/20">
               <Activity className="text-blue-400" size={24} />
@@ -1497,7 +1497,7 @@ const App = () => {
         const sampledData = mergedData.filter((_: any, i: number) => i % 8 === 0);
 
         return (
-          <div className="bg-zinc-900/30 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="bg-zinc-900/30 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-orange-400/10 border border-orange-400/20">
@@ -1539,7 +1539,7 @@ const App = () => {
 
       {/* Profit Margin Calculator */}
       {vendorInventory.length > 0 && (
-        <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+        <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20">
               <DollarSign className="text-emerald-400" size={24} />
@@ -1612,7 +1612,7 @@ const App = () => {
       {vendorInventory.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bulk Price Adjustment */}
-          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/20">
                 <Zap className="text-yellow-400" size={24} />
@@ -1667,7 +1667,7 @@ const App = () => {
           </div>
 
           {/* Demand Forecast */}
-          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-800 shadow-xl">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 rounded-2xl bg-cyan-400/10 border border-cyan-400/20">
                 <TrendingUp className="text-cyan-400" size={24} />
@@ -1712,7 +1712,7 @@ const App = () => {
           .slice(0, 4);
         if (unstockedHighDemand.length === 0) return null;
         return (
-          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-green-400/20 shadow-xl">
+          <div className="bg-zinc-900/50 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-green-400/20 shadow-xl">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 rounded-2xl bg-green-400/10 border border-green-400/20">
                 <Leaf className="text-green-400" size={24} />
@@ -1748,10 +1748,10 @@ const App = () => {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <h2 className="text-5xl font-black tracking-tighter">Terminal Admin</h2>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Terminal Admin</h2>
             <p className="text-zinc-500 mt-2 font-medium uppercase tracking-widest text-xs">Managing your {vendorShopType} Assets</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {vendorInventory.length > 0 && (
               <button
                 onClick={() => {
@@ -1767,12 +1767,12 @@ const App = () => {
                   a.href = url; a.download = 'agripresyo_inventory.csv'; a.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white px-6 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 hover:border-green-400/30 transition-all uppercase tracking-widest"
+                className="bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white px-4 sm:px-6 py-3 sm:py-5 rounded-2xl sm:rounded-[24px] font-black text-xs sm:text-sm flex items-center justify-center gap-2 sm:gap-3 hover:border-green-400/30 transition-all uppercase tracking-widest"
               >
                 <Download size={20} /> Export CSV
               </button>
             )}
-            <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-10 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
+            <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-6 sm:px-10 py-3 sm:py-5 rounded-2xl sm:rounded-[24px] font-black text-xs sm:text-sm flex items-center justify-center gap-2 sm:gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
               <Plus size={24} strokeWidth={3} /> New Listing
             </button>
           </div>
@@ -1789,12 +1789,12 @@ const App = () => {
             vendorInventory.map(crop => {
               const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
               return (
-                <div key={crop.id} className="bg-zinc-900 border border-zinc-800 rounded-[32px] p-8 group hover:border-green-400/30 transition-all shadow-xl">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-                    <div className="flex items-center gap-8">
+                <div key={crop.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-[32px] p-4 sm:p-6 lg:p-8 group hover:border-green-400/30 transition-all shadow-xl">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-10">
+                    <div className="flex items-center gap-4 sm:gap-8">
                       <CropIcon crop={crop} size="xl" />
                       <div>
-                        <h3 className="text-3xl font-black text-white group-hover:text-green-400 transition-colors">{myEntry.listingName || crop.name}</h3>
+                        <h3 className="text-xl sm:text-3xl font-black text-white group-hover:text-green-400 transition-colors">{myEntry.listingName || crop.name}</h3>
                         <div className="flex gap-3 mt-2">
                           <span className="px-4 py-1.5 rounded-xl bg-zinc-800 text-[10px] font-black text-zinc-500 uppercase tracking-widest">{crop.category}</span>
                           <span className="px-4 py-1.5 rounded-xl bg-green-400/10 text-[10px] font-black text-green-400 uppercase tracking-widest">Terminal Active</span>
@@ -1802,18 +1802,18 @@ const App = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 flex-1 lg:max-w-xl">
-                      <div className="bg-zinc-950 p-6 rounded-3xl border border-zinc-800 shadow-inner group/stat">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-6 flex-1 lg:max-w-xl">
+                      <div className="bg-zinc-950 p-3 sm:p-6 rounded-2xl sm:rounded-3xl border border-zinc-800 shadow-inner group/stat">
                         <p className="text-[10px] text-zinc-500 uppercase font-black tracking-[0.2em] mb-3">Ask Price</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-2xl font-mono font-bold text-green-400 leading-none">{formatPrice(myEntry.price)}</span>
+                          <span className="text-lg sm:text-2xl font-mono font-bold text-green-400 leading-none">{formatPrice(myEntry.price)}</span>
                           <button onClick={() => setEditingInventoryCrop(crop)} className="text-zinc-700 hover:text-white transition-colors bg-zinc-900 p-2 rounded-lg group-hover/stat:border-green-400/30 border border-transparent"><Edit2 size={16} /></button>
                         </div>
                       </div>
-                      <div className="bg-zinc-950 p-6 rounded-3xl border border-zinc-800 shadow-inner group/stat">
+                      <div className="bg-zinc-950 p-3 sm:p-6 rounded-2xl sm:rounded-3xl border border-zinc-800 shadow-inner group/stat">
                         <p className="text-[10px] text-zinc-500 uppercase font-black tracking-[0.2em] mb-3">Available Liquidity</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-2xl font-mono font-bold text-white leading-none">{myEntry.stock.toLocaleString()} <span className="text-xs uppercase text-zinc-600">kg</span></span>
+                          <span className="text-lg sm:text-2xl font-mono font-bold text-white leading-none">{myEntry.stock.toLocaleString()} <span className="text-xs uppercase text-zinc-600">kg</span></span>
                           <button onClick={() => setEditingInventoryCrop(crop)} className="text-zinc-700 hover:text-white transition-colors bg-zinc-900 p-2 rounded-lg group-hover/stat:border-green-400/30 border border-transparent"><Edit2 size={16} /></button>
                         </div>
                       </div>
@@ -1838,12 +1838,13 @@ const App = () => {
     <div className="min-h-screen flex flex-col selection:bg-green-400/30 animate-in fade-in duration-1000">
       <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
-      <header className="sticky top-10 z-40 bg-zinc-950/80 backdrop-blur-2xl border-b border-zinc-800 px-8 py-5">
+      <header className="sticky top-10 z-40 bg-zinc-950/80 backdrop-blur-2xl border-b border-zinc-800 px-3 sm:px-8 py-3 sm:py-5">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-12">
+          <div className="flex items-center gap-4 sm:gap-12">
             <div className="flex items-center gap-4 group cursor-pointer" onClick={() => setActiveTab('market')}>
-              <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6" />
-              <h1 className="text-3xl font-black tracking-tighter text-white">
+              <Logo size={40} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
+              <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block" />
+              <h1 className="text-xl sm:text-3xl font-black tracking-tighter text-white">
                 <span className="text-green-500">Agri</span>
                 <span className="text-zinc-200">Presyo</span>
               </h1>
@@ -1857,13 +1858,13 @@ const App = () => {
               {role === UserRole.VENDOR && <button onClick={() => setActiveTab('shop')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'shop' ? 'bg-zinc-900 text-green-500 shadow-inner' : 'text-zinc-500 hover:text-zinc-200'}`}>DASHBOARD</button>}
             </nav>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
 
             {role === UserRole.VENDOR && (
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
                 >
                   <Bell size={22} />
                   {notifications.length > 0 && (
@@ -1897,12 +1898,12 @@ const App = () => {
                 )}
               </div>
             )}
-            <button onClick={handleLogout} className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition-all hover:border-red-500/30 shadow-xl group"><LogOut size={22} className="group-hover:-translate-x-1 transition-transform" /></button>
+            <button onClick={handleLogout} className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition-all hover:border-red-500/30 shadow-xl group"><LogOut size={20} className="group-hover:-translate-x-1 transition-transform" /></button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 p-8 lg:p-12 max-w-[1400px] mx-auto w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full">
         {activeTab === 'market' && renderConsumerView()}
         {activeTab === 'market' && renderCalculatorWidget()}
         {activeTab === 'shops' && role !== UserRole.VENDOR && renderShopsView()}
@@ -1965,7 +1966,7 @@ const App = () => {
         </div>
       </footer>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-2xl border-t border-zinc-800 px-8 py-5 flex justify-between items-center z-50 rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-2xl border-t border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
         <button onClick={() => setActiveTab('market')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'market' ? 'text-green-500 scale-110' : 'text-zinc-600 hover:text-zinc-400'}`}>
           <Store size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Market</span>
@@ -1990,19 +1991,19 @@ const App = () => {
 
       {/* Vendor Detail View Modal */}
       {selectedVendor && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-black/98 backdrop-blur-xl" onClick={() => setSelectedVendor(null)}></div>
-          <div className="bg-zinc-900 w-full max-w-2xl rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-300">
-            <button onClick={() => setSelectedVendor(null)} className="absolute top-8 right-8 z-20 w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
-            <div className="p-10 lg:p-14 space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
+          <div className="bg-zinc-900 w-full max-w-2xl rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-300">
+            <button onClick={() => setSelectedVendor(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <div className="p-5 sm:p-10 lg:p-14 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
               <div className="flex flex-col md:flex-row justify-between items-start gap-8">
-                <div className="flex items-center gap-8">
-                  <div className="w-28 h-28 rounded-[36px] bg-zinc-950 flex items-center justify-center font-black text-5xl text-zinc-700 border border-zinc-800 shadow-2xl">
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-2xl sm:rounded-[36px] bg-zinc-950 flex items-center justify-center font-black text-3xl sm:text-5xl text-zinc-700 border border-zinc-800 shadow-2xl shrink-0">
                     {selectedVendor.name[0]}
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h2 className="text-4xl font-black text-white leading-none">{selectedVendor.name}</h2>
+                      <h2 className="text-2xl sm:text-4xl font-black text-white leading-none">{selectedVendor.name}</h2>
                       {selectedVendor.isHot && <ShieldCheck className="text-green-500 shrink-0" size={28} />}
                     </div>
                     <p className="text-zinc-500 text-xs font-black uppercase tracking-[0.3em] mb-4">{selectedVendor.specialty}</p>
@@ -2040,16 +2041,16 @@ const App = () => {
                 <h3 className="text-2xl font-black uppercase tracking-tighter text-green-500 border-b border-zinc-800 pb-4">Terminal Inventory</h3>
                 <div className="grid gap-4">
                   {selectedVendor.cropsSold.map((crop: any) => (
-                    <div key={crop.id} className="bg-zinc-950 p-6 rounded-[32px] border border-zinc-800 flex items-center justify-between group hover:border-zinc-600 transition-all shadow-lg">
-                      <div className="flex items-center gap-6">
+                    <div key={crop.id} className="bg-zinc-950 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] border border-zinc-800 flex items-center justify-between group hover:border-zinc-600 transition-all shadow-lg">
+                      <div className="flex items-center gap-3 sm:gap-6">
                         <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
                         <div>
-                          <p className="font-black text-2xl text-white tracking-tight">{crop.vendors.find((v: any) => v.id === selectedVendor.id)?.listingName || crop.name}</p>
+                          <p className="font-black text-base sm:text-2xl text-white tracking-tight">{crop.vendors.find((v: any) => v.id === selectedVendor.id)?.listingName || crop.name}</p>
                           <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Weight Index: {crop.weightPerUnit}kg/unit</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-3xl font-black font-mono text-green-500 leading-none mb-2">{formatPrice(crop.vendors.find((v: any) => v.id === selectedVendor.id)?.price || crop.currentPrice)}</p>
+                        <p className="text-xl sm:text-3xl font-black font-mono text-green-500 leading-none mb-2">{formatPrice(crop.vendors.find((v: any) => v.id === selectedVendor.id)?.price || crop.currentPrice)}</p>
                         <p className="text-[10px] font-black text-zinc-700 uppercase tracking-tight">Liquidity: {crop.vendors.find((v: any) => v.id === selectedVendor.id)?.stock}kg</p>
                       </div>
                     </div>
@@ -2057,7 +2058,7 @@ const App = () => {
                 </div>
               </div>
 
-              <button onClick={() => setSelectedVendor(null)} className="w-full bg-zinc-800 hover:bg-zinc-700 py-6 rounded-[28px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-10 transition-all hover:text-white">Terminate Connection</button>
+              <button onClick={() => setSelectedVendor(null)} className="w-full bg-zinc-800 hover:bg-zinc-700 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-6 sm:mt-10 transition-all hover:text-white text-sm sm:text-base">Terminate Connection</button>
             </div>
           </div>
         </div>
@@ -2065,32 +2066,32 @@ const App = () => {
 
       {/* Crop Info Modal */}
       {selectedCrop && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-black/98 backdrop-blur-xl" onClick={() => setSelectedCrop(null)}></div>
-          <div className="bg-zinc-900 w-full max-w-xl rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setSelectedCrop(null)} className="absolute top-8 right-8 z-20 w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
-            <div className="p-12 space-y-10">
-              <div className="flex items-center gap-8">
+          <div className="bg-zinc-900 w-full max-w-xl rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200">
+            <button onClick={() => setSelectedCrop(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <div className="p-5 sm:p-8 lg:p-12 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
+              <div className="flex items-center gap-4 sm:gap-8">
                 <CropIcon crop={selectedCrop} size="xl" />
                 <div>
-                  <h2 className="text-5xl font-black text-white tracking-tighter">{selectedCrop.name}</h2>
+                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter">{selectedCrop.name}</h2>
                   <p className="text-zinc-500 font-mono tracking-[0.4em] uppercase text-xs mt-1">{selectedCrop.category} INDEX</p>
                 </div>
               </div>
-              <div className="bg-zinc-950 p-8 rounded-[36px] border border-zinc-800 shadow-inner">
+              <div className="bg-zinc-950 p-4 sm:p-8 rounded-2xl sm:rounded-[36px] border border-zinc-800 shadow-inner">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest">Global Market Index</p>
                   <div className="flex items-center gap-1 text-green-500 font-bold text-lg font-mono">
                     <TrendingUp size={18} /> {selectedCrop.change24h}%
                   </div>
                 </div>
-                <p className="text-5xl font-black font-mono text-white tracking-tighter">{formatPrice(selectedCrop.currentPrice)} <span className="text-xl text-zinc-600">/ kg</span></p>
+                <p className="text-3xl sm:text-5xl font-black font-mono text-white tracking-tighter">{formatPrice(selectedCrop.currentPrice)} <span className="text-base sm:text-xl text-zinc-600">/ kg</span></p>
                 <p className="text-xs text-zinc-700 mt-4 font-bold uppercase tracking-widest">Projection: 1 unit ≈ {selectedCrop.weightPerUnit}kg</p>
               </div>
               <div className="space-y-4">
                 <p className="text-xs font-black uppercase tracking-widest text-zinc-600 ml-2">Available Ask Terminals</p>
                 {[...selectedCrop.vendors].sort((a, b) => a.price - b.price).map(v => (
-                  <div key={v.id} className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 rounded-3xl hover:border-green-400/30 transition-colors shadow-lg group">
+                  <div key={v.id} className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-3 sm:p-5 rounded-2xl sm:rounded-3xl hover:border-green-400/30 transition-colors shadow-lg group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center font-black text-zinc-600 group-hover:text-green-500">{v.name[0]}</div>
                       <div>
@@ -2103,13 +2104,13 @@ const App = () => {
                         </div>
                       </div>
                     </div>
-                    <p className="font-mono font-black text-2xl text-green-500">{formatPrice(v.price)}</p>
+                    <p className="font-mono font-black text-lg sm:text-2xl text-green-500">{formatPrice(v.price)}</p>
                   </div>
                 ))}
               </div>
               <div className="flex gap-4">
-                <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-6 rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10">Add to Assets</button>
-                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-800 text-zinc-500 py-6 rounded-[28px] font-black uppercase tracking-widest hover:text-white transition-colors">Close View</button>
+                <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10 text-sm sm:text-base">Add to Assets</button>
+                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-800 text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-white transition-colors text-sm sm:text-base">Close View</button>
               </div>
             </div>
           </div>
@@ -2118,16 +2119,16 @@ const App = () => {
 
       {/* Admin Modals */}
       {isAddCropModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-black/98 backdrop-blur-xl" onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }}></div>
-          <div className="bg-zinc-900 w-full max-w-lg rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl">
-            <button onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }} className="absolute top-8 right-8 z-20 w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
-            <div className="p-12 space-y-10">
-              <h2 className="text-4xl font-black text-white tracking-tighter">Initialize {vendorShopType} Listing</h2>
+          <div className="bg-zinc-900 w-full max-w-lg rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-800 shadow-2xl">
+            <button onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <div className="p-5 sm:p-8 lg:p-12 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tighter">Initialize {vendorShopType} Listing</h2>
               <div className="space-y-8">
                 <div>
                   <label className="text-[10px] font-black text-zinc-600 uppercase block mb-3 tracking-widest ml-2">Available {vendorShopType} Index Assets</label>
-                  <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-3 scrollbar-hide">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-3 scrollbar-hide">
                     {crops
                       .filter(c => vendorShopType === 'Fruit' ? c.category === 'Fruit' : c.category !== 'Fruit')
                       .map(c => (
@@ -2135,24 +2136,24 @@ const App = () => {
                           setAddCropModalSelection(c);
                           const nameInput = document.getElementById('admin-name') as HTMLInputElement;
                           if (nameInput) nameInput.value = c.name;
-                        }} className={`p-4 rounded-[24px] border transition-all ${addCropModalSelection?.id === c.id ? 'bg-green-500 border-green-400 text-black shadow-xl shadow-green-400/20' : 'bg-zinc-950 border-zinc-800 hover:border-zinc-600'}`}>
+                        }} className={`p-2 sm:p-4 rounded-xl sm:rounded-[24px] border transition-all ${addCropModalSelection?.id === c.id ? 'bg-green-500 border-green-400 text-black shadow-xl shadow-green-400/20' : 'bg-zinc-950 border-zinc-800 hover:border-zinc-600'}`}>
                           <CropIcon crop={c} size="sm" />
                         </button>
                       ))}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6">
                   <div className="space-y-2 col-span-2">
                     <label className="text-[10px] font-black text-zinc-600 uppercase ml-2 tracking-widest">Listing Name (Optional)</label>
-                    <input id="admin-name" type="text" placeholder="Custom name for this listing" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+                    <input id="admin-name" type="text" placeholder="Custom name for this listing" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-sm sm:text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-zinc-600 uppercase ml-2 tracking-widest">Ask Index (₱)</label>
-                    <input id="admin-p" type="number" min="0.01" step="0.01" placeholder="0.00" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-green-500 focus:border-green-400/50 shadow-inner" />
+                    <input id="admin-p" type="number" min="0.01" step="0.01" placeholder="0.00" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-green-500 focus:border-green-400/50 shadow-inner" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-zinc-600 uppercase ml-2 tracking-widest">Liquidity (kg)</label>
-                    <input id="admin-s" type="number" min="1" step="1" placeholder="0" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+                    <input id="admin-s" type="number" min="1" step="1" placeholder="0" className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
                   </div>
                 </div>
               </div>
@@ -2177,34 +2178,34 @@ const App = () => {
                 priceInput.value = '';
                 stockInput.value = '';
                 setAddCropModalSelection(null);
-              }} className="w-full bg-green-500 text-black py-6 rounded-[28px] font-black uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-green-400/20">Execute Listing</button>
+              }} className="w-full bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-green-400/20 text-sm sm:text-base">Execute Listing</button>
             </div>
           </div>
         </div>
       )}
 
       {editingInventoryCrop && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-black/98 backdrop-blur-xl" onClick={() => setEditingInventoryCrop(null)}></div>
-          <div className="bg-zinc-900 w-full max-w-lg rounded-[50px] p-12 relative border border-zinc-800 text-center space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
-            <button onClick={() => setEditingInventoryCrop(null)} className="absolute top-8 right-8 z-20 w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
+          <div className="bg-zinc-900 w-full max-w-lg rounded-3xl sm:rounded-[50px] p-5 sm:p-8 lg:p-12 relative border border-zinc-800 text-center space-y-6 sm:space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <button onClick={() => setEditingInventoryCrop(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all"><X size={20} /></button>
             <div className="mx-auto"><CropIcon crop={editingInventoryCrop} size="xl" /></div>
             <div>
-              <h2 className="text-4xl font-black text-white tracking-tighter">Update Node {editingInventoryCrop.name}</h2>
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tighter">Update Node {editingInventoryCrop.name}</h2>
               <p className="text-zinc-600 text-xs font-black uppercase tracking-[0.3em] mt-2">Adjusting terminal parameters</p>
             </div>
-            <div className="grid grid-cols-2 gap-6 text-left">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 text-left">
               <div className="space-y-2 col-span-2">
                 <label className="text-[10px] font-black text-zinc-600 uppercase ml-3 tracking-widest">Listing Name</label>
-                <input id="upd-name" type="text" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.listingName || editingInventoryCrop.name} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+                <input id="upd-name" type="text" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.listingName || editingInventoryCrop.name} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-sm sm:text-lg font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-600 uppercase ml-3 tracking-widest">Ask Index</label>
-                <input id="upd-p" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.price} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-green-400 focus:border-green-400/50 shadow-inner" />
+                <input id="upd-p" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.price} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-green-400 focus:border-green-400/50 shadow-inner" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-600 uppercase ml-3 tracking-widest">Liquidity Level</label>
-                <input id="upd-s" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.stock} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-5 font-mono text-xl font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
+                <input id="upd-s" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.stock} className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-white focus:border-green-400/50 shadow-inner" />
               </div>
             </div>
             <div className="flex gap-4 pt-4">
@@ -2217,8 +2218,8 @@ const App = () => {
                   return;
                 }
                 handleUpdateVendorListing(editingInventoryCrop.id, p, s, name);
-              }} className="flex-1 bg-green-500 text-black py-5 rounded-[28px] font-black uppercase tracking-widest transition-all shadow-xl hover:scale-105 active:scale-95 shadow-green-500/10">Commit Asset</button>
-              <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-800 text-zinc-500 py-5 rounded-[28px] font-black uppercase transition-colors hover:text-white">Discard</button>
+              }} className="flex-1 bg-green-500 text-black py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest transition-all shadow-xl hover:scale-105 active:scale-95 shadow-green-500/10 text-sm sm:text-base">Commit Asset</button>
+              <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-800 text-zinc-500 py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase transition-colors hover:text-white text-sm sm:text-base">Discard</button>
             </div>
           </div>
         </div>

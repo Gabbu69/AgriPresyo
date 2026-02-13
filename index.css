@@ -1,2 +1,19 @@
 /* AgriPresyo Global Styles */
 /* This file is intentionally minimal — Tailwind CDN handles utility classes. */
+
+/* Hide scrollbar but remain scrollable */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Prevent horizontal overflow on mobile */
+html,
+body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
