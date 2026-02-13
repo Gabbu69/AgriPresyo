@@ -66,12 +66,16 @@ const formatPrice = (price: number) => {
   return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const Ticker = ({ crops }: { crops: Crop[] }) => {
+const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (crop: Crop) => void }) => {
   return (
     <div className="bg-zinc-900 border-b border-zinc-800 h-10 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-md">
       <div className="animate-marquee flex gap-8 px-4">
         {[...crops, ...crops].map((crop, idx) => (
-          <div key={`${crop.id}-${idx}`} className="flex items-center gap-2 font-mono text-sm">
+          <div
+            key={`${crop.id}-${idx}`}
+            className="flex items-center gap-2 font-mono text-sm cursor-pointer hover:bg-zinc-800/60 rounded-lg px-2 py-1 transition-colors"
+            onClick={() => onCropClick?.(crop)}
+          >
             <span className="text-zinc-500 font-bold uppercase">{crop.name}</span>
             <span className="font-bold text-white">{formatPrice(crop.currentPrice)}</span>
             <span className={crop.change24h >= 0 ? 'text-green-400' : 'text-red-500'}>
@@ -1181,7 +1185,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-green-400/30 animate-in fade-in duration-1000">
-      <Ticker crops={crops} />
+      <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
       <header className="sticky top-10 z-40 bg-zinc-950/80 backdrop-blur-2xl border-b border-zinc-800 px-8 py-5">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
