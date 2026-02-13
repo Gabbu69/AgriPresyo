@@ -27,6 +27,10 @@ import {
   Leaf,
   Trophy,
   Award,
+  DollarSign,
+  Activity,
+  AlertTriangle,
+  Users,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -1126,6 +1130,247 @@ const App = () => {
           </div>
         </div>
       </div>
+
+      {/* Revenue & Performance Stats */}
+      {vendorInventory.length > 0 && (() => {
+        const portfolioValue = vendorInventory.reduce((acc, c) => {
+          const entry = c.vendors.find(v => v.id === adminVendorId);
+          return acc + (entry ? entry.price * entry.stock : 0);
+        }, 0);
+        const activeListings = vendorInventory.length;
+        const avgRating = vendorInventory.reduce((acc, c) => {
+          const entry = c.vendors.find(v => v.id === adminVendorId);
+          return acc + (entry?.rating || 0);
+        }, 0) / activeListings;
+        const lowStockItems = vendorInventory.filter(c => {
+          const entry = c.vendors.find(v => v.id === adminVendorId);
+          return entry && entry.stock < 100;
+        });
+
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+              <DollarSign className="text-green-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Portfolio Value</p>
+              <p className="text-3xl font-black font-mono text-green-400 tracking-tight">{formatPrice(portfolioValue)}</p>
+              <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Price × Stock</p>
+            </div>
+            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+              <Package className="text-blue-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Active Listings</p>
+              <p className="text-3xl font-black font-mono text-white tracking-tight">{activeListings}</p>
+              <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Products Live</p>
+            </div>
+            <div className="bg-zinc-900 p-6 rounded-[32px] border border-zinc-800 shadow-xl relative overflow-hidden group">
+              <Star className="text-yellow-400 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Average Rating</p>
+              <div className="flex items-center gap-2">
+                <p className="text-3xl font-black font-mono text-yellow-400 tracking-tight">{avgRating.toFixed(1)}</p>
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={14} fill={i < Math.round(avgRating) ? 'currentColor' : 'none'} className={i < Math.round(avgRating) ? 'text-yellow-400' : 'text-zinc-700'} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">Customer Score</p>
+            </div>
+            <div className={`bg-zinc-900 p-6 rounded-[32px] border shadow-xl relative overflow-hidden group ${lowStockItems.length > 0 ? 'border-red-500/30' : 'border-zinc-800'}`}>
+              <AlertTriangle className={`absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform ${lowStockItems.length > 0 ? 'text-red-500' : 'text-zinc-700'}`} size={48} />
+              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Low Stock Alerts</p>
+              <p className={`text-3xl font-black font-mono tracking-tight ${lowStockItems.length > 0 ? 'text-red-500' : 'text-green-400'}`}>{lowStockItems.length}</p>
+              <p className="text-[10px] text-zinc-600 font-bold mt-2 uppercase tracking-widest">{lowStockItems.length > 0 ? 'Items Below 100kg' : 'All Stock Healthy'}</p>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Price Comparison Table */}
+      {vendorInventory.length > 0 && (
+        <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-blue-400/10 border border-blue-400/20">
+              <Activity className="text-blue-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Price Intelligence</h3>
+              <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Your Prices vs Market Average</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pr-4">Asset</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Your Price</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Market Avg</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pl-4">Difference</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendorInventory.map(crop => {
+                  const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                  const marketAvg = crop.vendors.length > 0
+                    ? crop.vendors.reduce((sum, v) => sum + v.price, 0) / crop.vendors.length
+                    : crop.currentPrice;
+                  const diff = ((myEntry.price - marketAvg) / marketAvg) * 100;
+                  return (
+                    <tr key={crop.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                      <td className="py-4 pr-4">
+                        <div className="flex items-center gap-3">
+                          <CropIcon crop={crop} size="sm" />
+                          <span className="font-bold text-white text-sm">{myEntry.listingName || crop.name}</span>
+                        </div>
+                      </td>
+                      <td className="text-right font-mono font-bold text-green-400 py-4 px-4">{formatPrice(myEntry.price)}</td>
+                      <td className="text-right font-mono font-bold text-zinc-400 py-4 px-4">{formatPrice(Math.round(marketAvg * 100) / 100)}</td>
+                      <td className="text-right py-4 pl-4">
+                        <span className={`font-mono font-black text-sm px-3 py-1.5 rounded-xl ${diff > 0 ? 'text-red-400 bg-red-400/10' : diff < 0 ? 'text-green-400 bg-green-400/10' : 'text-zinc-400 bg-zinc-800'}`}>
+                          {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Top Market Movers & Competitor Overview */}
+      {vendorInventory.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Top Market Movers */}
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-green-400/10 border border-green-400/20">
+                <TrendingUp className="text-green-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Your Top Movers</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Trending Items in Your Inventory</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[...vendorInventory].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5).map((crop, idx) => {
+                const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                return (
+                  <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors group">
+                    <div className="flex items-center gap-4">
+                      <span className="text-lg font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
+                      <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="sm" /></div>
+                      <div>
+                        <p className="font-bold text-white text-sm">{myEntry.listingName || crop.name}</p>
+                        <p className="text-[10px] text-zinc-600 font-mono">{formatPrice(myEntry.price)}</p>
+                      </div>
+                    </div>
+                    <div className={`flex items-center gap-1 font-mono font-black text-sm px-3 py-1.5 rounded-xl ${crop.change24h >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
+                      {crop.change24h >= 0 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      {Math.abs(crop.change24h)}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Competitor Overview */}
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-purple-400/10 border border-purple-400/20">
+                <Users className="text-purple-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Competitor Overview</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Other Vendors Selling Your Crops</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {vendorInventory.map(crop => {
+                const otherVendors = crop.vendors.filter(v => v.id !== adminVendorId);
+                const minPrice = otherVendors.length > 0 ? Math.min(...otherVendors.map(v => v.price)) : 0;
+                const maxPrice = otherVendors.length > 0 ? Math.max(...otherVendors.map(v => v.price)) : 0;
+                return (
+                  <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <CropIcon crop={crop} size="sm" />
+                      <div>
+                        <p className="font-bold text-white text-sm">{crop.name}</p>
+                        <p className="text-[10px] text-zinc-600 font-bold">{otherVendors.length} competitor{otherVendors.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {otherVendors.length > 0 ? (
+                        <>
+                          <p className="font-mono text-xs text-zinc-400">{formatPrice(minPrice)} — {formatPrice(maxPrice)}</p>
+                          <p className="text-[10px] text-zinc-600 font-bold uppercase">Price Range</p>
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-green-400 font-black uppercase tracking-widest bg-green-400/10 px-3 py-1 rounded-lg">Exclusive</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Price History Chart */}
+      {vendorInventory.length > 0 && (() => {
+        const chartCrops = vendorInventory.slice(0, 5);
+        const chartColors = ['#4ade80', '#60a5fa', '#f59e0b', '#f43f5e', '#a855f7'];
+        const mergedData = chartCrops[0]?.history.map((point, idx) => {
+          const entry: any = { date: point.date };
+          chartCrops.forEach((crop, cIdx) => {
+            entry[crop.name] = crop.history[idx]?.price || 0;
+          });
+          return entry;
+        }) || [];
+        // sample every 8th point for performance
+        const sampledData = mergedData.filter((_: any, i: number) => i % 8 === 0);
+
+        return (
+          <div className="bg-zinc-900/30 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl bg-orange-400/10 border border-orange-400/20">
+                  <BarChart3 className="text-orange-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black tracking-tighter">Inventory Price History</h3>
+                  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Historical Trend for Your Top Listings</p>
+                </div>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                {chartCrops.map((crop, idx) => (
+                  <div key={crop.id} className="flex items-center gap-2 bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: chartColors[idx] }} />
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase">{crop.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={sampledData}>
+                  <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#71717a' }} interval={Math.floor(sampledData.length / 6)} />
+                  <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#09090b', borderRadius: '12px', border: '1px solid #27272a', fontFamily: 'Inter', padding: '10px' }}
+                    formatter={(value: any, name: string) => [`₱${value}`, name]}
+                  />
+                  {chartCrops.map((crop, idx) => (
+                    <Line key={crop.id} type="monotone" dataKey={crop.name} stroke={chartColors[idx]} strokeWidth={2} dot={false} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
