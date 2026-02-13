@@ -31,6 +31,10 @@ import {
   Activity,
   AlertTriangle,
   Users,
+  Heart,
+  Bell,
+  Download,
+  ArrowUpDown,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -384,6 +388,40 @@ const App = () => {
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
+  // Consumer features
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_favorites') || '[]'); } catch { return []; }
+  });
+  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'demand' | 'trending'>('default');
+
+  // Vendor features
+  const [vendorCostPrices, setVendorCostPrices] = useState<Record<string, number>>({});
+  const [bulkAdjustPercent, setBulkAdjustPercent] = useState<number>(0);
+  const [notifications, setNotifications] = useState<Array<{ id: string; cropName: string; qty: number; time: string }>>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Save favorites to localStorage
+  useEffect(() => { localStorage.setItem('AP_favorites', JSON.stringify(favorites)); }, [favorites]);
+
+  const toggleFavorite = (cropId: string) => {
+    setFavorites(prev => prev.includes(cropId) ? prev.filter(f => f !== cropId) : [...prev, cropId]);
+  };
+
+  // Seasonal helper
+  const getSeasonalStatus = (crop: Crop): { inSeason: boolean; label: string } => {
+    const month = new Date().getMonth();
+    const fruitSeasons: Record<string, number[]> = {
+      'Mango': [2, 3, 4, 5], 'Banana': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'Watermelon': [2, 3, 4, 5, 6],
+      'Pineapple': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 'Papaya': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      'Calamansi': [7, 8, 9, 10, 11, 0], 'Coconut': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    };
+    const name = crop.name.split(' ').pop() || crop.name;
+    const seasons = fruitSeasons[name];
+    if (!seasons) return { inSeason: true, label: 'In Season' };
+    return seasons.includes(month) ? { inSeason: true, label: 'In Season' } : { inSeason: false, label: 'Off Season' };
+  };
+
+
   // Global Market State
   const [crops, setCrops] = useState<Crop[]>(MOCK_CROPS);
 
@@ -392,6 +430,25 @@ const App = () => {
   const vendorInventory = useMemo(() => {
     return crops.filter(c => c.vendors.some(v => v.id === adminVendorId));
   }, [crops, adminVendorId]);
+
+  // Simulated order notifications for vendors
+  useEffect(() => {
+    if (role !== UserRole.VENDOR || vendorInventory.length === 0) return;
+    const interval = setInterval(() => {
+      const randomCrop = vendorInventory[Math.floor(Math.random() * vendorInventory.length)];
+      const entry = randomCrop.vendors.find(v => v.id === adminVendorId);
+      if (!entry) return;
+      const qty = Math.floor(Math.random() * 10) + 1;
+      const now = new Date();
+      setNotifications(prev => [{
+        id: `${Date.now()}`,
+        cropName: entry.listingName || randomCrop.name,
+        qty,
+        time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+      }, ...prev].slice(0, 20));
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [role, vendorInventory]);
 
   const allVendors = useMemo(() => {
     const vendorMap = new Map();
@@ -482,12 +539,19 @@ const App = () => {
   const [editingInventoryCrop, setEditingInventoryCrop] = useState<Crop | null>(null);
 
   const filteredCrops = useMemo(() => {
-    return crops.filter(c => {
+    let result = crops.filter(c => {
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
       const matchesCat = activeCategory === 'All' || c.category === activeCategory;
       return matchesSearch && matchesCat;
     });
-  }, [search, crops, activeCategory]);
+    switch (sortBy) {
+      case 'price-asc': result = [...result].sort((a, b) => a.currentPrice - b.currentPrice); break;
+      case 'price-desc': result = [...result].sort((a, b) => b.currentPrice - a.currentPrice); break;
+      case 'demand': result = [...result].sort((a, b) => { const d = { High: 3, Medium: 2, Low: 1 }; return (d[b.demand as keyof typeof d] || 0) - (d[a.demand as keyof typeof d] || 0); }); break;
+      case 'trending': result = [...result].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)); break;
+    }
+    return result;
+  }, [search, crops, activeCategory, sortBy]);
 
   const budgetStats = useMemo(() => {
     let totalCost = 0;
@@ -646,97 +710,198 @@ const App = () => {
     setEditingInventoryCrop(null);
   };
 
-  const renderConsumerView = () => (
-    <div className="space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search markets (Onions, Mangoes, Chili...)"
-              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-100 transition-all text-lg shadow-xl"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+  const renderConsumerView = () => {
+    const favoriteCrops = crops.filter(c => favorites.includes(c.id));
+
+    return (
+      <div className="space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Search markets (Onions, Mangoes, Chili...)"
+                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-100 transition-all text-lg shadow-xl"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-3 pb-2">
+              {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-xl border text-sm font-bold transition-all ${activeCategory === cat ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  {cat === 'All' ? 'All' : `${cat}s`}
+                </button>
+              ))}
+              <div className="flex items-center gap-1 ml-auto">
+                <ArrowUpDown size={14} className="text-zinc-600" />
+                {[
+                  { key: 'default', label: 'Default' },
+                  { key: 'price-asc', label: 'Price ↑' },
+                  { key: 'price-desc', label: 'Price ↓' },
+                  { key: 'demand', label: 'Demand' },
+                  { key: 'trending', label: 'Trending' },
+                ].map(s => (
+                  <button
+                    key={s.key}
+                    onClick={() => setSortBy(s.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${sortBy === s.key ? 'bg-green-400/20 text-green-400 border border-green-400/30' : 'text-zinc-600 hover:text-zinc-400'}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-xl border text-sm font-bold transition-all ${activeCategory === cat ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
-              >
-                {cat === 'All' ? 'All' : `${cat}s`}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div
-          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
-          onClick={() => analyticsData.topGainer && setSelectedCrop(analyticsData.topGainer)}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-            <TrendingUp size={80} className="text-green-400" />
-          </div>
-          <div className="flex justify-between items-start relative z-10">
-            <span className="text-green-400 font-bold text-xs uppercase tracking-widest">Market Top Gainer</span>
-          </div>
-          <div className="mt-4 relative z-10">
-            <h4 className="text-3xl font-black text-white">{analyticsData.topGainer?.name || 'Loading...'}</h4>
-            <div className="flex items-center gap-2">
-              {analyticsData.topGainer && <CropIcon crop={analyticsData.topGainer} size="lg" />}
-              <p className="text-green-400 font-mono font-bold text-xl">+{analyticsData.topGainer?.change24h}%</p>
+          <div
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
+            onClick={() => analyticsData.topGainer && setSelectedCrop(analyticsData.topGainer)}
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
+              <TrendingUp size={80} className="text-green-400" />
+            </div>
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-green-400 font-bold text-xs uppercase tracking-widest">Market Top Gainer</span>
+            </div>
+            <div className="mt-4 relative z-10">
+              <h4 className="text-3xl font-black text-white">{analyticsData.topGainer?.name || 'Loading...'}</h4>
+              <div className="flex items-center gap-2">
+                {analyticsData.topGainer && <CropIcon crop={analyticsData.topGainer} size="lg" />}
+                <p className="text-green-400 font-mono font-bold text-xl">+{analyticsData.topGainer?.change24h}%</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tighter">
-          <BarChart3 className="text-green-400" size={20} />
-          Terminal Intelligence
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCrops.map(crop => (
-            <div
-              key={crop.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:bg-zinc-800/80 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
-              onClick={() => setSelectedCrop(crop)}
-            >
-              <div className="flex justify-between items-start relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
-                  <div>
-                    <h3 className="font-black text-white text-lg leading-tight">{crop.name}</h3>
-                    <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{crop.category}</p>
+        {/* Favorites / Watchlist */}
+        {favoriteCrops.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tighter">
+              <Heart className="text-red-400" size={20} fill="currentColor" />
+              My Watchlist
+              <span className="text-sm font-mono text-zinc-600 ml-2">{favoriteCrops.length} items</span>
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {favoriteCrops.map(crop => (
+                <div
+                  key={`fav-${crop.id}`}
+                  className="min-w-[200px] bg-zinc-900 border border-red-400/20 rounded-2xl p-4 cursor-pointer hover:border-red-400/40 transition-all shadow-lg flex-shrink-0"
+                  onClick={() => setSelectedCrop(crop)}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <CropIcon crop={crop} size="sm" />
+                    <div>
+                      <p className="font-bold text-white text-sm">{crop.name}</p>
+                      <p className="font-mono text-green-400 text-sm font-bold">{formatPrice(crop.currentPrice)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono text-xl font-bold text-white">
-                    {formatPrice(crop.currentPrice)}
-                  </p>
-                  <div className={`flex items-center justify-end text-xs font-bold ${crop.change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-                    {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  <div className={`text-xs font-bold flex items-center gap-1 ${crop.change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                    {crop.change24h >= 0 ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     {Math.abs(crop.change24h)}%
                   </div>
                 </div>
-              </div>
-              <div className="mt-8 flex items-end justify-between relative z-10">
-                <Sparkline data={crop.history} color={crop.change24h >= 0 ? '#4ade80' : '#ef4444'} />
-                <button
-                  onClick={(e) => { e.stopPropagation(); addToBudget(crop.id); }}
-                  className="bg-zinc-950 hover:bg-green-400 hover:text-black p-4 rounded-2xl text-zinc-400 transition-all shadow-xl active:scale-90"
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tighter">
+            <BarChart3 className="text-green-400" size={20} />
+            Terminal Intelligence
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCrops.map(crop => {
+              const season = getSeasonalStatus(crop);
+              const isFav = favorites.includes(crop.id);
+              return (
+                <div
+                  key={crop.id}
+                  className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:bg-zinc-800/80 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
+                  onClick={() => setSelectedCrop(crop)}
                 >
-                  <Calculator size={22} />
-                </button>
+                  {/* Seasonal badge */}
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${season.inSeason ? 'bg-green-400/10 text-green-400' : 'bg-red-400/10 text-red-400'}`}>
+                      {season.inSeason ? '🟢' : '🔴'} {season.label}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(crop.id); }}
+                      className={`p-1.5 rounded-lg transition-all ${isFav ? 'text-red-400 bg-red-400/10' : 'text-zinc-700 hover:text-red-400 hover:bg-red-400/10'}`}
+                    >
+                      <Heart size={14} fill={isFav ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-start relative z-10 mt-2">
+                    <div className="flex items-center gap-4">
+                      <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
+                      <div>
+                        <h3 className="font-black text-white text-lg leading-tight">{crop.name}</h3>
+                        <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{crop.category}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-xl font-bold text-white">
+                        {formatPrice(crop.currentPrice)}
+                      </p>
+                      <div className={`flex items-center justify-end text-xs font-bold ${crop.change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                        {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {Math.abs(crop.change24h)}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-8 flex items-end justify-between relative z-10">
+                    <Sparkline data={crop.history} color={crop.change24h >= 0 ? '#4ade80' : '#ef4444'} />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addToBudget(crop.id); }}
+                      className="bg-zinc-950 hover:bg-green-400 hover:text-black p-4 rounded-2xl text-zinc-400 transition-all shadow-xl active:scale-90"
+                    >
+                      <Calculator size={22} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Budget Recommendations */}
+        {budgetItems.length === 0 && (
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 rounded-2xl bg-green-400/10 border border-green-400/20">
+                <Calculator className="text-green-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Suggested Basket</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Best Value Picks Within ₱{budgetLimit}</p>
               </div>
             </div>
-          ))}
-        </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...crops].sort((a, b) => a.currentPrice - b.currentPrice).slice(0, 4).map(crop => (
+                <div
+                  key={`suggest-${crop.id}`}
+                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 hover:border-green-400/30 transition-colors cursor-pointer group"
+                  onClick={() => { addToBudget(crop.id); }}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="sm" /></div>
+                    <p className="font-bold text-white text-sm">{crop.name}</p>
+                  </div>
+                  <p className="font-mono text-green-400 font-bold text-lg">{formatPrice(crop.currentPrice)}</p>
+                  <p className="text-[10px] text-zinc-600 font-bold uppercase mt-1">Click to add to budget</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderCalculatorWidget = () => (
     <div className="bg-zinc-950 border border-zinc-800 rounded-[40px] p-10 shadow-2xl relative overflow-hidden mt-12 mb-20 border-t-green-400/30">
@@ -1372,15 +1537,245 @@ const App = () => {
         );
       })()}
 
+      {/* Profit Margin Calculator */}
+      {vendorInventory.length > 0 && (
+        <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20">
+              <DollarSign className="text-emerald-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Profit Margin Calculator</h3>
+              <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Input Cost Price to See Your Margins</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pr-4">Product</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Ask Price</th>
+                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Cost / kg</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Margin</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pl-4">Profit / kg</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendorInventory.map(crop => {
+                  const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                  const costPrice = vendorCostPrices[crop.id] || 0;
+                  const margin = costPrice > 0 ? ((myEntry.price - costPrice) / myEntry.price) * 100 : 0;
+                  const profit = costPrice > 0 ? myEntry.price - costPrice : 0;
+                  return (
+                    <tr key={crop.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                      <td className="py-4 pr-4">
+                        <div className="flex items-center gap-3">
+                          <CropIcon crop={crop} size="sm" />
+                          <span className="font-bold text-white text-sm">{myEntry.listingName || crop.name}</span>
+                        </div>
+                      </td>
+                      <td className="text-right font-mono font-bold text-green-400 py-4 px-4">{formatPrice(myEntry.price)}</td>
+                      <td className="text-center py-4 px-4">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={vendorCostPrices[crop.id] || ''}
+                          onChange={(e) => setVendorCostPrices(prev => ({ ...prev, [crop.id]: Number(e.target.value) }))}
+                          className="w-24 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 font-mono text-sm text-white text-center outline-none focus:border-green-400/50"
+                        />
+                      </td>
+                      <td className="text-right py-4 px-4">
+                        {costPrice > 0 ? (
+                          <span className={`font-mono font-black text-sm px-3 py-1.5 rounded-xl ${margin > 20 ? 'text-green-400 bg-green-400/10' : margin > 0 ? 'text-yellow-400 bg-yellow-400/10' : 'text-red-400 bg-red-400/10'}`}>
+                            {margin.toFixed(1)}%
+                          </span>
+                        ) : <span className="text-zinc-700 text-xs">Enter cost</span>}
+                      </td>
+                      <td className="text-right py-4 pl-4">
+                        {costPrice > 0 ? (
+                          <span className={`font-mono font-bold text-sm ${profit > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {profit > 0 ? '+' : ''}{formatPrice(profit)}
+                          </span>
+                        ) : <span className="text-zinc-700 text-xs">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Price Adjustment & Demand Forecast */}
+      {vendorInventory.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Bulk Price Adjustment */}
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/20">
+                <Zap className="text-yellow-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Bulk Price Adjust</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Adjust All Prices at Once</p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <input
+                  type="number"
+                  value={bulkAdjustPercent}
+                  onChange={(e) => setBulkAdjustPercent(Number(e.target.value))}
+                  className="w-28 bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 font-mono text-xl font-bold text-white text-center outline-none focus:border-green-400/50"
+                />
+                <span className="text-zinc-500 font-black text-2xl">%</span>
+              </div>
+              <div className="flex gap-3">
+                {[-10, -5, 5, 10, 15].map(pct => (
+                  <button
+                    key={pct}
+                    onClick={() => setBulkAdjustPercent(pct)}
+                    className={`px-3 py-2 rounded-xl text-xs font-black transition-all ${pct === bulkAdjustPercent ? 'bg-green-400/20 text-green-400 border border-green-400/30' : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:text-white'}`}
+                  >
+                    {pct > 0 ? '+' : ''}{pct}%
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  if (bulkAdjustPercent === 0) return;
+                  const multiplier = 1 + bulkAdjustPercent / 100;
+                  setCrops(prev => prev.map(crop => {
+                    const hasVendor = crop.vendors.some(v => v.id === adminVendorId);
+                    if (!hasVendor) return crop;
+                    return {
+                      ...crop,
+                      vendors: crop.vendors.map(v =>
+                        v.id === adminVendorId ? { ...v, price: Math.round(v.price * multiplier * 100) / 100 } : v
+                      )
+                    };
+                  }));
+                  setBulkAdjustPercent(0);
+                }}
+                className="w-full bg-yellow-400 text-black py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+              >
+                Apply {bulkAdjustPercent > 0 ? '+' : ''}{bulkAdjustPercent}% to All Listings
+              </button>
+            </div>
+          </div>
+
+          {/* Demand Forecast */}
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-cyan-400/10 border border-cyan-400/20">
+                <TrendingUp className="text-cyan-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Demand Forecast</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">What Consumers Are Looking For</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[...crops].sort((a, b) => {
+                const demandScore = { High: 3, Medium: 2, Low: 1 };
+                return ((demandScore[b.demand as keyof typeof demandScore] || 0) + b.change24h) - ((demandScore[a.demand as keyof typeof demandScore] || 0) + a.change24h);
+              }).slice(0, 5).map((crop, idx) => (
+                <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl">
+                  <div className="flex items-center gap-4">
+                    <span className="text-lg font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
+                    <CropIcon crop={crop} size="sm" />
+                    <div>
+                      <p className="font-bold text-white text-sm">{crop.name}</p>
+                      <p className="text-[10px] text-zinc-600 font-bold">{formatPrice(crop.currentPrice)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${crop.demand === 'High' ? 'bg-green-400/10 text-green-400' : crop.demand === 'Medium' ? 'bg-yellow-400/10 text-yellow-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                      {crop.demand} Demand
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Market Recommendations */}
+      {vendorInventory.length > 0 && (() => {
+        const vendorCropIds = new Set(vendorInventory.map(c => c.id));
+        const unstockedHighDemand = crops
+          .filter(c => !vendorCropIds.has(c.id) && (c.demand === 'High' || c.change24h > 3))
+          .sort((a, b) => b.change24h - a.change24h)
+          .slice(0, 4);
+        if (unstockedHighDemand.length === 0) return null;
+        return (
+          <div className="bg-zinc-900/50 p-8 rounded-[40px] border border-green-400/20 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-green-400/10 border border-green-400/20">
+                <Leaf className="text-green-400" size={24} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black uppercase tracking-tighter">Consider Stocking</h3>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">High Demand Crops You Don't Sell Yet</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {unstockedHighDemand.map(crop => (
+                <div key={crop.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-green-400/30 transition-colors group">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
+                    <div>
+                      <p className="font-bold text-white text-sm">{crop.name}</p>
+                      <p className="text-[10px] text-zinc-600 font-bold">{crop.vendors.length} vendor{crop.vendors.length !== 1 ? 's' : ''}</p>
+                    </div>
+                  </div>
+                  <p className="font-mono text-green-400 font-bold text-lg">{formatPrice(crop.currentPrice)}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${crop.demand === 'High' ? 'bg-green-400/10 text-green-400' : 'bg-yellow-400/10 text-yellow-400'}`}>{crop.demand}</span>
+                    <span className="text-green-400 text-[9px] font-mono font-bold">+{crop.change24h}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Export CSV & Terminal Admin Header */}
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <h2 className="text-5xl font-black tracking-tighter">Terminal Admin</h2>
             <p className="text-zinc-500 mt-2 font-medium uppercase tracking-widest text-xs">Managing your {vendorShopType} Assets</p>
           </div>
-          <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-10 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
-            <Plus size={24} strokeWidth={3} /> New Listing
-          </button>
+          <div className="flex items-center gap-4">
+            {vendorInventory.length > 0 && (
+              <button
+                onClick={() => {
+                  const headers = ['Product', 'Category', 'Ask Price', 'Stock (kg)', 'Market Price', 'Rating'];
+                  const rows = vendorInventory.map(crop => {
+                    const entry = crop.vendors.find(v => v.id === adminVendorId)!;
+                    return [entry.listingName || crop.name, crop.category, entry.price, entry.stock, crop.currentPrice, entry.rating];
+                  });
+                  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url; a.download = 'agripresyo_inventory.csv'; a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white px-6 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 hover:border-green-400/30 transition-all uppercase tracking-widest"
+              >
+                <Download size={20} /> Export CSV
+              </button>
+            )}
+            <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-10 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
+              <Plus size={24} strokeWidth={3} /> New Listing
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -1464,6 +1859,44 @@ const App = () => {
           </div>
           <div className="flex items-center gap-4">
 
+            {role === UserRole.VENDOR && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
+                >
+                  <Bell size={22} />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">{Math.min(notifications.length, 9)}{notifications.length > 9 ? '+' : ''}</span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 top-16 w-80 bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
+                    <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
+                      <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Order Notifications</span>
+                      {notifications.length > 0 && <button onClick={() => setNotifications([])} className="text-[10px] text-red-400 font-bold hover:text-red-300">Clear All</button>}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto scrollbar-hide">
+                      {notifications.length === 0 ? (
+                        <p className="p-6 text-center text-zinc-600 text-sm">No new orders</p>
+                      ) : notifications.map(n => (
+                        <div key={n.id} className="px-4 py-3 border-b border-zinc-800/50 hover:bg-zinc-800/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-green-400/10 flex items-center justify-center">
+                              <ShoppingBag size={14} className="text-green-400" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-white font-bold">{n.qty}kg of {n.cropName}</p>
+                              <p className="text-[10px] text-zinc-600 font-mono">{n.time}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <button onClick={handleLogout} className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition-all hover:border-red-500/30 shadow-xl group"><LogOut size={22} className="group-hover:-translate-x-1 transition-transform" /></button>
           </div>
         </div>
@@ -1476,6 +1909,61 @@ const App = () => {
         {activeTab === 'analytics' && renderAnalyticsDashboard()}
         {activeTab === 'shop' && role === UserRole.VENDOR && renderVendorView()}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-zinc-950 border-t border-zinc-800 mt-20 hidden lg:block">
+        <div className="max-w-[1400px] mx-auto px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <Logo size={40} className="text-green-500" />
+                <h3 className="text-2xl font-black tracking-tighter">
+                  <span className="text-green-500">Agri</span>
+                  <span className="text-zinc-200">Presyo</span>
+                </h3>
+              </div>
+              <p className="text-zinc-600 text-sm leading-relaxed max-w-sm">Your real-time agricultural price monitoring platform. Connecting Philippine farmers, vendors and consumers with transparent market data.</p>
+              <div className="flex gap-4 mt-6">
+                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">© {new Date().getFullYear()} AgriPresyo</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Navigation</h4>
+              <ul className="space-y-3">
+                {['Market', 'Analytics', role === UserRole.VENDOR ? 'Dashboard' : 'Shops'].map(item => (
+                  <li key={item}>
+                    <button
+                      onClick={() => setActiveTab(item === 'Dashboard' ? 'shop' : item === 'Shops' ? 'shops' : item.toLowerCase() as any)}
+                      className="text-zinc-600 hover:text-green-400 text-sm font-bold transition-colors"
+                    >{item}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Market Stats</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-zinc-600 text-sm">Total Crops</span>
+                  <span className="text-white font-mono font-bold text-sm">{crops.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-600 text-sm">Active Vendors</span>
+                  <span className="text-white font-mono font-bold text-sm">{allVendors.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-600 text-sm">Avg Price</span>
+                  <span className="text-green-400 font-mono font-bold text-sm">{formatPrice(crops.reduce((s, c) => s + c.currentPrice, 0) / crops.length)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-zinc-700 text-[10px] font-bold uppercase tracking-widest">Built for the Philippine Agricultural Community</p>
+            <p className="text-zinc-800 text-[10px] font-mono">Real-time data • Transparent pricing • Sustainable farming</p>
+          </div>
+        </div>
+      </footer>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-2xl border-t border-zinc-800 px-8 py-5 flex justify-between items-center z-50 rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
         <button onClick={() => setActiveTab('market')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'market' ? 'text-green-500 scale-110' : 'text-zinc-600 hover:text-zinc-400'}`}>
