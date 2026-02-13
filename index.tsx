@@ -668,7 +668,10 @@ const App = () => {
             ))}
           </div>
         </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group">
+        <div
+          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
+          onClick={() => analyticsData.topGainer && setSelectedCrop(analyticsData.topGainer)}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
             <TrendingUp size={80} className="text-green-400" />
           </div>
@@ -932,7 +935,7 @@ const App = () => {
     </div>
   );
 
-  const RankingCard = ({ title, items, color, subtitle }: { title: string, items: Crop[], color: string, subtitle: string }) => (
+  const RankingCard = ({ title, items, color, subtitle, onCropClick }: { title: string, items: Crop[], color: string, subtitle: string, onCropClick?: (crop: Crop) => void }) => (
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-[40px] p-8 shadow-2xl flex flex-col">
       <div className="flex items-center gap-4 mb-8">
         <div className={`p-3 rounded-2xl border ${color === 'yellow' ? 'bg-yellow-400/20 border-yellow-400/30' : 'bg-green-400/20 border-green-400/30'}`}>
@@ -945,7 +948,11 @@ const App = () => {
       </div>
       <div className="space-y-4 flex-1">
         {items.map((crop, idx) => (
-          <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors group">
+          <div
+            key={crop.id}
+            className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-green-400/30 transition-colors group cursor-pointer"
+            onClick={() => onCropClick?.(crop)}
+          >
             <div className="flex items-center gap-4">
               <span className="text-xl font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
               <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
@@ -972,24 +979,28 @@ const App = () => {
           subtitle="Highest Ask Index"
           items={analyticsData.expFruits}
           color="yellow"
+          onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Value Fruits"
           subtitle="Lowest Ask Index"
           items={analyticsData.cheapFruits}
           color="green"
+          onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Premium Veggies"
           subtitle="Highest Ask Index"
           items={analyticsData.expVeggies}
           color="yellow"
+          onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Value Veggies"
           subtitle="Lowest Ask Index"
           items={analyticsData.cheapVeggies}
           color="green"
+          onCropClick={(crop) => setSelectedCrop(crop)}
         />
       </div>
 
