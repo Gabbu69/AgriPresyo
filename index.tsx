@@ -9,11 +9,8 @@ import {
   Search,
   Calculator,
   Star,
-  AlertTriangle,
   ChevronUp,
   ChevronDown,
-  Globe,
-  User,
   Plus,
   Minus,
   Trash2,
@@ -21,21 +18,15 @@ import {
   Edit2,
   ArrowRight,
   Zap,
-  Tag,
   Lock,
   Mail,
   ShieldCheck,
   LogOut,
   X,
-  MapPin,
   ShoppingBag,
-  Target,
-  ArrowDown,
   Leaf,
   Trophy,
   Award,
-  ArrowUpRight,
-  Settings2
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -382,7 +373,7 @@ const App = () => {
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
   const [shopFilter, setShopFilter] = useState<'All' | 'Fruit' | 'Vegetable'>('All');
-  const [volatilityTimeRange, setVolatilityTimeRange] = useState<'weekly' | 'monthly'>('monthly');
+
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
   // Global Market State
@@ -1125,7 +1116,7 @@ const App = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <h2 className="text-5xl font-black tracking-tighter">Terminal Admin</h2>
-            <p className="text-zinc-500 text-lg mt-2 font-medium uppercase tracking-widest text-xs">Managing your {vendorShopType} Assets</p>
+            <p className="text-zinc-500 mt-2 font-medium uppercase tracking-widest text-xs">Managing your {vendorShopType} Assets</p>
           </div>
           <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-10 py-5 rounded-[24px] font-black text-sm flex items-center gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
             <Plus size={24} strokeWidth={3} /> New Listing

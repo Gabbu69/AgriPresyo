@@ -309,7 +309,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'garlic-ilocos',
     name: 'Ilocos Garlic',
-    category: 'Vegetable',
+    category: 'Spice',
     currentPrice: 180,
     change24h: 2.5,
     history: generateHistory(180),
@@ -324,7 +324,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'onion-red',
     name: 'Red Onion',
-    category: 'Vegetable',
+    category: 'Spice',
     currentPrice: 160,
     change24h: -15.4,
     history: generateHistory(160),
@@ -339,7 +339,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'ginger',
     name: 'Yellow Ginger',
-    category: 'Vegetable',
+    category: 'Spice',
     currentPrice: 110,
     change24h: 4.8,
     history: generateHistory(110),
@@ -354,7 +354,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'chili-labuyo',
     name: 'Siling Labuyo',
-    category: 'Vegetable',
+    category: 'Spice',
     currentPrice: 350,
     change24h: 18.2,
     history: generateHistory(350),
@@ -369,7 +369,7 @@ export const MOCK_CROPS: Crop[] = [
   {
     id: 'lemongrass',
     name: 'Tanglad (Lemongrass)',
-    category: 'Vegetable',
+    category: 'Spice',
     currentPrice: 25,
     change24h: 0.9,
     history: generateHistory(25),

@@ -27,7 +27,7 @@ export interface Vendor {
 export interface Crop {
   id: string;
   name: string;
-  category: 'Vegetable' | 'Fruit' | 'Spice' | 'Root' | 'Organic';
+  category: 'Vegetable' | 'Fruit' | 'Spice' | 'Root';
   currentPrice: number;
   change24h: number;
   history: PricePoint[];
