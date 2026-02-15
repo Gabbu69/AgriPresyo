@@ -6,6 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AgriPresyo - Agri-Fintech Intelligence</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Roboto Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -14,10 +27,19 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
+      /* Default to light mode (will be overridden by dark class) */
+      background-color: #fafafa;
+      /* zinc-50 */
+      color: #18181b;
+      /* zinc-900 */
+    }
+
+    /* Dark mode overrides applied when 'dark' class is present on html */
+    .dark body {
       background-color: #09090b;
-      /* Zinc 950 */
+      /* zinc-950 */
       color: #f4f4f5;
-      /* Zinc 100 */
+      /* zinc-100 */
     }
 
     .font-mono {

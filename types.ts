@@ -1,7 +1,7 @@
-
 export enum UserRole {
   CONSUMER = 'CONSUMER',
-  VENDOR = 'VENDOR'
+  VENDOR = 'VENDOR',
+  ADMIN = 'ADMIN'
 }
 
 
@@ -40,4 +40,13 @@ export interface Crop {
 export interface BudgetListItem {
   cropId: string;
   quantity: number; // Number of units
+}
+
+export interface SystemAlert {
+  id: string;
+  type: 'OPPORTUNITY' | 'PERFORMANCE' | 'SECURITY' | 'HEALTH' | 'COMMUNITY';
+  message: string;
+  suggestion: string;
+  timestamp: string;
+  actionLabel?: string;
 }
