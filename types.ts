@@ -50,3 +50,40 @@ export interface SystemAlert {
   timestamp: string;
   actionLabel?: string;
 }
+
+export interface UserRecord {
+  name?: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  status: 'active' | 'pending' | 'banned';
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  target: string;
+  details: string;
+  timestamp: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  priority: 'high' | 'medium' | 'low';
+  active: boolean;
+}
+
+export interface Complaint {
+  id: string;
+  from: string;        // email of complainant
+  fromRole: UserRole;
+  targetUser?: string;  // email of target (optional)
+  subject: string;
+  message: string;
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+  timestamp: string;
+  adminNote?: string;
+}

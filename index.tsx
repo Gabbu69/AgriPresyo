@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useMemo, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -41,7 +41,16 @@ import {
   Activity as ActivityIcon,
   Server,
   Database,
-  Globe
+  Globe,
+  MessageSquare,
+  FileText,
+  Ban,
+  CheckCircle,
+  Clock,
+  Megaphone,
+  Flag,
+  Eye,
+  AlertCircle
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -54,8 +63,11 @@ import {
   CartesianGrid,
   Line
 } from 'recharts';
-import { UserRole, Crop, BudgetListItem, Vendor, SystemAlert } from './types';
+import { UserRole, Crop, BudgetListItem, Vendor, SystemAlert, UserRecord, AuditLogEntry, Announcement, Complaint } from './types';
 import { MOCK_CROPS } from './constants';
+
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Simulated Intelligence Engine
 const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
@@ -132,14 +144,33 @@ const simpleHash = async (str: string): Promise<string> => {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
-const Logo = ({ size = 100, className = "" }: { size?: number, className?: string }) => (
-  <img
-    src="/AgriPresyo_logoFinal.png"
-    alt="AgriPresyo"
-    style={{ width: size, height: size }}
-    className={`object-contain rounded-2xl ${className}`}
-  />
-);
+const Logo = ({ size = 100, className = "", onUnlock }: { size?: number, className?: string, onUnlock?: () => void }) => {
+  const [clicks, setClicks] = useState(0);
+
+  const handleClick = () => {
+    setClicks(prev => {
+      const next = prev + 1;
+      if (next === 5) {
+        onUnlock?.();
+        return 0;
+      }
+      return next;
+    });
+
+    // Reset clicks if not continued quickly
+    setTimeout(() => setClicks(0), 2000);
+  };
+
+  return (
+    <img
+      src="/AgriPresyo_logoFinal.png"
+      alt="AgriPresyo"
+      style={{ width: size, height: size }}
+      className={`object-contain rounded-2xl ${className} cursor-pointer active:scale-95 transition-transform`}
+      onClick={handleClick}
+    />
+  );
+};
 
 const formatPrice = (price: number) => {
   const value = price;
@@ -337,7 +368,95 @@ const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg'
 };
 
 
-const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: UserRole) => void, attemptLogin: (email: string, password: string, role: UserRole) => Promise<boolean>, onRegister: (name: string, email: string, password: string, role: UserRole) => Promise<boolean> }) => {
+const ROLE_LABELS: Record<UserRole, { label: string; icon: string; desc: string }> = {
+  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: '🛒', desc: 'Browse prices & build budgets' },
+  [UserRole.VENDOR]: { label: 'VENDOR', icon: '🏪', desc: 'Manage your shop & inventory' },
+  [UserRole.ADMIN]: { label: 'ADMIN', icon: '🛡️', desc: 'System administration & analytics' },
+};
+
+const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setRole: (r: UserRole) => void; isAdminUnlocked: boolean }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const current = ROLE_LABELS[role];
+  const otherRoles = Object.entries(ROLE_LABELS)
+    .filter(([key]) => key !== role)
+    .filter(([key]) => isAdminUnlocked || key !== UserRole.ADMIN) as [UserRole, typeof current][];
+
+  return (
+    <div ref={dropdownRef} className="relative mb-6">
+      {/* Selected role trigger */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="w-full flex items-center justify-between bg-black border border-zinc-800 rounded-2xl px-5 py-3.5 hover:border-green-500/40 transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{current.icon}</span>
+          <div className="text-left">
+            <p className="text-xs font-black text-green-500 tracking-widest">{current.label}</p>
+            <p className="text-[10px] text-zinc-500 mt-0.5">{current.desc}</p>
+          </div>
+        </div>
+        <ChevronDown
+          size={16}
+          className={`text-zinc-600 group-hover:text-green-500 transition-all duration-300 ${isOpen ? 'rotate-180 text-green-500' : ''}`}
+        />
+      </button>
+
+      {/* Dropdown options */}
+      <div
+        className={`absolute top-full left-0 right-0 mt-2 bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden z-50 shadow-[0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300 origin-top ${isOpen
+          ? 'opacity-100 scale-y-100 translate-y-0'
+          : 'opacity-0 scale-y-75 -translate-y-2 pointer-events-none'
+          }`}
+      >
+        {otherRoles.map(([key, info]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => {
+              setRole(key);
+              setIsOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-green-500/10 transition-colors text-left border-b border-zinc-800/50 last:border-b-0"
+          >
+            <span className="text-xl">{info.icon}</span>
+            <div>
+              <p className="text-xs font-black text-zinc-400 tracking-widest">{info.label}</p>
+              <p className="text-[10px] text-zinc-600 mt-0.5">{info.desc}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const LoginPage = ({
+  onLogin,
+  attemptLogin,
+  onRegister,
+  isAdminUnlocked,
+  onUnlock
+}: {
+  onLogin: (role: UserRole, email?: string) => void,
+  attemptLogin: (email: string, password: string, role: UserRole) => Promise<string>,
+  onRegister: (name: string, email: string, password: string, role: UserRole) => Promise<string>,
+  isAdminUnlocked: boolean,
+  onUnlock: () => void
+}) => {
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -350,9 +469,13 @@ const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: User
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const ok = await attemptLogin(email.trim().toLowerCase(), password, role);
-    if (ok) {
-      onLogin(role);
+    const result = await attemptLogin(email.trim().toLowerCase(), password, role);
+    if (result === 'ok') {
+      onLogin(role, email.trim().toLowerCase());
+    } else if (result === 'banned') {
+      setError('🚫 Your account has been banned. Contact support for assistance.');
+    } else if (result === 'pending') {
+      setError('⏳ Your account is pending admin approval. Please wait.');
     } else {
       setError('Invalid credentials — please create an account or try again.');
     }
@@ -361,10 +484,13 @@ const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: User
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role);
-    if (success) {
-      onLogin(role);
-    } else {
+    const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role);
+    if (result === 'ok') {
+      onLogin(role, regEmail.trim().toLowerCase());
+    } else if (result === 'pending') {
+      setError('✅ Registration submitted! Your vendor account is pending admin approval.');
+      setShowRegister(false);
+    } else if (result === 'exists') {
       setError('Account already exists with that email.');
     }
   };
@@ -376,7 +502,14 @@ const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: User
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-500 mt-8">
         <div className="flex flex-col items-center mb-6">
-          <Logo size={120} className="text-green-500 mb-6 drop-shadow-[0_0_20px_rgba(34,197,94,0.1)]" />
+          <Logo
+            size={120}
+            className="text-green-500 mb-6 drop-shadow-[0_0_20px_rgba(34,197,94,0.1)]"
+            onUnlock={() => {
+              onUnlock();
+              alert("🔰 ADMIN PRIVILEGES UNLOCKED");
+            }}
+          />
           <h1 className="text-5xl font-black tracking-tighter text-white">
             <span className="text-green-500">Agri</span>
             <span className="text-white/80">Presyo</span>
@@ -385,26 +518,7 @@ const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: User
         </div>
 
         <div className="bg-zinc-950 dark:bg-black border border-zinc-800 rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
-          <div className="flex bg-black p-1.5 rounded-2xl border border-zinc-800 mb-6 shadow-inner">
-            <button
-              onClick={() => setRole(UserRole.CONSUMER)}
-              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${role === UserRole.CONSUMER ? 'bg-green-500 text-black shadow-lg shadow-green-500/20' : 'text-zinc-600 hover:text-white'}`}
-            >
-              CONSUMER
-            </button>
-            <button
-              onClick={() => setRole(UserRole.VENDOR)}
-              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${role === UserRole.VENDOR ? 'bg-green-500 text-black shadow-lg shadow-green-500/20' : 'text-zinc-600 hover:text-white'}`}
-            >
-              VENDOR
-            </button>
-            <button
-              onClick={() => setRole(UserRole.ADMIN)}
-              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${role === UserRole.ADMIN ? 'bg-green-500 text-black shadow-lg shadow-green-500/20' : 'text-zinc-600 hover:text-white'}`}
-            >
-              ADMIN
-            </button>
-          </div>
+          <RoleDropdown role={role} setRole={setRole} isAdminUnlocked={isAdminUnlocked} />
 
           {showRegister ? (
             <form onSubmit={handleRegister} className="space-y-6">
@@ -498,16 +612,59 @@ const LoginPage = ({ onLogin, attemptLogin, onRegister }: { onLogin: (role: User
   );
 };
 
+const AnnouncementBanner = ({ announcements }: { announcements: Announcement[] }) => {
+  const active = announcements.filter(a => a.active);
+  if (active.length === 0) return null;
+
+  return (
+    <div className="space-y-3 mb-8 animate-in slide-in-from-top duration-500">
+      {active.map(a => (
+        <div key={a.id} className={`p-4 rounded-2xl flex items-center gap-4 shadow-lg border ${a.priority === 'high' ? 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400' : a.priority === 'medium' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
+          <div className={`p-2 rounded-xl ${a.priority === 'high' ? 'bg-red-500/20' : a.priority === 'medium' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+            <Megaphone size={20} className="shrink-0" />
+          </div>
+          <div>
+            <p className="font-black text-sm uppercase tracking-wider mb-0.5">{a.title}</p>
+            <p className="text-xs font-medium opacity-90">{a.message}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
-  const [users, setUsers] = useState<Array<{ name?: string; email: string; password: string; role: UserRole }>>(() => {
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
+
+  // Secret Admin Access State
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => localStorage.getItem('AP_admin_unlocked') === 'true');
+
+  useEffect(() => {
+    localStorage.setItem('AP_admin_unlocked', String(isAdminUnlocked));
+  }, [isAdminUnlocked]);
+
+  const [users, setUsers] = useState<UserRecord[]>(() => {
     try {
       const raw = localStorage.getItem('AP_users');
-      return raw ? JSON.parse(raw) : [];
+      const parsed = raw ? JSON.parse(raw) : [];
+      // Migrate old users without status
+      return parsed.map((u: any) => ({ ...u, status: u.status || 'active' }));
     } catch (e) {
       return [];
     }
+  });
+
+  // Admin feature states
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_auditLog') || '[]'); } catch { return []; }
+  });
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_announcements') || '[]'); } catch { return []; }
+  });
+  const [complaints, setComplaints] = useState<Complaint[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_complaints') || '[]'); } catch { return []; }
   });
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -522,6 +679,7 @@ const App = () => {
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
   const [shopFilter, setShopFilter] = useState<'All' | 'Fruit' | 'Vegetable'>('All');
+  const [hoverRating, setHoverRating] = useState(0);
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
@@ -539,6 +697,20 @@ const App = () => {
 
   // Save favorites to localStorage
   useEffect(() => { localStorage.setItem('AP_favorites', JSON.stringify(favorites)); }, [favorites]);
+  useEffect(() => { localStorage.setItem('AP_auditLog', JSON.stringify(auditLog)); }, [auditLog]);
+  useEffect(() => { localStorage.setItem('AP_announcements', JSON.stringify(announcements)); }, [announcements]);
+  useEffect(() => { localStorage.setItem('AP_complaints', JSON.stringify(complaints)); }, [complaints]);
+
+  const addAuditEntry = (action: string, target: string, details: string) => {
+    const entry: AuditLogEntry = {
+      id: `audit-${Date.now()}`,
+      action,
+      target,
+      details,
+      timestamp: new Date().toLocaleString()
+    };
+    setAuditLog(prev => [entry, ...prev].slice(0, 100));
+  };
 
   const toggleFavorite = (cropId: string) => {
     setFavorites(prev => prev.includes(cropId) ? prev.filter(f => f !== cropId) : [...prev, cropId]);
@@ -576,18 +748,21 @@ const App = () => {
     return () => clearInterval(interval);
   }, [role, users, crops]);
 
-  const adminVendorId = 'v_admin_node';
+  const currentVendorId = useMemo(() => {
+    if (role === UserRole.VENDOR && currentUserEmail) return currentUserEmail;
+    return 'v_admin_node';
+  }, [role, currentUserEmail]);
 
   const vendorInventory = useMemo(() => {
-    return crops.filter(c => c.vendors.some(v => v.id === adminVendorId));
-  }, [crops, adminVendorId]);
+    return crops.filter(c => c.vendors.some(v => v.id === currentVendorId));
+  }, [crops, currentVendorId]);
 
   // Simulated order notifications for vendors
   useEffect(() => {
     if (role !== UserRole.VENDOR || vendorInventory.length === 0) return;
     const interval = setInterval(() => {
       const randomCrop = vendorInventory[Math.floor(Math.random() * vendorInventory.length)];
-      const entry = randomCrop.vendors.find(v => v.id === adminVendorId);
+      const entry = randomCrop.vendors.find(v => v.id === currentVendorId);
       if (!entry) return;
       const qty = Math.floor(Math.random() * 10) + 1;
       const now = new Date();
@@ -639,13 +814,13 @@ const App = () => {
 
   const filteredVendors = useMemo(() => {
     return allVendors.filter(v => {
-      if (v.id === adminVendorId && role === UserRole.VENDOR) return false;
+      if (v.id === currentVendorId && role === UserRole.VENDOR) return false;
       if (shopFilter === 'All') return true;
       if (shopFilter === 'Fruit') return v.cropsSold.every((c: any) => c.category === 'Fruit');
       if (shopFilter === 'Vegetable') return v.cropsSold.every((c: any) => c.category !== 'Fruit');
       return true;
     });
-  }, [allVendors, shopFilter, role, adminVendorId]);
+  }, [allVendors, shopFilter, role, currentVendorId]);
 
   const fruitVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.every((c: any) => c.category === 'Fruit')), [filteredVendors]);
   const vegetableVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.some((c: any) => c.category !== 'Fruit')), [filteredVendors]);
@@ -788,9 +963,10 @@ const App = () => {
     setSystemAlerts(prev => prev.filter(a => a.id !== alert.id));
   };
 
-  const handleLogin = (userRole: UserRole) => {
+  const handleLogin = (userRole: UserRole, email?: string) => {
     setRole(userRole);
     setIsAuthenticated(true);
+    if (email) setCurrentUserEmail(email);
     if (userRole === UserRole.VENDOR) {
       setActiveTab('shop');
     } else if (userRole === UserRole.ADMIN) {
@@ -800,19 +976,24 @@ const App = () => {
     }
   };
 
-  const attemptLogin = async (email: string, password: string, userRole: UserRole) => {
+  const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
     const hashed = await simpleHash(password);
     const found = users.find(u => u.email === email && u.password === hashed && u.role === userRole);
-    return !!found;
+    if (!found) return 'not_found';
+    if (found.status === 'banned') return 'banned';
+    if (found.status === 'pending') return 'pending';
+    return 'ok';
   };
 
-  const registerUser = async (name: string, email: string, password: string, userRole: UserRole) => {
-    if (users.find(u => u.email === email)) return false;
+  const registerUser = async (name: string, email: string, password: string, userRole: UserRole): Promise<string> => {
+    if (users.find(u => u.email === email)) return 'exists';
     const hashed = await simpleHash(password);
-    const next = [...users, { name: name || undefined, email, password: hashed, role: userRole }];
+    const status = userRole === UserRole.VENDOR ? 'pending' : 'active';
+    const next: UserRecord[] = [...users, { name: name || undefined, email, password: hashed, role: userRole, status: status as any }];
     setUsers(next);
     try { localStorage.setItem('AP_users', JSON.stringify(next)); } catch (e) { }
-    return true;
+    if (userRole === UserRole.VENDOR) return 'pending';
+    return 'ok';
   };
 
 
@@ -820,7 +1001,7 @@ const App = () => {
   const handleUpdatePrice = (cropId: string, newPrice: number) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        const updatedVendors = c.vendors.map(v => v.id === adminVendorId ? { ...v, price: newPrice } : v);
+        const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice } : v);
         return { ...c, currentPrice: newPrice, vendors: updatedVendors };
       }
       return c;
@@ -831,7 +1012,7 @@ const App = () => {
   const handleUpdateStock = (cropId: string, newStock: number) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        const updatedVendors = c.vendors.map(v => v.id === adminVendorId ? { ...v, stock: newStock } : v);
+        const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, stock: newStock } : v);
         return { ...c, vendors: updatedVendors };
       }
       return c;
@@ -842,7 +1023,7 @@ const App = () => {
   const handleDeleteFromInventory = (cropId: string) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        return { ...c, vendors: c.vendors.filter(v => v.id !== adminVendorId) };
+        return { ...c, vendors: c.vendors.filter(v => v.id !== currentVendorId) };
       }
       return c;
     }));
@@ -853,9 +1034,9 @@ const App = () => {
   const handleAddCropToVendor = (cropId: string, price: number, stock: number, listingName?: string) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        if (c.vendors.some(v => v.id === adminVendorId)) return c;
+        if (c.vendors.some(v => v.id === currentVendorId)) return c;
         const newEntry: Vendor = {
-          id: adminVendorId,
+          id: currentVendorId,
           name: 'Personal Market Node',
           rating: 5.0,
           reviewCount: 1,
@@ -878,35 +1059,41 @@ const App = () => {
 
     setUserVendorRatings(prev => ({ ...prev, [vId]: finalUserRating }));
 
-    setCrops(prev => prev.map(c => {
-      const updatedVendors = c.vendors.map(v => {
-        if (v.id === vId) {
-          let newCount = v.reviewCount;
-          let totalScore = v.rating * v.reviewCount;
+    // Calculate new stats based on current state
+    const representativeVendor = crops.flatMap(c => c.vendors).find(v => v.id === vId);
+    if (!representativeVendor) return;
 
-          if (existingUserRating === 0 && finalUserRating > 0) {
-            newCount += 1;
-            totalScore += finalUserRating;
-          } else if (existingUserRating > 0 && finalUserRating === 0) {
-            newCount = Math.max(0, newCount - 1);
-            totalScore = Math.max(0, totalScore - existingUserRating);
-          } else if (existingUserRating > 0 && finalUserRating > 0) {
-            totalScore = totalScore - existingUserRating + finalUserRating;
-          }
+    let newCount = representativeVendor.reviewCount;
+    let totalScore = representativeVendor.rating * representativeVendor.reviewCount;
 
-          const finalAvg = newCount === 0 ? 0 : Number((totalScore / newCount).toFixed(1));
-          return { ...v, rating: finalAvg, reviewCount: newCount };
-        }
-        return v;
-      });
-      return { ...c, vendors: updatedVendors };
-    }));
+    if (existingUserRating === 0 && finalUserRating > 0) {
+      newCount += 1;
+      totalScore += finalUserRating;
+    } else if (existingUserRating > 0 && finalUserRating === 0) {
+      newCount = Math.max(0, newCount - 1);
+      totalScore = Math.max(0, totalScore - existingUserRating);
+    } else if (existingUserRating > 0 && finalUserRating > 0) {
+      totalScore = totalScore - existingUserRating + finalUserRating;
+    }
+
+    const finalAvg = newCount === 0 ? 0 : Number((totalScore / newCount).toFixed(1));
+
+    // Update all occurrences of this vendor in crops
+    setCrops(prev => prev.map(c => ({
+      ...c,
+      vendors: c.vendors.map(v => v.id === vId ? { ...v, rating: finalAvg, reviewCount: newCount } : v)
+    })));
+
+    // Update selectedVendor if it's the one being rated, so the UI updates immediately
+    if (selectedVendor && selectedVendor.id === vId) {
+      setSelectedVendor(prev => ({ ...prev, rating: finalAvg, reviewCount: newCount }));
+    }
   };
 
   const handleUpdateVendorListing = (cropId: string, newPrice: number, newStock: number, newListingName?: string) => {
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        const updatedVendors = c.vendors.map(v => v.id === adminVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName } : v);
+        const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName } : v);
         return { ...c, vendors: updatedVendors };
       }
       return c;
@@ -1494,7 +1681,7 @@ const App = () => {
           <Package className="text-blue-400 absolute top-8 right-8 group-hover:scale-150 transition-transform duration-500 opacity-20" size={64} />
           <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Node Aggregate</p>
           <div className="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">
-            {vendorInventory.reduce((acc, c) => acc + (c.vendors.find(v => v.id === adminVendorId)?.stock || 0), 0).toLocaleString()}
+            {vendorInventory.reduce((acc, c) => acc + (c.vendors.find(v => v.id === currentVendorId)?.stock || 0), 0).toLocaleString()}
             <span className="text-lg text-zinc-600 dark:text-zinc-500 font-mono uppercase ml-3 tracking-normal">kg</span>
           </div>
         </div>
@@ -1503,16 +1690,16 @@ const App = () => {
       {/* Revenue & Performance Stats */}
       {vendorInventory.length > 0 && (() => {
         const portfolioValue = vendorInventory.reduce((acc, c) => {
-          const entry = c.vendors.find(v => v.id === adminVendorId);
+          const entry = c.vendors.find(v => v.id === currentVendorId);
           return acc + (entry ? entry.price * entry.stock : 0);
         }, 0);
         const activeListings = vendorInventory.length;
         const avgRating = vendorInventory.reduce((acc, c) => {
-          const entry = c.vendors.find(v => v.id === adminVendorId);
+          const entry = c.vendors.find(v => v.id === currentVendorId);
           return acc + (entry?.rating || 0);
         }, 0) / activeListings;
         const lowStockItems = vendorInventory.filter(c => {
-          const entry = c.vendors.find(v => v.id === adminVendorId);
+          const entry = c.vendors.find(v => v.id === currentVendorId);
           return entry && entry.stock < 100;
         });
 
@@ -1577,7 +1764,7 @@ const App = () => {
               </thead>
               <tbody>
                 {vendorInventory.map(crop => {
-                  const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                  const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
                   const marketAvg = crop.vendors.length > 0
                     ? crop.vendors.reduce((sum, v) => sum + v.price, 0) / crop.vendors.length
                     : crop.currentPrice;
@@ -1622,7 +1809,7 @@ const App = () => {
             </div>
             <div className="space-y-4">
               {[...vendorInventory].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5).map((crop, idx) => {
-                const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
                 return (
                   <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-700 dark:hover:border-zinc-600 transition-colors group">
                     <div className="flex items-center gap-4">
@@ -1656,7 +1843,7 @@ const App = () => {
             </div>
             <div className="space-y-4">
               {vendorInventory.map(crop => {
-                const otherVendors = crop.vendors.filter(v => v.id !== adminVendorId);
+                const otherVendors = crop.vendors.filter(v => v.id !== currentVendorId);
                 const minPrice = otherVendors.length > 0 ? Math.min(...otherVendors.map(v => v.price)) : 0;
                 const maxPrice = otherVendors.length > 0 ? Math.max(...otherVendors.map(v => v.price)) : 0;
                 return (
@@ -1768,7 +1955,7 @@ const App = () => {
               </thead>
               <tbody>
                 {vendorInventory.map(crop => {
-                  const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+                  const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
                   const costPrice = vendorCostPrices[crop.id] || 0;
                   const margin = costPrice > 0 ? ((myEntry.price - costPrice) / myEntry.price) * 100 : 0;
                   const profit = costPrice > 0 ? myEntry.price - costPrice : 0;
@@ -1854,12 +2041,12 @@ const App = () => {
                   if (bulkAdjustPercent === 0) return;
                   const multiplier = 1 + bulkAdjustPercent / 100;
                   setCrops(prev => prev.map(crop => {
-                    const hasVendor = crop.vendors.some(v => v.id === adminVendorId);
+                    const hasVendor = crop.vendors.some(v => v.id === currentVendorId);
                     if (!hasVendor) return crop;
                     return {
                       ...crop,
                       vendors: crop.vendors.map(v =>
-                        v.id === adminVendorId ? { ...v, price: Math.round(v.price * multiplier * 100) / 100 } : v
+                        v.id === currentVendorId ? { ...v, price: Math.round(v.price * multiplier * 100) / 100 } : v
                       )
                     };
                   }));
@@ -1963,7 +2150,7 @@ const App = () => {
                 onClick={() => {
                   const headers = ['Name', 'Category', 'Ask Price', 'Stock', 'Market Price', 'Rating'];
                   const rows = vendorInventory.map(crop => {
-                    const entry = crop.vendors.find(v => v.id === adminVendorId)!;
+                    const entry = crop.vendors.find(v => v.id === currentVendorId)!;
                     return [entry.listingName || crop.name, crop.category, entry.price, entry.stock, crop.currentPrice, entry.rating];
                   });
                   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
@@ -1993,7 +2180,7 @@ const App = () => {
             </div>
           ) : (
             vendorInventory.map(crop => {
-              const myEntry = crop.vendors.find(v => v.id === adminVendorId)!;
+              const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
               return (
                 <div key={crop.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 group hover:border-green-400/30 transition-all shadow-lg">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-10">
@@ -2039,6 +2226,7 @@ const App = () => {
   );
 
   const renderAdminView = () => {
+    const pendingUsers = users.filter(u => u.status === 'pending');
     return (
       <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
         <div>
@@ -2046,120 +2234,272 @@ const App = () => {
           <p className="text-zinc-500 dark:text-zinc-400 text-lg mt-2 font-medium">Platform Management & Intelligence</p>
         </div>
 
-        {/* System Intelligence Stream */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[32px] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <Activity size={120} className="text-green-500" />
-          </div>
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center animate-pulse">
-              <Zap size={20} className="text-green-500" />
-            </div>
-            <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">System Intelligence</h3>
-            <span className="text-xs font-mono text-zinc-500 py-1 px-2 rounded bg-zinc-100 dark:bg-zinc-800">
-              LIVE FEED • {systemAlerts.length} ALERTS
-            </span>
-          </div>
-          <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide relative z-10">
-            {systemAlerts.length === 0 ? (
-              <div className="text-center py-8 text-zinc-400 font-mono text-sm">
-                <ShieldCheck size={32} className="mx-auto mb-2 opacity-50" />
-                SYSTEM OPTIMAL • NO ANOMALIES DETECTED
-              </div>
-            ) : (
-              systemAlerts.map(alert => (
-                <div key={alert.id} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl flex items-start gap-4 animate-in slide-in-from-left duration-500">
-                  <div className={`mt-1 p-2 rounded-lg ${alert.type === 'OPPORTUNITY' ? 'bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                    alert.type === 'SECURITY' ? 'bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400' :
-                      alert.type === 'PERFORMANCE' ? 'bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' :
-                        alert.type === 'HEALTH' ? 'bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400' :
-                          'bg-zinc-100 dark:bg-zinc-700/50 text-zinc-600 dark:text-zinc-400'
-                    }`}>
-                    {alert.type === 'OPPORTUNITY' && <Award size={16} />}
-                    {alert.type === 'SECURITY' && <Lock size={16} />}
-                    {alert.type === 'PERFORMANCE' && <Database size={16} />}
-                    {alert.type === 'HEALTH' && <Activity size={16} />}
-                    {alert.type === 'COMMUNITY' && <UsersIcon size={16} />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${alert.type === 'OPPORTUNITY' ? 'text-blue-600' :
-                        alert.type === 'SECURITY' ? 'text-red-600' :
-                          alert.type === 'PERFORMANCE' ? 'text-yellow-600' :
-                            alert.type === 'HEALTH' ? 'text-purple-600' :
-                              'text-zinc-400'
-                        }`}>[{alert.type}]</span>
-                      <span className="text-[10px] font-mono text-zinc-300">{alert.timestamp}</span>
-                    </div>
-                    <p className="text-zinc-600 dark:text-zinc-300 text-sm font-medium leading-relaxed mb-2">{alert.message}</p>
-                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900/50 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
-                      <p className="text-[10px] text-zinc-400 italic flex-1 mr-4">Suggestion: {alert.suggestion}</p>
-                      {alert.actionLabel && (
-                        <button
-                          onClick={() => handleAlertAction(alert)}
-                          className="text-[10px] font-black bg-zinc-900 text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-lg hover:scale-105 active:scale-95 transition-transform uppercase tracking-wider"
-                        >
-                          {alert.actionLabel}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
             <UsersIcon className="text-blue-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-black uppercase tracking-widest mb-3">Total Users</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Total Users</p>
             <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">{users.length}</p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold mt-2 uppercase tracking-widest">Registered Accounts</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Registered</p>
           </div>
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
-            <ActivityIcon className="text-green-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-black uppercase tracking-widest mb-3">Platform Activity</p>
-            <p className="text-3xl font-black font-mono text-green-500 tracking-tight">Healthy</p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold mt-2 uppercase tracking-widest">System Status</p>
+            <Clock className="text-yellow-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Pending</p>
+            <p className="text-3xl font-black font-mono text-yellow-500 tracking-tight">{pendingUsers.length}</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Awaiting Review</p>
           </div>
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
             <Store className="text-orange-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-black uppercase tracking-widest mb-3">Active Vendors</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Active Vendors</p>
             <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">{allVendors.length}</p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold mt-2 uppercase tracking-widest">Market Nodes</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Market Nodes</p>
           </div>
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
-            <Globe className="text-purple-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-black uppercase tracking-widest mb-3">Total Listings</p>
-            <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">
-              {crops.reduce((acc, crop) => acc + crop.vendors.length, 0)}
-            </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-bold mt-2 uppercase tracking-widest">Local Assets</p>
+            <MessageSquare className="text-red-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Open Complaints</p>
+            <p className="text-3xl font-black font-mono text-red-500 tracking-tight">{complaints.filter(c => c.status === 'open').length}</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Need Attention</p>
           </div>
         </div>
 
-        {/* User Management */}
+        {/* Approval Queue */}
+        {pendingUsers.length > 0 && (
+          <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-yellow-400/30 shadow-xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/20"><Clock className="text-yellow-400" size={24} /></div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Approval Queue</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingUsers.length} vendor{pendingUsers.length !== 1 ? 's' : ''} awaiting approval</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {pendingUsers.map((user, idx) => (
+                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-yellow-400/10 flex items-center justify-center font-bold text-yellow-500">{(user.name || user.email)[0].toUpperCase()}</div>
+                    <div>
+                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
+                      <p className="text-xs text-zinc-500">{user.email} &bull; {user.role}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('APPROVE_USER', user.email, `Approved vendor: ${user.name || user.email}`); }} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Approve</button>
+                    <button onClick={() => { setUsers(prev => { const next = prev.filter(u => u.email !== user.email); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_USER', user.email, `Rejected vendor: ${user.name || user.email}`); }} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Price Override */}
         <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
           <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-              <UsersIcon className="text-zinc-600 dark:text-zinc-400" size={24} />
-            </div>
+            <div className="p-3 rounded-2xl bg-orange-400/10 border border-orange-400/20"><Flag className="text-orange-400" size={24} /></div>
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">User Registry</h3>
-              <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Manage Platform Access</p>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Price Override</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Flag & correct suspicious prices</p>
             </div>
-            <button onClick={clearUsers} className="text-xs text-red-500 font-bold uppercase tracking-widest hover:text-red-400 transition-colors border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-zinc-900">
-              Reset Database
-            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                  <th className="text-left text-[10px] text-zinc-500 dark:text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">User</th>
-                  <th className="text-left text-[10px] text-zinc-500 dark:text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Role</th>
-                  <th className="text-right text-[10px] text-zinc-500 dark:text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Status</th>
+                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pr-4">Crop</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Price</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Mkt Avg</th>
+                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Status</th>
+                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pl-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {crops.slice(0, 12).map(crop => {
+                  const avg = crop.vendors.length > 0 ? crop.vendors.reduce((s, v) => s + v.price, 0) / crop.vendors.length : crop.currentPrice;
+                  const diff = Math.abs(((crop.currentPrice - avg) / avg) * 100);
+                  const isSuspicious = diff > 20;
+                  return (
+                    <tr key={crop.id} className={`border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors ${isSuspicious ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+                      <td className="py-3 pr-4"><div className="flex items-center gap-3"><CropIcon crop={crop} size="sm" /><span className="font-bold text-zinc-900 dark:text-white text-sm">{crop.name}</span></div></td>
+                      <td className="text-right font-mono font-bold text-green-500 py-3 px-4">{formatPrice(crop.currentPrice)}</td>
+                      <td className="text-right font-mono text-zinc-400 py-3 px-4">{formatPrice(Math.round(avg * 100) / 100)}</td>
+                      <td className="text-center py-3 px-4">{isSuspicious ? <span className="text-[10px] font-black text-red-500 bg-red-500/10 px-3 py-1 rounded-lg uppercase">Suspicious</span> : <span className="text-[10px] font-black text-green-500 bg-green-500/10 px-3 py-1 rounded-lg uppercase">Normal</span>}</td>
+                      <td className="text-center py-3 pl-4">
+                        <button onClick={() => { const np = prompt(`Override price for ${crop.name} (current: ${formatPrice(crop.currentPrice)}):`, String(Math.round(avg * 100) / 100)); if (np && !isNaN(Number(np)) && Number(np) > 0) { const p = Number(np); setCrops(prev => prev.map(c => c.id === crop.id ? { ...c, currentPrice: p } : c)); addAuditEntry('PRICE_OVERRIDE', crop.name, `Price: ${formatPrice(crop.currentPrice)} -> ${formatPrice(p)}`); } }} className="text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-orange-400/20 hover:text-orange-500 transition-all uppercase tracking-wider">Override</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Announcement System */}
+        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-blue-400/10 border border-blue-400/20"><Megaphone className="text-blue-400" size={24} /></div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Announcements</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Post platform-wide notices</p>
+            </div>
+          </div>
+          <div className="space-y-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input id="ann-title" type="text" placeholder="Announcement title..." className="col-span-1 md:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50" />
+              <select id="ann-priority" className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none">
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+            </div>
+            <textarea id="ann-message" placeholder="Announcement message..." rows={3} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-blue-400/50 resize-none" />
+            <button onClick={() => { const title = (document.getElementById('ann-title') as HTMLInputElement).value.trim(); const message = (document.getElementById('ann-message') as HTMLTextAreaElement).value.trim(); const priority = (document.getElementById('ann-priority') as HTMLSelectElement).value as 'high' | 'medium' | 'low'; if (!title || !message) { alert('Please fill in title and message.'); return; } setAnnouncements(prev => [{ id: `ann-${Date.now()}`, title, message, timestamp: new Date().toLocaleString(), priority, active: true }, ...prev]); addAuditEntry('CREATE_ANNOUNCEMENT', title, `Posted ${priority} announcement`); (document.getElementById('ann-title') as HTMLInputElement).value = ''; (document.getElementById('ann-message') as HTMLTextAreaElement).value = ''; }} className="bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"><Megaphone size={16} /> Post Announcement</button>
+          </div>
+          {announcements.length > 0 && (
+            <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
+              {announcements.map(ann => (
+                <div key={ann.id} className={`p-4 rounded-2xl border flex items-start justify-between gap-4 ${ann.priority === 'high' ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50' : ann.priority === 'medium' ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50' : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50'}`}>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${ann.priority === 'high' ? 'text-red-500' : ann.priority === 'medium' ? 'text-orange-500' : 'text-blue-500'}`}>{ann.priority}</span>
+                      <span className="text-[10px] text-zinc-400 font-mono">{ann.timestamp}</span>
+                    </div>
+                    <p className="font-bold text-zinc-900 dark:text-white text-sm">{ann.title}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{ann.message}</p>
+                  </div>
+                  <button onClick={() => { setAnnouncements(prev => prev.filter(a => a.id !== ann.id)); addAuditEntry('DELETE_ANNOUNCEMENT', ann.title, 'Removed announcement'); }} className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 mt-1"><Trash2 size={16} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Complaints */}
+        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-red-400/10 border border-red-400/20"><MessageSquare className="text-red-400" size={24} /></div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Complaints</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{complaints.length} total &bull; {complaints.filter(c => c.status === 'open').length} open</p>
+            </div>
+          </div>
+          {complaints.length === 0 ? (
+            <div className="text-center py-12 text-zinc-400">
+              <CheckCircle size={40} className="mx-auto mb-3 opacity-30" />
+              <p className="font-black uppercase tracking-widest text-sm">No complaints filed</p>
+              <p className="text-xs text-zinc-500 mt-1">All clear!</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
+              {complaints.map(comp => (
+                <div key={comp.id} className={`p-4 rounded-2xl border ${comp.status === 'open' ? 'bg-red-50/50 dark:bg-red-950/10 border-red-200 dark:border-red-900/30' : comp.status === 'reviewing' ? 'bg-yellow-50/50 dark:bg-yellow-950/10 border-yellow-200 dark:border-yellow-900/30' : comp.status === 'resolved' ? 'bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-900/30' : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700'}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg ${comp.status === 'open' ? 'bg-red-500/10 text-red-500' : comp.status === 'reviewing' ? 'bg-yellow-500/10 text-yellow-500' : comp.status === 'resolved' ? 'bg-green-500/10 text-green-500' : 'bg-zinc-500/10 text-zinc-500'}`}>{comp.status}</span>
+                        <span className="text-[10px] text-zinc-400 font-mono">{comp.timestamp}</span>
+                      </div>
+                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{comp.subject}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{comp.message}</p>
+                      <p className="text-[10px] text-zinc-400 mt-2">From: {comp.from} ({comp.fromRole}){comp.targetUser ? ` | Against: ${comp.targetUser}` : ''}</p>
+                      {comp.adminNote && <p className="text-[10px] text-green-500 mt-1 italic">Admin: {comp.adminNote}</p>}
+                    </div>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      {comp.status === 'open' && <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'reviewing' } : x)); addAuditEntry('REVIEW_COMPLAINT', comp.subject, `Reviewing from ${comp.from}`); }} className="text-[10px] font-black bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Review</button>}
+                      {(comp.status === 'open' || comp.status === 'reviewing') && (
+                        <>
+                          <button onClick={() => { const note = prompt('Admin note (optional):'); setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'resolved', adminNote: note || undefined } : x)); addAuditEntry('RESOLVE_COMPLAINT', comp.subject, `Resolved from ${comp.from}`); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Resolve</button>
+                          <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'dismissed' } : x)); addAuditEntry('DISMISS_COMPLAINT', comp.subject, `Dismissed from ${comp.from}`); }} className="text-[10px] font-black bg-zinc-400/20 text-zinc-500 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Dismiss</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Market Report Export */}
+        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20"><FileText className="text-emerald-400" size={24} /></div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Market Reports</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Generate downloadable CSV</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => {
+                const doc = new jsPDF();
+                doc.setFontSize(18);
+                doc.text('AgriPresyo Market Report', 14, 22);
+                doc.setFontSize(11);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+
+                doc.setLineWidth(0.5);
+                doc.line(14, 33, 196, 33);
+
+                doc.setFontSize(14);
+                doc.text('Platform Summary', 14, 42);
+                doc.setFontSize(10);
+                doc.text(`Total Crops: ${crops.length}`, 14, 48);
+                doc.text(`Registered Users: ${users.length}`, 14, 53);
+                doc.text(`Active Users: ${users.filter(u => u.status === 'active').length}`, 80, 53);
+                doc.text(`Banned Users: ${users.filter(u => u.status === 'banned').length}`, 140, 53);
+
+                const tableData = crops.map(c => [
+                  c.name,
+                  c.category,
+                  formatPrice(c.currentPrice),
+                  `${c.change24h}%`,
+                  c.demand,
+                  c.vendors.length.toString()
+                ]);
+
+                autoTable(doc, {
+                  head: [['Crop', 'Category', 'Price', 'Change', 'Demand', 'Vendors']],
+                  body: tableData,
+                  startY: 60,
+                  theme: 'grid',
+                  headStyles: { fillColor: [34, 197, 94] },
+                  alternateRowStyles: { fillColor: [240, 253, 244] },
+                });
+
+                doc.save(`agripresyo_report_${new Date().toISOString().split('T')[0]}.pdf`);
+                addAuditEntry('EXPORT_REPORT_PDF', 'Market Report', 'PDF Export Generated');
+              }} className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-red-500/10"><FileText size={16} /> Export PDF</button>
+
+              <button onClick={() => { const headers = ['Crop', 'Category', 'Price', 'Change24h', 'Demand', 'Vendors', 'AvgVendorPrice']; const rows = crops.map(c => { const avg = c.vendors.length > 0 ? (c.vendors.reduce((s: number, v: any) => s + v.price, 0) / c.vendors.length).toFixed(2) : c.currentPrice.toFixed(2); return [c.name, c.category, c.currentPrice, c.change24h, c.demand, c.vendors.length, avg]; }); const csv = [headers, ...rows, [], ['USER SUMMARY'], ['Total Users', users.length], ['Active', users.filter(u => u.status === 'active').length], ['Pending', users.filter(u => u.status === 'pending').length], ['Banned', users.filter(u => u.status === 'banned').length]].map(r => r.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `agripresyo_report_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url); addAuditEntry('EXPORT_REPORT', 'Market Report', `CSV with ${crops.length} crops`); }} className="bg-emerald-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-emerald-500/10"><Download size={16} /> Export CSV</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center"><p className="text-2xl font-black font-mono text-zinc-900 dark:text-white">{crops.length}</p><p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Crops</p></div>
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center"><p className="text-2xl font-black font-mono text-zinc-900 dark:text-white">{crops.reduce((a, c) => a + c.vendors.length, 0)}</p><p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Listings</p></div>
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center"><p className="text-2xl font-black font-mono text-green-500">{formatPrice(crops.reduce((s, c) => s + c.currentPrice, 0) / crops.length)}</p><p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Avg Price</p></div>
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center"><p className="text-2xl font-black font-mono text-zinc-900 dark:text-white">{users.filter(u => u.status === 'active').length}</p><p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Active Users</p></div>
+          </div>
+        </div>
+
+        {/* User Management with Ban/Suspend */}
+        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"><UsersIcon className="text-zinc-600 dark:text-zinc-400" size={24} /></div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">User Registry</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Manage Platform Access</p>
+            </div>
+            <button onClick={clearUsers} className="text-xs text-red-500 font-bold uppercase tracking-widest hover:text-red-400 transition-colors border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 bg-white dark:bg-zinc-900">Reset Database</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">User</th>
+                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Role</th>
+                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Status</th>
+                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2167,25 +2507,26 @@ const App = () => {
                   <tr key={idx} className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 dark:text-zinc-500">
-                          {(user.name || user.email)[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed User'}</p>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">{user.email}</p>
-                        </div>
+                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 dark:text-zinc-500">{(user.name || user.email)[0].toUpperCase()}</div>
+                        <div><p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p><p className="text-xs text-zinc-500">{user.email}</p></div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${user.role === UserRole.ADMIN ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
-                        user.role === UserRole.VENDOR ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' :
-                          'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                        }`}>
-                        {user.role}
-                      </span>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${user.role === UserRole.ADMIN ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : user.role === UserRole.VENDOR ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'}`}>{user.role}</span>
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${user.status === 'active' ? 'text-green-500 bg-green-500/10' : user.status === 'pending' ? 'text-yellow-500 bg-yellow-500/10' : 'text-red-500 bg-red-500/10'}`}>{user.status}</span>
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <span className="text-green-500 text-xs font-bold uppercase">Active</span>
+                      {user.role !== UserRole.ADMIN && (
+                        <div className="flex gap-2 justify-end">
+                          {user.status === 'banned' ? (
+                            <button onClick={() => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
+                          ) : user.status === 'active' ? (
+                            <button onClick={() => { if (!confirm(`Ban ${user.name || user.email}?`)) return; setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role})`); }} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
+                          ) : null}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -2193,9 +2534,40 @@ const App = () => {
             </table>
           </div>
         </div>
+
+        {/* Audit Log */}
+        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-purple-400/10 border border-purple-400/20"><FileText className="text-purple-400" size={24} /></div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Audit Log</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{auditLog.length} entries</p>
+              </div>
+            </div>
+            {auditLog.length > 0 && <button onClick={() => setAuditLog([])} className="text-xs text-zinc-500 font-bold uppercase tracking-widest hover:text-red-400 transition-colors border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-xl hover:border-red-400/30">Clear Log</button>}
+          </div>
+          {auditLog.length === 0 ? (
+            <div className="text-center py-12 text-zinc-400"><FileText size={40} className="mx-auto mb-3 opacity-30" /><p className="font-black uppercase tracking-widest text-sm">No actions recorded</p><p className="text-xs text-zinc-500 mt-1">Admin actions appear here</p></div>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-hide">
+              {auditLog.map(entry => {
+                const clr = entry.action.includes('BAN') || entry.action.includes('REJECT') || entry.action.includes('DISMISS') ? 'text-red-500 bg-red-500/10' : entry.action.includes('APPROVE') || entry.action.includes('RESOLVE') || entry.action.includes('UNBAN') ? 'text-green-500 bg-green-500/10' : entry.action.includes('PRICE') ? 'text-orange-500 bg-orange-500/10' : entry.action.includes('EXPORT') ? 'text-emerald-500 bg-emerald-500/10' : entry.action.includes('ANNOUNCEMENT') ? 'text-blue-500 bg-blue-500/10' : 'text-purple-500 bg-purple-500/10';
+                return (
+                  <div key={entry.id} className="flex items-center gap-4 p-3 bg-zinc-50 dark:bg-black/30 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shrink-0 ${clr}`}>{entry.action}</span>
+                    <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white font-bold truncate">{entry.details}</p><p className="text-[10px] text-zinc-400 font-mono">{entry.target}</p></div>
+                    <span className="text-[10px] text-zinc-500 font-mono shrink-0">{entry.timestamp}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
+
 
 
   const handleLogout = () => {
@@ -2206,7 +2578,7 @@ const App = () => {
     setRole(UserRole.CONSUMER);
   };
 
-  if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} />;
+  if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 animate-in fade-in duration-1000">
@@ -2230,7 +2602,7 @@ const App = () => {
               )}
               <button onClick={() => setActiveTab('analytics')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'analytics' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>ANALYTICS</button>
               {role === UserRole.VENDOR && <button onClick={() => setActiveTab('shop')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'shop' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>DASHBOARD</button>}
-              {role === UserRole.ADMIN && <button onClick={() => setActiveTab('admin')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'admin' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>ADMIN CONSOLE</button>}
+              {role === UserRole.ADMIN && isAdminUnlocked && <button onClick={() => setActiveTab('admin')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'admin' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>ADMIN CONSOLE</button>}
             </nav>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -2280,6 +2652,7 @@ const App = () => {
       </header>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full">
+        {isAuthenticated && <AnnouncementBanner announcements={announcements} />}
         {activeTab === 'market' && renderConsumerView()}
         {activeTab === 'market' && renderCalculatorWidget()}
         {activeTab === 'shops' && role !== UserRole.VENDOR && renderShopsView()}
@@ -2369,7 +2742,7 @@ const App = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dash</span>
           </button>
         )}
-        {role === UserRole.ADMIN && (
+        {role === UserRole.ADMIN && isAdminUnlocked && (
           <button onClick={() => setActiveTab('admin')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'admin' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <ShieldCheck size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Admin</span>
@@ -2397,7 +2770,7 @@ const App = () => {
                     <p className="text-zinc-400 dark:text-zinc-500 text-xs font-black uppercase tracking-[0.3em] mb-4">{selectedVendor.specialty}</p>
                     <div className="flex flex-col gap-3">
                       <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Rate Terminal (Toggle Stars)</p>
-                      <div className="flex items-center gap-1 text-yellow-500 bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 w-fit shadow-inner">
+                      <div className="flex items-center gap-1 text-yellow-500 bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 w-fit shadow-inner" onMouseLeave={() => setHoverRating(0)}>
                         {[...Array(5)].map((_, i) => {
                           const starVal = i + 1;
                           const userRating = userVendorRatings[selectedVendor.id] || 0;
@@ -2405,12 +2778,14 @@ const App = () => {
                             <button
                               key={i}
                               onClick={() => handleRateVendor(selectedVendor.id, starVal)}
+                              onMouseEnter={() => setHoverRating(starVal)}
+                              onMouseLeave={() => setHoverRating(0)}
                               className="hover:scale-125 transition-transform p-1 group/star"
                             >
                               <Star
                                 size={36}
-                                fill={starVal <= userRating ? "currentColor" : "none"}
-                                className={starVal <= userRating ? "text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" : "text-zinc-800 dark:text-zinc-700 group-hover/star:text-zinc-600 dark:group-hover/star:text-zinc-500"}
+                                fill={(hoverRating ? starVal <= hoverRating : starVal <= userRating) ? "currentColor" : "none"}
+                                className={(hoverRating ? starVal <= hoverRating : starVal <= userRating) ? "text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" : "text-zinc-800 dark:text-zinc-700"}
                               />
                             </button>
                           );
@@ -2586,15 +2961,15 @@ const App = () => {
             <div className="grid grid-cols-2 gap-3 sm:gap-6 text-left">
               <div className="space-y-2 col-span-2">
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Listing Name</label>
-                <input id="upd-name" type="text" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.listingName || editingInventoryCrop.name} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-sm sm:text-lg font-bold outline-none text-zinc-900 dark:text-white focus:border-green-400/50 shadow-inner" />
+                <input id="upd-name" type="text" defaultValue={editingInventoryCrop.vendors.find(v => v.id === currentVendorId)?.listingName || editingInventoryCrop.name} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-sm sm:text-lg font-bold outline-none text-zinc-900 dark:text-white focus:border-green-400/50 shadow-inner" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Ask Index</label>
-                <input id="upd-p" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.price} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-green-600 focus:border-green-400/50 shadow-inner" />
+                <input id="upd-p" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === currentVendorId)?.price} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-green-600 focus:border-green-400/50 shadow-inner" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Liquidity Level</label>
-                <input id="upd-s" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === adminVendorId)?.stock} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-zinc-900 dark:text-white focus:border-green-400/50 shadow-inner" />
+                <input id="upd-s" type="number" defaultValue={editingInventoryCrop.vendors.find(v => v.id === currentVendorId)?.stock} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-5 font-mono text-lg sm:text-xl font-bold outline-none text-zinc-900 dark:text-white focus:border-green-400/50 shadow-inner" />
               </div>
             </div>
             <div className="flex gap-4 pt-4">
