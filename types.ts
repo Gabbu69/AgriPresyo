@@ -35,6 +35,7 @@ export interface Crop {
   demand: 'High' | 'Medium' | 'Low';
   icon: string;
   weightPerUnit: number; // kg per single unit (e.g. 0.1kg per onion)
+  lastUpdated?: string; // ISO timestamp of last price change
 }
 
 export interface BudgetListItem {
@@ -74,6 +75,7 @@ export interface Announcement {
   timestamp: string;
   priority: 'high' | 'medium' | 'low';
   active: boolean;
+  duration?: number; // in seconds
 }
 
 export interface Complaint {

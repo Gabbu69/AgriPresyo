@@ -178,6 +178,20 @@ const formatPrice = (price: number) => {
   return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
+const timeAgo = (isoString: string): string => {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffSec = Math.floor((now - then) / 1000);
+  if (diffSec < 60) return 'Just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return `${diffDay}d ago`;
+  return new Date(isoString).toLocaleDateString();
+};
+
 const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (crop: Crop) => void }) => {
   return (
     <div className="bg-zinc-900 border-b border-zinc-800 h-10 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-md">
@@ -612,31 +626,59 @@ const LoginPage = ({
   );
 };
 
-const AnnouncementBanner = ({ announcements }: { announcements: Announcement[] }) => {
-  const active = announcements.filter(a => a.active);
+const BannerItem = ({ announcement, onDismiss }: { announcement: Announcement, onDismiss: (id: string) => void }) => {
+  useEffect(() => {
+    if (announcement.duration && announcement.duration > 0) {
+      const timer = setTimeout(() => {
+        onDismiss(announcement.id);
+      }, announcement.duration * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [announcement, onDismiss]);
+
+  return (
+    <div className={`p-4 rounded-2xl flex items-start justify-between gap-4 shadow-lg border relative group animate-in slide-in-from-top duration-500 ${announcement.priority === 'high' ? 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400' : announcement.priority === 'medium' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
+      <div className="flex items-center gap-4">
+        <div className={`p-2 rounded-xl shrink-0 ${announcement.priority === 'high' ? 'bg-red-500/20' : announcement.priority === 'medium' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
+          <Megaphone size={20} />
+        </div>
+        <div>
+          <p className="font-black text-sm uppercase tracking-wider mb-0.5">{announcement.title}</p>
+          <p className="text-xs font-medium opacity-90">{announcement.message}</p>
+          {announcement.duration && announcement.duration > 0 && (
+            <div className="w-full h-1 bg-black/5 dark:bg-white/10 mt-2 rounded-full overflow-hidden">
+              <div className="h-full bg-current opacity-30 origin-left animate-duration-progress" style={{ animationDuration: `${announcement.duration}s` }} />
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={() => onDismiss(announcement.id)}
+        className="text-current opacity-50 hover:opacity-100 transition-opacity p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+};
+
+const AnnouncementBanner = ({ announcements, dismissedIds, onDismiss }: { announcements: Announcement[], dismissedIds: string[], onDismiss: (id: string) => void }) => {
+  const active = announcements.filter(a => a.active && !dismissedIds.includes(a.id));
   if (active.length === 0) return null;
 
   return (
-    <div className="space-y-3 mb-8 animate-in slide-in-from-top duration-500">
+    <div className="space-y-3 mb-8">
       {active.map(a => (
-        <div key={a.id} className={`p-4 rounded-2xl flex items-center gap-4 shadow-lg border ${a.priority === 'high' ? 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400' : a.priority === 'medium' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
-          <div className={`p-2 rounded-xl ${a.priority === 'high' ? 'bg-red-500/20' : a.priority === 'medium' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
-            <Megaphone size={20} className="shrink-0" />
-          </div>
-          <div>
-            <p className="font-black text-sm uppercase tracking-wider mb-0.5">{a.title}</p>
-            <p className="text-xs font-medium opacity-90">{a.message}</p>
-          </div>
-        </div>
+        <BannerItem key={a.id} announcement={a} onDismiss={onDismiss} />
       ))}
     </div>
   );
 };
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
-  const [currentUserEmail, setCurrentUserEmail] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('AP_isAuthenticated') === 'true');
+  const [role, setRole] = useState<UserRole>(() => (localStorage.getItem('AP_role') as UserRole) || UserRole.CONSUMER);
+  const [currentUserEmail, setCurrentUserEmail] = useState(() => localStorage.getItem('AP_currentUserEmail') || '');
 
   // Secret Admin Access State
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => localStorage.getItem('AP_admin_unlocked') === 'true');
@@ -666,9 +708,15 @@ const App = () => {
   const [complaints, setComplaints] = useState<Complaint[]>(() => {
     try { return JSON.parse(localStorage.getItem('AP_complaints') || '[]'); } catch { return []; }
   });
+  const [dismissedIds, setDismissedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_dismissed_announcements') || '[]'); } catch { return []; }
+  });
+  const [seenAnnouncementIds, setSeenAnnouncementIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('AP_seen_announcements') || '[]'); } catch { return []; }
+  });
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState<'market' | 'shops' | 'analytics' | 'shop' | 'admin'>('market');
+  const [activeTab, setActiveTab] = useState<'market' | 'shops' | 'analytics' | 'shop' | 'admin'>(() => (localStorage.getItem('AP_activeTab') as any) || 'market');
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [addCropModalSelection, setAddCropModalSelection] = useState<Crop | null>(null);
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
@@ -690,16 +738,28 @@ const App = () => {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'demand' | 'trending'>('default');
 
   // Vendor features
+
   const [vendorCostPrices, setVendorCostPrices] = useState<Record<string, number>>({});
   const [bulkAdjustPercent, setBulkAdjustPercent] = useState<number>(0);
-  const [notifications, setNotifications] = useState<Array<{ id: string; cropName: string; qty: number; time: string }>>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [showAnnouncementsDropdown, setShowAnnouncementsDropdown] = useState(false);
+  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
+  const [complaintForm, setComplaintForm] = useState({ subject: '', message: '' });
 
   // Save favorites to localStorage
   useEffect(() => { localStorage.setItem('AP_favorites', JSON.stringify(favorites)); }, [favorites]);
+  useEffect(() => { localStorage.setItem('AP_isAuthenticated', String(isAuthenticated)); }, [isAuthenticated]);
+  useEffect(() => { localStorage.setItem('AP_role', role); }, [role]);
+  useEffect(() => { localStorage.setItem('AP_currentUserEmail', currentUserEmail); }, [currentUserEmail]);
+  useEffect(() => { localStorage.setItem('AP_activeTab', activeTab); }, [activeTab]);
   useEffect(() => { localStorage.setItem('AP_auditLog', JSON.stringify(auditLog)); }, [auditLog]);
   useEffect(() => { localStorage.setItem('AP_announcements', JSON.stringify(announcements)); }, [announcements]);
   useEffect(() => { localStorage.setItem('AP_complaints', JSON.stringify(complaints)); }, [complaints]);
+  useEffect(() => { localStorage.setItem('AP_dismissed_announcements', JSON.stringify(dismissedIds)); }, [dismissedIds]);
+  useEffect(() => { localStorage.setItem('AP_seen_announcements', JSON.stringify(seenAnnouncementIds)); }, [seenAnnouncementIds]);
+
+  const handleDismissAnnouncement = (id: string) => {
+    setDismissedIds(prev => prev.includes(id) ? prev : [...prev, id]);
+  };
 
   const addAuditEntry = (action: string, target: string, details: string) => {
     const entry: AuditLogEntry = {
@@ -759,22 +819,8 @@ const App = () => {
 
   // Simulated order notifications for vendors
   useEffect(() => {
-    if (role !== UserRole.VENDOR || vendorInventory.length === 0) return;
-    const interval = setInterval(() => {
-      const randomCrop = vendorInventory[Math.floor(Math.random() * vendorInventory.length)];
-      const entry = randomCrop.vendors.find(v => v.id === currentVendorId);
-      if (!entry) return;
-      const qty = Math.floor(Math.random() * 10) + 1;
-      const now = new Date();
-      setNotifications(prev => [{
-        id: `${Date.now()}`,
-        cropName: entry.listingName || randomCrop.name,
-        qty,
-        time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-      }, ...prev].slice(0, 20));
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [role, vendorInventory]);
+    // Replaced fake order notifications with Admin Announcements (via Bell icon)
+  }, []);
 
   const allVendors = useMemo(() => {
     const vendorMap = new Map();
@@ -999,10 +1045,12 @@ const App = () => {
 
 
   const handleUpdatePrice = (cropId: string, newPrice: number) => {
+    const now = new Date().toISOString();
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
         const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice } : v);
-        return { ...c, currentPrice: newPrice, vendors: updatedVendors };
+        const newHistory = [...c.history, { date: now.slice(0, 10), price: newPrice }];
+        return { ...c, currentPrice: newPrice, vendors: updatedVendors, lastUpdated: now, history: newHistory };
       }
       return c;
     }));
@@ -1032,6 +1080,7 @@ const App = () => {
 
 
   const handleAddCropToVendor = (cropId: string, price: number, stock: number, listingName?: string) => {
+    const now = new Date().toISOString();
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
         if (c.vendors.some(v => v.id === currentVendorId)) return c;
@@ -1046,7 +1095,8 @@ const App = () => {
           isHot: true,
           listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
         };
-        return { ...c, vendors: [...c.vendors, newEntry] };
+        const newHistory = [...c.history, { date: now.slice(0, 10), price }];
+        return { ...c, vendors: [...c.vendors, newEntry], lastUpdated: now, history: newHistory };
       }
       return c;
     }));
@@ -1091,14 +1141,37 @@ const App = () => {
   };
 
   const handleUpdateVendorListing = (cropId: string, newPrice: number, newStock: number, newListingName?: string) => {
+    const now = new Date().toISOString();
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
         const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName } : v);
-        return { ...c, vendors: updatedVendors };
+        const newHistory = [...c.history, { date: now.slice(0, 10), price: newPrice }];
+        return { ...c, vendors: updatedVendors, lastUpdated: now, history: newHistory };
       }
       return c;
     }));
     setEditingInventoryCrop(null);
+  };
+
+  const handleSubmitComplaint = () => {
+    if (!complaintForm.subject.trim() || !complaintForm.message.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+    const newComplaint: Complaint = {
+      id: `comp-${Date.now()}`,
+      from: currentUserEmail,
+      fromRole: UserRole.VENDOR,
+      subject: complaintForm.subject,
+      message: complaintForm.message,
+      status: 'open',
+      timestamp: new Date().toISOString()
+    };
+    setComplaints(prev => [newComplaint, ...prev]);
+    setComplaintForm({ subject: '', message: '' });
+    setIsComplaintModalOpen(false);
+    addAuditEntry('SUBMIT_COMPLAINT', currentUserEmail, `Subject: ${newComplaint.subject}`);
+    alert('Complaint submitted successfully. An admin will review it shortly.');
   };
 
   const renderConsumerView = () => {
@@ -1243,6 +1316,11 @@ const App = () => {
                         {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         {Math.abs(crop.change24h)}%
                       </div>
+                      {crop.lastUpdated && (
+                        <p className="text-[9px] text-zinc-400 dark:text-zinc-600 font-mono mt-1 flex items-center justify-end gap-1">
+                          <Clock size={9} /> {timeAgo(crop.lastUpdated)}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="mt-8 flex items-end justify-between relative z-10">
@@ -2165,6 +2243,9 @@ const App = () => {
                 <Download size={20} /> Export CSV
               </button>
             )}
+            <button onClick={() => setIsComplaintModalOpen(true)} className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-4 sm:px-6 py-3 sm:py-5 rounded-2xl sm:rounded-[24px] font-black text-xs sm:text-sm flex items-center justify-center gap-2 sm:gap-3 transition-all uppercase tracking-widest border border-red-500/20 hover:border-red-500 shadow-xl">
+              <Megaphone size={20} /> Report Issue
+            </button>
             <button onClick={() => setIsAddCropModalOpen(true)} className="bg-green-500 text-black px-6 sm:px-10 py-3 sm:py-5 rounded-2xl sm:rounded-[24px] font-black text-xs sm:text-sm flex items-center justify-center gap-2 sm:gap-3 shadow-[0_10px_30px_rgba(34,197,94,0.2)] hover:scale-105 transition-all uppercase tracking-widest">
               <Plus size={24} strokeWidth={3} /> New Listing
             </button>
@@ -2344,8 +2425,9 @@ const App = () => {
             </div>
           </div>
           <div className="space-y-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <input id="ann-title" type="text" placeholder="Announcement title..." className="col-span-1 md:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50" />
+              <input id="ann-duration" type="number" placeholder="Duration (sec, optional)" className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50" />
               <select id="ann-priority" className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none">
                 <option value="low">Low Priority</option>
                 <option value="medium">Medium Priority</option>
@@ -2353,7 +2435,21 @@ const App = () => {
               </select>
             </div>
             <textarea id="ann-message" placeholder="Announcement message..." rows={3} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-blue-400/50 resize-none" />
-            <button onClick={() => { const title = (document.getElementById('ann-title') as HTMLInputElement).value.trim(); const message = (document.getElementById('ann-message') as HTMLTextAreaElement).value.trim(); const priority = (document.getElementById('ann-priority') as HTMLSelectElement).value as 'high' | 'medium' | 'low'; if (!title || !message) { alert('Please fill in title and message.'); return; } setAnnouncements(prev => [{ id: `ann-${Date.now()}`, title, message, timestamp: new Date().toLocaleString(), priority, active: true }, ...prev]); addAuditEntry('CREATE_ANNOUNCEMENT', title, `Posted ${priority} announcement`); (document.getElementById('ann-title') as HTMLInputElement).value = ''; (document.getElementById('ann-message') as HTMLTextAreaElement).value = ''; }} className="bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"><Megaphone size={16} /> Post Announcement</button>
+            <button onClick={() => {
+              const title = (document.getElementById('ann-title') as HTMLInputElement).value.trim();
+              const message = (document.getElementById('ann-message') as HTMLTextAreaElement).value.trim();
+              const durationStr = (document.getElementById('ann-duration') as HTMLInputElement).value.trim();
+              const duration = durationStr ? parseInt(durationStr) : undefined;
+              const priority = (document.getElementById('ann-priority') as HTMLSelectElement).value as 'high' | 'medium' | 'low';
+
+              if (!title || !message) { alert('Please fill in title and message.'); return; }
+
+              setAnnouncements(prev => [{ id: `ann-${Date.now()}`, title, message, timestamp: new Date().toLocaleString(), priority, active: true, duration }, ...prev]);
+              addAuditEntry('CREATE_ANNOUNCEMENT', title, `Posted ${priority} announcement${duration ? ` (${duration}s)` : ''}`);
+              (document.getElementById('ann-title') as HTMLInputElement).value = '';
+              (document.getElementById('ann-message') as HTMLTextAreaElement).value = '';
+              (document.getElementById('ann-duration') as HTMLInputElement).value = '';
+            }} className="bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"><Megaphone size={16} /> Post Announcement</button>
           </div>
           {announcements.length > 0 && (
             <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
@@ -2576,6 +2672,7 @@ const App = () => {
     setUserVendorRatings({});
     setActiveTab('market');
     setRole(UserRole.CONSUMER);
+    setCurrentUserEmail('');
   };
 
   if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
@@ -2611,32 +2708,39 @@ const App = () => {
             {role === UserRole.VENDOR && (
               <div className="relative">
                 <button
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={() => {
+                    if (!showAnnouncementsDropdown) {
+                      const visibleIds = announcements.filter(a => a.active).map(a => a.id);
+                      setSeenAnnouncementIds(prev => [...new Set([...prev, ...visibleIds])]);
+                    }
+                    setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
+                  }}
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
                 >
                   <Bell size={22} />
-                  {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">{Math.min(notifications.length, 9)}{notifications.length > 9 ? '+' : ''}</span>
+                  {announcements.filter(a => a.active && !seenAnnouncementIds.includes(a.id)).length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">{Math.min(announcements.filter(a => a.active && !seenAnnouncementIds.includes(a.id)).length, 9)}{announcements.filter(a => a.active && !seenAnnouncementIds.includes(a.id)).length > 9 ? '+' : ''}</span>
                   )}
                 </button>
-                {showNotifications && (
+                {showAnnouncementsDropdown && (
                   <div className="absolute right-0 top-16 w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
                     <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
-                      <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Order Notifications</span>
-                      {notifications.length > 0 && <button onClick={() => setNotifications([])} className="text-[10px] text-red-400 font-bold hover:text-red-300">Clear All</button>}
+                      <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Admin Announcements</span>
+                      <button onClick={() => setShowAnnouncementsDropdown(false)} className="text-[10px] text-zinc-400 font-bold hover:text-zinc-200">Close</button>
                     </div>
                     <div className="max-h-80 overflow-y-auto scrollbar-hide">
-                      {notifications.length === 0 ? (
-                        <p className="p-6 text-center text-zinc-600 dark:text-zinc-400 text-sm">No new orders</p>
-                      ) : notifications.map(n => (
-                        <div key={n.id} className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-green-400/10 flex items-center justify-center">
-                              <ShoppingBag size={14} className="text-green-400" />
+                      {announcements.filter(a => a.active).length === 0 ? (
+                        <p className="p-6 text-center text-zinc-600 dark:text-zinc-400 text-sm">No new announcements</p>
+                      ) : announcements.filter(a => a.active).map(ann => (
+                        <div key={ann.id} className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${ann.priority === 'high' ? 'bg-red-500/10 text-red-500' : ann.priority === 'medium' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                              <Megaphone size={14} />
                             </div>
                             <div>
-                              <p className="text-sm text-zinc-900 font-bold">{n.qty}kg of {n.cropName}</p>
-                              <p className="text-[10px] text-zinc-500 font-mono">{n.time}</p>
+                              <p className="text-sm text-zinc-900 dark:text-white font-bold">{ann.title}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{ann.message}</p>
+                              <p className="text-[9px] text-zinc-400 font-mono mt-1">{ann.timestamp}</p>
                             </div>
                           </div>
                         </div>
@@ -2652,7 +2756,7 @@ const App = () => {
       </header>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full">
-        {isAuthenticated && <AnnouncementBanner announcements={announcements} />}
+        {isAuthenticated && <AnnouncementBanner announcements={announcements} dismissedIds={dismissedIds} onDismiss={handleDismissAnnouncement} />}
         {activeTab === 'market' && renderConsumerView()}
         {activeTab === 'market' && renderCalculatorWidget()}
         {activeTab === 'shops' && role !== UserRole.VENDOR && renderShopsView()}
@@ -2850,6 +2954,95 @@ const App = () => {
                 </div>
                 <p className="text-3xl sm:text-5xl font-black font-mono text-zinc-900 dark:text-white tracking-tighter">{formatPrice(selectedCrop.currentPrice)} <span className="text-base sm:text-xl text-zinc-400 dark:text-zinc-500">/ kg</span></p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-600 mt-4 font-bold uppercase tracking-widest">Projection: 1 unit ≈ {selectedCrop.weightPerUnit}kg</p>
+                {selectedCrop.lastUpdated && (
+                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-3 flex items-center gap-1.5 font-mono">
+                    <Clock size={11} className="text-green-500" /> Last updated {timeAgo(selectedCrop.lastUpdated)}
+                  </p>
+                )}
+              </div>
+
+              {/* Price History Chart */}
+              <div className="space-y-4">
+                <p className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600 ml-2">Price History</p>
+                <div className="bg-zinc-50 dark:bg-zinc-950 p-4 sm:p-6 rounded-2xl sm:rounded-[28px] border border-zinc-200 dark:border-zinc-800 shadow-inner">
+                  <div className="h-48 sm:h-56 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={selectedCrop.history.slice(-52)}>
+                        <defs>
+                          <linearGradient id="historyGrad" x1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'} stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 9, fill: '#71717a' }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(d: string) => {
+                            const dt = new Date(d);
+                            return dt.toLocaleDateString('en', { month: 'short' });
+                          }}
+                          interval={Math.max(0, Math.floor(selectedCrop.history.slice(-52).length / 6) - 1)}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 9, fill: '#71717a' }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v: number) => `₱${v}`}
+                          domain={['auto', 'auto']}
+                          width={50}
+                        />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: '12px', fontSize: '12px', fontFamily: 'monospace' }}
+                          labelStyle={{ color: '#a1a1aa', fontWeight: 'bold', fontSize: '10px', textTransform: 'uppercase' }}
+                          formatter={(value: number) => [`₱${value.toFixed(2)}`, 'Price']}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="price"
+                          stroke={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'}
+                          fill="url(#historyGrad)"
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, stroke: '#000', strokeWidth: 2 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Price Data */}
+              <div className="space-y-3">
+                <p className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600 ml-2">Recent Data Points</p>
+                <div className="max-h-56 overflow-y-auto scrollbar-hide space-y-2 pr-1">
+                  {selectedCrop.history.slice(-10).reverse().map((pt, idx, arr) => {
+                    const prevPt = idx < arr.length - 1 ? arr[idx + 1] : null;
+                    const change = prevPt ? ((pt.price - prevPt.price) / prevPt.price) * 100 : 0;
+                    return (
+                      <div key={`${pt.date}-${idx}`} className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 px-4 py-3 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+                            <Clock size={12} className="text-zinc-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white font-mono">{new Date(pt.date).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {prevPt && (
+                            <span className={`text-[10px] font-black ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(1)}%
+                            </span>
+                          )}
+                          <p className="font-mono font-black text-green-600 text-sm">₱{pt.price.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div className="space-y-4">
                 <p className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600 ml-2">Available Ask Terminals</p>
@@ -2984,6 +3177,44 @@ const App = () => {
                 handleUpdateVendorListing(editingInventoryCrop.id, p, s, name);
               }} className="flex-1 bg-green-500 text-black py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest transition-all shadow-xl hover:scale-105 active:scale-95 shadow-green-500/10 text-sm sm:text-base">Commit Asset</button>
               <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase transition-colors hover:text-zinc-900 dark:hover:text-white text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">Discard</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isComplaintModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6">
+          <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setIsComplaintModalOpen(false)}></div>
+          <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl sm:rounded-[40px] p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 relative">
+            <button onClick={() => setIsComplaintModalOpen(false)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20"><AlertCircle className="text-red-500" size={24} /></div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Report Issue</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Submit a complaint to Admin</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Subject</label>
+                <input
+                  type="text"
+                  placeholder="Brief summary of the issue"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner"
+                  value={complaintForm.subject}
+                  onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Message</label>
+                <textarea
+                  rows={4}
+                  placeholder="Describe the problem in detail..."
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner resize-none"
+                  value={complaintForm.message}
+                  onChange={(e) => setComplaintForm(prev => ({ ...prev, message: e.target.value }))}
+                />
+              </div>
+              <button onClick={handleSubmitComplaint} className="w-full bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-500/20 mt-2">Submit Complaint</button>
             </div>
           </div>
         </div>
