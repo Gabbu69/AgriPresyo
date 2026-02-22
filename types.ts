@@ -40,7 +40,8 @@ export interface Crop {
 
 export interface BudgetListItem {
   cropId: string;
-  quantity: number; // Number of units
+  quantity: number; // Number of units or kg depending on unit
+  unit: 'qty' | 'kg'; // Whether quantity represents units or kilograms
 }
 
 export interface SystemAlert {

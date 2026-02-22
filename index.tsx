@@ -723,11 +723,18 @@ const App = () => {
   const [budgetLimit, setBudgetLimit] = useState<number>(1000);
   const [budgetItems, setBudgetItems] = useState<BudgetListItem[]>([]);
   const [userVendorRatings, setUserVendorRatings] = useState<Record<string, number>>({});
+  const [vendorRatingData, setVendorRatingData] = useState<Record<string, { rating: number; reviewCount: number }>>({});
 
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
   const [shopFilter, setShopFilter] = useState<'All' | 'Fruit' | 'Vegetable'>('All');
   const [hoverRating, setHoverRating] = useState(0);
+  const [overrideVendorKey, setOverrideVendorKey] = useState<string | null>(null);
+  const [overridePrice, setOverridePrice] = useState<string>('');
+  const [expandedOverrideCrop, setExpandedOverrideCrop] = useState<string | null>(null);
+  const [complaintConfirmStep, setComplaintConfirmStep] = useState(false);
+  const [adminNoteComplaintId, setAdminNoteComplaintId] = useState<string | null>(null);
+  const [adminNoteText, setAdminNoteText] = useState('');
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
@@ -828,10 +835,10 @@ const App = () => {
     // 1. First, populate from registered users who are vendors
     users.filter(u => u.role === UserRole.VENDOR).forEach(u => {
       vendorMap.set(u.email, {
-        id: u.email, // Using email as a unique ID for registered users
+        id: u.email,
         name: u.name || u.email.split('@')[0],
-        rating: 5.0,
-        reviewCount: 0,
+        rating: vendorRatingData[u.email]?.rating ?? 5.0,
+        reviewCount: vendorRatingData[u.email]?.reviewCount ?? 0,
         specialty: 'New Market Partner',
         price: 0,
         stock: 0,
@@ -849,14 +856,16 @@ const App = () => {
         if (!existing.cropsSold.some((c: any) => c.id === crop.id)) {
           existing.cropsSold.push(crop);
         }
-        // Update rating/price if it's the specific instance from the crop
+        // Update rating/price/stock/reviewCount from the crop vendor data
         if (v.price > 0) existing.price = v.price;
         if (v.stock > 0) existing.stock = v.stock;
+        existing.rating = v.rating;
+        existing.reviewCount = v.reviewCount;
       });
     });
 
     return Array.from(vendorMap.values());
-  }, [crops, users]);
+  }, [crops, users, vendorRatingData]);
 
   const filteredVendors = useMemo(() => {
     return allVendors.filter(v => {
@@ -954,7 +963,7 @@ const App = () => {
     budgetItems.forEach(item => {
       const crop = crops.find(c => c.id === item.cropId);
       if (crop) {
-        const weight = item.quantity * crop.weightPerUnit;
+        const weight = item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
         totalWeight += weight;
         totalCost += weight * crop.currentPrice;
       }
@@ -968,8 +977,25 @@ const App = () => {
       if (existing) {
         return prev.map(i => i.cropId === cropId ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { cropId, quantity: 1 }];
+      return [...prev, { cropId, quantity: 1, unit: 'qty' as const }];
     });
+  };
+
+  const toggleBudgetUnit = (cropId: string) => {
+    setBudgetItems(prev => prev.map(i => {
+      if (i.cropId !== cropId) return i;
+      const crop = crops.find(c => c.id === cropId);
+      if (!crop) return i;
+      if (i.unit === 'qty') {
+        // Convert qty to kg
+        const kg = Number((i.quantity * crop.weightPerUnit).toFixed(2));
+        return { ...i, unit: 'kg' as const, quantity: kg || 0.1 };
+      } else {
+        // Convert kg to qty
+        const qty = Math.max(1, Math.round(i.quantity / crop.weightPerUnit));
+        return { ...i, unit: 'qty' as const, quantity: qty };
+      }
+    }));
   };
 
   const removeFromBudget = (cropId: string) => {
@@ -977,7 +1003,11 @@ const App = () => {
   };
 
   const updateBudgetQty = (cropId: string, qty: number) => {
-    setBudgetItems(prev => prev.map(i => i.cropId === cropId ? { ...i, quantity: Math.max(1, qty) } : i));
+    setBudgetItems(prev => prev.map(i => {
+      if (i.cropId !== cropId) return i;
+      const minVal = i.unit === 'kg' ? 0.1 : 1;
+      return { ...i, quantity: Math.max(minVal, qty) };
+    }));
   };
 
   const clearUsers = () => {
@@ -1109,12 +1139,13 @@ const App = () => {
 
     setUserVendorRatings(prev => ({ ...prev, [vId]: finalUserRating }));
 
-    // Calculate new stats based on current state
-    const representativeVendor = crops.flatMap(c => c.vendors).find(v => v.id === vId);
-    if (!representativeVendor) return;
+    // Try to find vendor in crops first, then fall back to vendorRatingData or allVendors
+    const cropVendor = crops.flatMap(c => c.vendors).find(v => v.id === vId);
+    const currentRating = cropVendor?.rating ?? vendorRatingData[vId]?.rating ?? 5.0;
+    const currentCount = cropVendor?.reviewCount ?? vendorRatingData[vId]?.reviewCount ?? 0;
 
-    let newCount = representativeVendor.reviewCount;
-    let totalScore = representativeVendor.rating * representativeVendor.reviewCount;
+    let newCount = currentCount;
+    let totalScore = currentRating * currentCount;
 
     if (existingUserRating === 0 && finalUserRating > 0) {
       newCount += 1;
@@ -1128,15 +1159,20 @@ const App = () => {
 
     const finalAvg = newCount === 0 ? 0 : Number((totalScore / newCount).toFixed(1));
 
-    // Update all occurrences of this vendor in crops
-    setCrops(prev => prev.map(c => ({
-      ...c,
-      vendors: c.vendors.map(v => v.id === vId ? { ...v, rating: finalAvg, reviewCount: newCount } : v)
-    })));
+    // Always store in vendorRatingData (works for ALL vendors)
+    setVendorRatingData(prev => ({ ...prev, [vId]: { rating: finalAvg, reviewCount: newCount } }));
 
-    // Update selectedVendor if it's the one being rated, so the UI updates immediately
+    // Also update in crops if vendor exists there
+    if (cropVendor) {
+      setCrops(prev => prev.map(c => ({
+        ...c,
+        vendors: c.vendors.map(v => v.id === vId ? { ...v, rating: finalAvg, reviewCount: newCount } : v)
+      })));
+    }
+
+    // Update selectedVendor if it's the one being rated
     if (selectedVendor && selectedVendor.id === vId) {
-      setSelectedVendor(prev => ({ ...prev, rating: finalAvg, reviewCount: newCount }));
+      setSelectedVendor((prev: any) => ({ ...prev, rating: finalAvg, reviewCount: newCount }));
     }
   };
 
@@ -1158,6 +1194,11 @@ const App = () => {
       alert('Please fill in all fields');
       return;
     }
+    // Show confirm step instead of browser confirm()
+    setComplaintConfirmStep(true);
+  };
+
+  const confirmSubmitComplaint = () => {
     const newComplaint: Complaint = {
       id: `comp-${Date.now()}`,
       from: currentUserEmail,
@@ -1169,9 +1210,9 @@ const App = () => {
     };
     setComplaints(prev => [newComplaint, ...prev]);
     setComplaintForm({ subject: '', message: '' });
+    setComplaintConfirmStep(false);
     setIsComplaintModalOpen(false);
     addAuditEntry('SUBMIT_COMPLAINT', currentUserEmail, `Subject: ${newComplaint.subject}`);
-    alert('Complaint submitted successfully. An admin will review it shortly.');
   };
 
   const renderConsumerView = () => {
@@ -1408,7 +1449,10 @@ const App = () => {
           <div className="grid gap-4">
             {budgetItems.map(item => {
               const crop = crops.find(c => c.id === item.cropId)!;
-              const weight = item.quantity * crop.weightPerUnit;
+              const weight = item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
+              const displayQty = item.unit === 'kg' ? `${item.quantity}kg` : `${item.quantity} units`;
+              const stepVal = item.unit === 'kg' ? 0.1 : 1;
+              const minVal = item.unit === 'kg' ? 0.1 : 1;
               return (
                 <div key={item.cropId} className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-50 dark:bg-zinc-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 transition-colors group gap-4">
                   <div className="flex items-center gap-4 sm:gap-6">
@@ -1416,16 +1460,19 @@ const App = () => {
                     <div>
                       <h4 className="font-black text-base sm:text-xl text-zinc-900 dark:text-white">{crop.name}</h4>
                       <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
-                        <span>Qty: {item.quantity}</span>
+                        <span>{displayQty}</span>
                         <span>≈ {weight.toFixed(2)}kg</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 sm:gap-8 flex-wrap sm:flex-nowrap">
+                    <button onClick={() => toggleBudgetUnit(item.cropId)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shadow-sm ${item.unit === 'kg' ? 'bg-blue-500/10 text-blue-500 border-blue-500/30' : 'bg-green-500/10 text-green-500 border-green-500/30'}`}>
+                      {item.unit === 'qty' ? 'QTY' : 'KG'}
+                    </button>
                     <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
-                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity - 1)} className="p-1.5 sm:p-2 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"><Minus size={16} /></button>
-                      <span className="w-8 sm:w-12 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white">{item.quantity}</span>
-                      <button onClick={() => updateBudgetQty(item.cropId, item.quantity + 1)} className="p-1.5 sm:p-2 hover:bg-green-400/10 hover:text-green-400 transition-all rounded-lg"><Plus size={16} /></button>
+                      <button onClick={() => updateBudgetQty(item.cropId, item.unit === 'kg' ? Number((item.quantity - stepVal).toFixed(2)) : item.quantity - 1)} className="p-1.5 sm:p-2 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"><Minus size={16} /></button>
+                      <span className="w-12 sm:w-16 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white">{item.unit === 'kg' ? item.quantity.toFixed(1) : item.quantity}</span>
+                      <button onClick={() => updateBudgetQty(item.cropId, item.unit === 'kg' ? Number((item.quantity + stepVal).toFixed(2)) : item.quantity + 1)} className="p-1.5 sm:p-2 hover:bg-green-400/10 hover:text-green-400 transition-all rounded-lg"><Plus size={16} /></button>
                     </div>
                     <div className="text-right flex-1 sm:w-32 sm:flex-none">
                       <p className="font-mono text-lg sm:text-2xl font-bold text-zinc-900 dark:text-white">{formatPrice(weight * crop.currentPrice)}</p>
@@ -2379,39 +2426,89 @@ const App = () => {
             <div className="p-3 rounded-2xl bg-orange-400/10 border border-orange-400/20"><Flag className="text-orange-400" size={24} /></div>
             <div>
               <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Price Override</h3>
-              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Flag & correct suspicious prices</p>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Flag & correct suspicious vendor prices</p>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                  <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pr-4">Crop</th>
-                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Price</th>
-                  <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Mkt Avg</th>
-                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Status</th>
-                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 pl-4">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {crops.slice(0, 12).map(crop => {
-                  const avg = crop.vendors.length > 0 ? crop.vendors.reduce((s, v) => s + v.price, 0) / crop.vendors.length : crop.currentPrice;
-                  const diff = Math.abs(((crop.currentPrice - avg) / avg) * 100);
-                  const isSuspicious = diff > 20;
-                  return (
-                    <tr key={crop.id} className={`border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors ${isSuspicious ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
-                      <td className="py-3 pr-4"><div className="flex items-center gap-3"><CropIcon crop={crop} size="sm" /><span className="font-bold text-zinc-900 dark:text-white text-sm">{crop.name}</span></div></td>
-                      <td className="text-right font-mono font-bold text-green-500 py-3 px-4">{formatPrice(crop.currentPrice)}</td>
-                      <td className="text-right font-mono text-zinc-400 py-3 px-4">{formatPrice(Math.round(avg * 100) / 100)}</td>
-                      <td className="text-center py-3 px-4">{isSuspicious ? <span className="text-[10px] font-black text-red-500 bg-red-500/10 px-3 py-1 rounded-lg uppercase">Suspicious</span> : <span className="text-[10px] font-black text-green-500 bg-green-500/10 px-3 py-1 rounded-lg uppercase">Normal</span>}</td>
-                      <td className="text-center py-3 pl-4">
-                        <button onClick={() => { const np = prompt(`Override price for ${crop.name} (current: ${formatPrice(crop.currentPrice)}):`, String(Math.round(avg * 100) / 100)); if (np && !isNaN(Number(np)) && Number(np) > 0) { const p = Number(np); setCrops(prev => prev.map(c => c.id === crop.id ? { ...c, currentPrice: p } : c)); addAuditEntry('PRICE_OVERRIDE', crop.name, `Price: ${formatPrice(crop.currentPrice)} -> ${formatPrice(p)}`); } }} className="text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-orange-400/20 hover:text-orange-500 transition-all uppercase tracking-wider">Override</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {crops.filter(c => c.vendors.length > 0).slice(0, 12).map(crop => {
+              const avg = crop.vendors.reduce((s, v) => s + v.price, 0) / crop.vendors.length;
+              const suspiciousVendors = crop.vendors.filter(v => Math.abs(((v.price - avg) / avg) * 100) > 20);
+              const isExpanded = expandedOverrideCrop === crop.id;
+              return (
+                <div key={crop.id} className={`rounded-2xl border transition-all ${suspiciousVendors.length > 0 ? 'border-red-200 dark:border-red-900/40 bg-red-50/30 dark:bg-red-950/10' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30'}`}>
+                  <button onClick={() => setExpandedOverrideCrop(isExpanded ? null : crop.id)} className="w-full flex items-center justify-between p-4 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <CropIcon crop={crop} size="sm" />
+                      <div className="text-left">
+                        <span className="font-bold text-zinc-900 dark:text-white text-sm">{crop.name}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-mono text-zinc-400">Avg: {formatPrice(Math.round(avg * 100) / 100)}</span>
+                          <span className="text-[10px] text-zinc-400">&bull;</span>
+                          <span className="text-[10px] text-zinc-400 font-bold">{crop.vendors.length} vendor{crop.vendors.length !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {suspiciousVendors.length > 0 && (
+                        <span className="text-[10px] font-black text-red-500 bg-red-500/10 px-3 py-1 rounded-lg uppercase flex items-center gap-1">
+                          <AlertTriangle size={12} /> {suspiciousVendors.length} suspicious
+                        </span>
+                      )}
+                      {suspiciousVendors.length === 0 && (
+                        <span className="text-[10px] font-black text-green-500 bg-green-500/10 px-3 py-1 rounded-lg uppercase">Normal</span>
+                      )}
+                      <ChevronDown size={16} className={`text-zinc-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+                  {isExpanded && (
+                    <div className="px-4 pb-4 pt-1 space-y-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                      {crop.vendors.map(vendor => {
+                        const vendorDiff = Math.abs(((vendor.price - avg) / avg) * 100);
+                        const vendorSuspicious = vendorDiff > 20;
+                        const vendorKey = `${crop.id}-${vendor.id}`;
+                        const isEditingVendor = overrideVendorKey === vendorKey;
+                        return (
+                          <div key={vendor.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl transition-colors ${vendorSuspicious ? 'bg-red-50 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/30' : 'bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800'}`}>
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${vendorSuspicious ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+                                {vendor.name[0]}
+                              </div>
+                              <div>
+                                <p className="font-bold text-zinc-900 dark:text-white text-sm">{vendor.name}</p>
+                                <p className="text-[10px] text-zinc-400 font-mono">
+                                  {vendor.specialty} &bull; {formatPrice(vendor.price)}
+                                  {vendorSuspicious && <span className="text-red-500 ml-2 font-black">({vendorDiff > 0 && vendor.price > avg ? '+' : ''}{((vendor.price - avg) / avg * 100).toFixed(0)}% vs avg)</span>}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {isEditingVendor ? (
+                                <div className="flex items-center gap-2">
+                                  <input type="number" min="0.01" step="0.01" value={overridePrice} onChange={(e) => setOverridePrice(e.target.value)} placeholder={String(Math.round(avg * 100) / 100)} className="w-24 bg-zinc-50 dark:bg-zinc-950 border border-orange-400/50 rounded-lg px-2 py-1 text-sm font-mono font-bold text-orange-600 outline-none focus:border-orange-400" autoFocus />
+                                  <button onClick={() => {
+                                    const p = Number(overridePrice);
+                                    if (!isNaN(p) && p > 0) {
+                                      const oldPrice = vendor.price;
+                                      setCrops(prev => prev.map(c => c.id === crop.id ? { ...c, vendors: c.vendors.map(v => v.id === vendor.id ? { ...v, price: p } : v) } : c));
+                                      addAuditEntry('PRICE_OVERRIDE', `${crop.name} - ${vendor.name}`, `Vendor price: ${formatPrice(oldPrice)} -> ${formatPrice(p)}`);
+                                    }
+                                    setOverrideVendorKey(null);
+                                    setOverridePrice('');
+                                  }} className="text-[10px] font-black bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase tracking-wider">Apply</button>
+                                  <button onClick={() => { setOverrideVendorKey(null); setOverridePrice(''); }} className="text-[10px] font-black bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase tracking-wider">Cancel</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => { setOverrideVendorKey(vendorKey); setOverridePrice(String(Math.round(avg * 100) / 100)); }} className={`text-[10px] font-black px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase tracking-wider ${vendorSuspicious ? 'bg-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-orange-400/20 hover:text-orange-500'}`}>Override</button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -2498,13 +2595,21 @@ const App = () => {
                       <p className="font-bold text-zinc-900 dark:text-white text-sm">{comp.subject}</p>
                       <p className="text-xs text-zinc-500 mt-1">{comp.message}</p>
                       <p className="text-[10px] text-zinc-400 mt-2">From: {comp.from} ({comp.fromRole}){comp.targetUser ? ` | Against: ${comp.targetUser}` : ''}</p>
-                      {comp.adminNote && <p className="text-[10px] text-green-500 mt-1 italic">Admin: {comp.adminNote}</p>}
+                      {comp.adminNote && (
+                        <div className="mt-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/40 rounded-xl p-3 flex items-start gap-3">
+                          <div className="p-1.5 rounded-lg bg-green-500/10 shrink-0 mt-0.5"><CheckCircle size={12} className="text-green-500" /></div>
+                          <div>
+                            <p className="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest mb-0.5">Admin Note</p>
+                            <p className="text-xs text-green-700 dark:text-green-300">{comp.adminNote}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col gap-1 shrink-0">
                       {comp.status === 'open' && <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'reviewing' } : x)); addAuditEntry('REVIEW_COMPLAINT', comp.subject, `Reviewing from ${comp.from}`); }} className="text-[10px] font-black bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Review</button>}
                       {(comp.status === 'open' || comp.status === 'reviewing') && (
                         <>
-                          <button onClick={() => { const note = prompt('Admin note (optional):'); setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'resolved', adminNote: note || undefined } : x)); addAuditEntry('RESOLVE_COMPLAINT', comp.subject, `Resolved from ${comp.from}`); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Resolve</button>
+                          <button onClick={() => { setAdminNoteComplaintId(comp.id); setAdminNoteText(''); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Resolve</button>
                           <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'dismissed' } : x)); addAuditEntry('DISMISS_COMPLAINT', comp.subject, `Dismissed from ${comp.from}`); }} className="text-[10px] font-black bg-zinc-400/20 text-zinc-500 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Dismiss</button>
                         </>
                       )}
@@ -2894,9 +2999,19 @@ const App = () => {
                             </button>
                           );
                         })}
-                        <div className="ml-8 border-l border-zinc-100 dark:border-zinc-800 pl-8 flex flex-col items-center">
-                          <span className="text-3xl font-black text-zinc-900 dark:text-white font-mono leading-none">{selectedVendor.rating}</span>
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-tighter mt-1">Index Score</span>
+                        <div className="ml-6 sm:ml-8 pl-6 sm:pl-8 border-l border-zinc-200/50 dark:border-zinc-700/50 flex flex-col items-center gap-3">
+                          <div className="relative w-20 h-20 flex items-center justify-center">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-400/20 via-orange-400/10 to-transparent border-2 border-yellow-400/30 animate-pulse" style={{ animationDuration: '3s' }} />
+                            <div className="relative flex flex-col items-center">
+                              <span className="text-3xl font-black text-zinc-900 dark:text-white font-mono leading-none">{selectedVendor.rating}</span>
+                              <span className="text-[8px] text-yellow-500 font-black uppercase tracking-wider mt-0.5">Score</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700">
+                            <Activity size={10} className="text-green-500" />
+                            <span className="text-[10px] font-black text-zinc-600 dark:text-zinc-300">{selectedVendor.reviewCount}</span>
+                            <span className="text-[10px] font-bold text-zinc-400 uppercase">Reports</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3193,28 +3308,103 @@ const App = () => {
                 <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Submit a complaint to Admin</p>
               </div>
             </div>
+            {complaintConfirmStep ? (
+              <div className="space-y-6 text-center">
+                <div className="w-20 h-20 mx-auto rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center">
+                  <AlertCircle className="text-red-500" size={40} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-black text-zinc-900 dark:text-white">Confirm Submission</h4>
+                  <p className="text-zinc-500 text-sm mt-2">Are you sure you want to submit this complaint?</p>
+                </div>
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-left">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Subject</p>
+                  <p className="text-sm font-bold text-zinc-900 dark:text-white mb-3">{complaintForm.subject}</p>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Message</p>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300">{complaintForm.message}</p>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setComplaintConfirmStep(false)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700">Go Back</button>
+                  <button onClick={confirmSubmitComplaint} className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-500/20 flex items-center justify-center gap-2"><CheckCircle size={18} /> Confirm</button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Subject</label>
+                  <input
+                    type="text"
+                    placeholder="Brief summary of the issue"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner"
+                    value={complaintForm.subject}
+                    onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Message</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Describe the problem in detail..."
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner resize-none"
+                    value={complaintForm.message}
+                    onChange={(e) => setComplaintForm(prev => ({ ...prev, message: e.target.value }))}
+                  />
+                </div>
+                <button onClick={handleSubmitComplaint} className="w-full bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-500/20 mt-2">Submit Complaint</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Admin Note Modal */}
+      {adminNoteComplaintId && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-6">
+          <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setAdminNoteComplaintId(null)}></div>
+          <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl sm:rounded-[40px] p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 relative">
+            <button onClick={() => setAdminNoteComplaintId(null)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 rounded-2xl bg-green-500/10 border border-green-500/20"><CheckCircle className="text-green-500" size={24} /></div>
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Resolve Complaint</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Add an admin note (optional)</p>
+              </div>
+            </div>
             <div className="space-y-4">
+              {(() => {
+                const comp = complaints.find(c => c.id === adminNoteComplaintId); return comp ? (
+                  <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MessageSquare size={14} className="text-red-400" />
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Complaint Details</span>
+                    </div>
+                    <p className="font-bold text-zinc-900 dark:text-white text-sm">{comp.subject}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{comp.message}</p>
+                    <p className="text-[10px] text-zinc-400 mt-2">From: {comp.from}</p>
+                  </div>
+                ) : null;
+              })()}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Subject</label>
-                <input
-                  type="text"
-                  placeholder="Brief summary of the issue"
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner"
-                  value={complaintForm.subject}
-                  onChange={(e) => setComplaintForm(prev => ({ ...prev, subject: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Message</label>
+                <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest flex items-center gap-2"><FileText size={12} /> Admin Note</label>
                 <textarea
-                  rows={4}
-                  placeholder="Describe the problem in detail..."
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-red-500/50 shadow-inner resize-none"
-                  value={complaintForm.message}
-                  onChange={(e) => setComplaintForm(prev => ({ ...prev, message: e.target.value }))}
+                  rows={3}
+                  placeholder="Add a note about the resolution..."
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold text-sm outline-none text-zinc-900 dark:text-white focus:border-green-500/50 shadow-inner resize-none"
+                  value={adminNoteText}
+                  onChange={(e) => setAdminNoteText(e.target.value)}
+                  autoFocus
                 />
               </div>
-              <button onClick={handleSubmitComplaint} className="w-full bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-500/20 mt-2">Submit Complaint</button>
+              <div className="flex gap-3">
+                <button onClick={() => setAdminNoteComplaintId(null)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700 text-sm">Cancel</button>
+                <button onClick={() => {
+                  const comp = complaints.find(c => c.id === adminNoteComplaintId);
+                  setComplaints(prev => prev.map(x => x.id === adminNoteComplaintId ? { ...x, status: 'resolved' as const, adminNote: adminNoteText.trim() || undefined } : x));
+                  if (comp) addAuditEntry('RESOLVE_COMPLAINT', comp.subject, `Resolved from ${comp.from}${adminNoteText.trim() ? ` — Note: ${adminNoteText.trim()}` : ''}`);
+                  setAdminNoteComplaintId(null);
+                  setAdminNoteText('');
+                }} className="flex-1 bg-green-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-green-500/20 flex items-center justify-center gap-2 text-sm"><CheckCircle size={18} /> Resolve</button>
+              </div>
             </div>
           </div>
         </div>
