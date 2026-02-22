@@ -722,8 +722,8 @@ const App = () => {
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
   const [budgetLimit, setBudgetLimit] = useState<number>(1000);
   const [budgetItems, setBudgetItems] = useState<BudgetListItem[]>([]);
-  const [userVendorRatings, setUserVendorRatings] = useState<Record<string, number>>({});
-  const [vendorRatingData, setVendorRatingData] = useState<Record<string, { rating: number; reviewCount: number }>>({});
+  const [userVendorRatings, setUserVendorRatings] = useState<Record<string, number>>(() => { try { const s = localStorage.getItem('AP_userVendorRatings'); return s ? JSON.parse(s) : {}; } catch { return {}; } });
+  const [vendorRatingData, setVendorRatingData] = useState<Record<string, { rating: number; reviewCount: number }>>(() => { try { const s = localStorage.getItem('AP_vendorRatingData'); return s ? JSON.parse(s) : {}; } catch { return {}; } });
 
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
@@ -763,6 +763,8 @@ const App = () => {
   useEffect(() => { localStorage.setItem('AP_complaints', JSON.stringify(complaints)); }, [complaints]);
   useEffect(() => { localStorage.setItem('AP_dismissed_announcements', JSON.stringify(dismissedIds)); }, [dismissedIds]);
   useEffect(() => { localStorage.setItem('AP_seen_announcements', JSON.stringify(seenAnnouncementIds)); }, [seenAnnouncementIds]);
+  useEffect(() => { localStorage.setItem('AP_userVendorRatings', JSON.stringify(userVendorRatings)); }, [userVendorRatings]);
+  useEffect(() => { localStorage.setItem('AP_vendorRatingData', JSON.stringify(vendorRatingData)); }, [vendorRatingData]);
 
   const handleDismissAnnouncement = (id: string) => {
     setDismissedIds(prev => prev.includes(id) ? prev : [...prev, id]);
