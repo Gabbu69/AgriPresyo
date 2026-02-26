@@ -626,7 +626,7 @@ const LoginPage = ({
   );
 };
 
-const BannerItem = ({ announcement, onDismiss }: { announcement: Announcement, onDismiss: (id: string) => void }) => {
+const BannerItem: React.FC<{ announcement: Announcement; onDismiss: (id: string) => void }> = ({ announcement, onDismiss }) => {
   useEffect(() => {
     if (announcement.duration && announcement.duration > 0) {
       const timer = setTimeout(() => {
@@ -2366,25 +2366,25 @@ const App = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
+          <div onClick={() => document.getElementById('admin-user-registry')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-blue-400/40 transition-all">
             <UsersIcon className="text-blue-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Total Users</p>
             <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">{users.length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Registered</p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
+          <div onClick={() => document.getElementById('admin-approval-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-yellow-400/40 transition-all">
             <Clock className="text-yellow-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Pending</p>
             <p className="text-3xl font-black font-mono text-yellow-500 tracking-tight">{pendingUsers.length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Awaiting Review</p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
+          <div onClick={() => document.getElementById('admin-price-override')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-orange-400/40 transition-all">
             <Store className="text-orange-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Active Vendors</p>
             <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">{allVendors.length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Market Nodes</p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
+          <div onClick={() => document.getElementById('admin-complaints')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-red-400/40 transition-all">
             <MessageSquare className="text-red-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Open Complaints</p>
             <p className="text-3xl font-black font-mono text-red-500 tracking-tight">{complaints.filter(c => c.status === 'open').length}</p>
@@ -2394,7 +2394,7 @@ const App = () => {
 
         {/* Approval Queue */}
         {pendingUsers.length > 0 && (
-          <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-yellow-400/30 shadow-xl">
+          <div id="admin-approval-queue" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-yellow-400/30 shadow-xl scroll-mt-24">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/20"><Clock className="text-yellow-400" size={24} /></div>
               <div>
@@ -2423,7 +2423,7 @@ const App = () => {
         )}
 
         {/* Price Override */}
-        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+        <div id="admin-price-override" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-orange-400/10 border border-orange-400/20"><Flag className="text-orange-400" size={24} /></div>
             <div>
@@ -2570,7 +2570,7 @@ const App = () => {
         </div>
 
         {/* Complaints */}
-        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+        <div id="admin-complaints" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-red-400/10 border border-red-400/20"><MessageSquare className="text-red-400" size={24} /></div>
             <div>
@@ -2686,7 +2686,7 @@ const App = () => {
         </div>
 
         {/* User Management with Ban/Suspend */}
-        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+        <div id="admin-user-registry" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"><UsersIcon className="text-zinc-600 dark:text-zinc-400" size={24} /></div>
             <div>
@@ -2780,6 +2780,7 @@ const App = () => {
     setActiveTab('market');
     setRole(UserRole.CONSUMER);
     setCurrentUserEmail('');
+    setIsAdminUnlocked(false);
   };
 
   if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
