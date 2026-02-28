@@ -479,10 +479,40 @@ const LoginPage = ({
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [error, setError] = useState('');
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showUnlockedModal, setShowUnlockedModal] = useState(false);
+
+  const STATIC_OTP = '143143';
+
+  const handleOtpSubmit = () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setOtpError('');
+    setTimeout(() => {
+      if (otpInput.trim() === STATIC_OTP) {
+        setShowOtpModal(false);
+        setOtpInput('');
+        setOtpError('');
+        setIsLoading(false);
+        onUnlock();
+        setShowUnlockedModal(true);
+        setTimeout(() => setShowUnlockedModal(false), 3500);
+      } else {
+        setOtpError('Invalid OTP. Please try again.');
+        setIsLoading(false);
+      }
+    }, 1200);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError('');
+    setIsLoading(true);
+    await new Promise(r => setTimeout(r, 1200));
     const result = await attemptLogin(email.trim().toLowerCase(), password, role);
     if (result === 'ok') {
       onLogin(role, email.trim().toLowerCase());
@@ -493,11 +523,15 @@ const LoginPage = ({
     } else {
       setError('Invalid credentials — please create an account or try again.');
     }
+    setIsLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError('');
+    setIsLoading(true);
+    await new Promise(r => setTimeout(r, 1200));
     const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role);
     if (result === 'ok') {
       onLogin(role, regEmail.trim().toLowerCase());
@@ -507,6 +541,7 @@ const LoginPage = ({
     } else if (result === 'exists') {
       setError('Account already exists with that email.');
     }
+    setIsLoading(false);
   };
 
   return (
@@ -520,8 +555,9 @@ const LoginPage = ({
             size={120}
             className="text-green-500 mb-6 drop-shadow-[0_0_20px_rgba(34,197,94,0.1)]"
             onUnlock={() => {
-              onUnlock();
-              alert("🔰 ADMIN PRIVILEGES UNLOCKED");
+              setShowOtpModal(true);
+              setOtpInput('');
+              setOtpError('');
             }}
           />
           <h1 className="text-5xl font-black tracking-tighter text-white">
@@ -574,7 +610,7 @@ const LoginPage = ({
 
               <div className="flex gap-4">
                 <button type="button" onClick={() => setShowRegister(false)} className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all">Back to Login</button>
-                <button type="submit" className="flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all">Create Account</button>
+                <button type="submit" disabled={isLoading} className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : ''}`}>{isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Creating...</span></> : 'Create Account'}</button>
               </div>
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
             </form>
@@ -608,20 +644,119 @@ const LoginPage = ({
 
                 <button
                   type="submit"
-                  className="w-full bg-black text-green-500 border border-green-500/50 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(34,197,94,0.1)]"
+                  disabled={isLoading}
+                  className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-black text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
-                  Access Terminal
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Authenticating...</span></> : 'Access Terminal'}
                 </button>
               </form>
 
-              <div className="text-center mt-4">
-                <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-200">Don't have an account? Create Account</button>
-              </div>
+              {role !== UserRole.ADMIN && (
+                <div className="text-center mt-4">
+                  <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-200">Don't have an account? Create Account</button>
+                </div>
+              )}
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
             </>
           )}
         </div>
+
+        {/* OTP Verification Modal */}
+        {showOtpModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
+              <div className="flex flex-col items-center mb-6">
+                <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
+                  <ShieldCheck className="text-green-500" size={32} />
+                </div>
+                <h2 className="text-xl font-black text-white tracking-tight">Admin Verification</h2>
+                <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
+              </div>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    maxLength={6}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
+                    value={otpInput}
+                    onChange={(e) => {
+                      setOtpInput(e.target.value.replace(/[^0-9]/g, ''));
+                      setOtpError('');
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOtpSubmit()}
+                    autoFocus
+                  />
+                </div>
+                {otpError && <p className="text-center text-sm text-red-500 font-bold">{otpError}</p>}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setShowOtpModal(false); setOtpInput(''); setOtpError(''); }}
+                    className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOtpSubmit}
+                    disabled={isLoading}
+                    className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
+                  >
+                    {isLoading ? <><span className="btn-spinner" /> <span className="ml-1">Verifying...</span></> : 'Verify'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Admin Unlocked Graphic Modal */}
+      {showUnlockedModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={() => setShowUnlockedModal(false)}>
+          {/* Backdrop with radial gradient */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" style={{ animation: 'adminUnlockFadeIn 0.4s ease-out' }} />
+
+          {/* Center content */}
+          <div className="relative z-10 flex flex-col items-center" style={{ animation: 'adminUnlockScaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+            {/* Glow ring */}
+            <div className="absolute w-48 h-48 rounded-full" style={{
+              background: 'radial-gradient(circle, rgba(34,197,94,0.3) 0%, transparent 70%)',
+              animation: 'adminUnlockGlowPulse 2s ease-in-out infinite',
+              top: '-20px'
+            }} />
+
+            {/* Shield icon with ring */}
+            <div className="relative mb-6">
+              <div className="w-28 h-28 rounded-full border-2 border-green-400/50 flex items-center justify-center" style={{
+                background: 'radial-gradient(circle at 30% 30%, rgba(34,197,94,0.25), rgba(0,0,0,0.5))',
+                boxShadow: '0 0 40px rgba(34,197,94,0.3), inset 0 0 30px rgba(34,197,94,0.1)',
+                animation: 'adminUnlockShieldPulse 1.5s ease-in-out infinite'
+              }}>
+                <ShieldCheck size={52} className="text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]" />
+              </div>
+              {/* Ring animation */}
+              <div className="absolute inset-[-8px] rounded-full border border-green-400/30" style={{ animation: 'adminUnlockRingExpand 2s ease-out infinite' }} />
+              <div className="absolute inset-[-16px] rounded-full border border-green-400/15" style={{ animation: 'adminUnlockRingExpand 2s ease-out infinite 0.5s' }} />
+            </div>
+
+            {/* Text */}
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white mb-2" style={{ textShadow: '0 0 30px rgba(34,197,94,0.5)' }}>
+              ACCESS <span className="text-green-400">GRANTED</span>
+            </h2>
+            <p className="text-green-400/80 font-bold uppercase tracking-[0.3em] text-xs mb-4">Admin Privileges Unlocked</p>
+            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-5 py-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full" style={{ animation: 'adminUnlockDotPulse 1s ease-in-out infinite' }} />
+              <span className="text-green-400 text-xs font-black uppercase tracking-widest">Terminal Ready</span>
+            </div>
+
+            {/* Tap to dismiss */}
+            <p className="text-zinc-600 text-[10px] mt-6 uppercase tracking-widest" style={{ animation: 'adminUnlockFadeIn 1s ease-out 1s both' }}>Tap anywhere to continue</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -687,14 +822,30 @@ const App = () => {
     localStorage.setItem('AP_admin_unlocked', String(isAdminUnlocked));
   }, [isAdminUnlocked]);
 
+  const SEEDED_ADMIN: UserRecord = {
+    name: 'Gab The Admin',
+    email: 'gabtheadmin@yahoo.com',
+    password: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // SHA-256 of '123'
+    role: UserRole.ADMIN,
+    status: 'active',
+  };
+
   const [users, setUsers] = useState<UserRecord[]>(() => {
     try {
       const raw = localStorage.getItem('AP_users');
-      const parsed = raw ? JSON.parse(raw) : [];
+      const parsed: UserRecord[] = raw ? JSON.parse(raw) : [];
       // Migrate old users without status
-      return parsed.map((u: any) => ({ ...u, status: u.status || 'active' }));
+      const migrated = parsed.map((u: any) => ({ ...u, status: u.status || 'active' }));
+      // Ensure seeded admin always exists
+      if (!migrated.find(u => u.email === SEEDED_ADMIN.email && u.role === UserRole.ADMIN)) {
+        const withAdmin = [...migrated, SEEDED_ADMIN];
+        localStorage.setItem('AP_users', JSON.stringify(withAdmin));
+        return withAdmin;
+      }
+      return migrated;
     } catch (e) {
-      return [];
+      localStorage.setItem('AP_users', JSON.stringify([SEEDED_ADMIN]));
+      return [SEEDED_ADMIN];
     }
   });
 
@@ -1055,6 +1206,11 @@ const App = () => {
   };
 
   const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
+    // Static admin login — hardcoded credentials
+    if (userRole === UserRole.ADMIN) {
+      if (email === 'gabtheadmin@yahoo.com' && password === '123') return 'ok';
+      return 'not_found';
+    }
     const hashed = await simpleHash(password);
     const found = users.find(u => u.email === email && u.password === hashed && u.role === userRole);
     if (!found) return 'not_found';
@@ -1064,6 +1220,7 @@ const App = () => {
   };
 
   const registerUser = async (name: string, email: string, password: string, userRole: UserRole): Promise<string> => {
+    if (userRole === UserRole.ADMIN) return 'forbidden';
     if (users.find(u => u.email === email)) return 'exists';
     const hashed = await simpleHash(password);
     const status = userRole === UserRole.VENDOR ? 'pending' : 'active';
