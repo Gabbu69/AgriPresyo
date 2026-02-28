@@ -836,6 +836,14 @@ const App = () => {
     status: 'active',
   };
 
+  const MOCK_VENDOR_GAB: UserRecord = {
+    name: 'Gab The Vendor',
+    email: 'gab@test.com',
+    password: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // SHA-256 of '123'
+    role: UserRole.VENDOR,
+    status: 'active',
+  };
+
   const [users, setUsers] = useState<UserRecord[]>(() => {
     try {
       const raw = localStorage.getItem('AP_users');
@@ -843,15 +851,15 @@ const App = () => {
       // Migrate old users without status
       const migrated = parsed.map((u: any) => ({ ...u, status: u.status || 'active' }));
       // Ensure seeded admin always exists
-      if (!migrated.find(u => u.email === SEEDED_ADMIN.email && u.role === UserRole.ADMIN)) {
-        const withAdmin = [...migrated, SEEDED_ADMIN];
-        localStorage.setItem('AP_users', JSON.stringify(withAdmin));
-        return withAdmin;
+      if (!migrated.find(u => u.email === SEEDED_ADMIN.email)) {
+        const withSeeds = [...migrated, SEEDED_ADMIN, MOCK_VENDOR_GAB];
+        localStorage.setItem('AP_users', JSON.stringify(withSeeds));
+        return withSeeds;
       }
       return migrated;
     } catch (e) {
-      localStorage.setItem('AP_users', JSON.stringify([SEEDED_ADMIN]));
-      return [SEEDED_ADMIN];
+      localStorage.setItem('AP_users', JSON.stringify([SEEDED_ADMIN, MOCK_VENDOR_GAB]));
+      return [SEEDED_ADMIN, MOCK_VENDOR_GAB];
     }
   });
 
@@ -1147,15 +1155,17 @@ const App = () => {
 
   // Full-screen Alert Graphic Component
   const [activeGraphicAlert, setActiveGraphicAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string } | null>(null);
-  const [activeConfirmAlert, setActiveConfirmAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string, onConfirm: () => void } | null>(null);
+  const [activeConfirmAlert, setActiveConfirmAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string, onConfirm: (reason?: string) => void } | null>(null);
+  const [actionReason, setActionReason] = useState('');
 
-  const ActionConfirmModal = ({ alert, onCancel }: { alert: { type: string, title: string, subtitle: string, onConfirm: () => void } | null, onCancel: () => void }) => {
+  const ActionConfirmModal = ({ alert, onCancel }: { alert: { type: string, title: string, subtitle: string, onConfirm: (reason?: string) => void } | null, onCancel: () => void }) => {
     if (!alert) return null;
 
     let Icon = ShieldCheck;
     let colorClass = '';
     let bgColorClass = '';
     let btnClass = '';
+    const showReasonField = ['BAN', 'REJECT', 'WARN'].includes(alert.type);
 
     switch (alert.type) {
       case 'BAN':
@@ -1206,20 +1216,36 @@ const App = () => {
             <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2 text-center">{alert.title}</h2>
             <p className="text-zinc-400 text-xs font-medium mb-8 text-center">{alert.subtitle}</p>
 
+            {showReasonField && (
+              <div className="w-full mb-6 text-left">
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2 ml-1">Internal Reason (Required)</p>
+                <textarea
+                  value={actionReason}
+                  onChange={(e) => setActionReason(e.target.value)}
+                  placeholder="e.g. Terms of Service violation, Spamming..."
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-green-400/50 resize-none h-20"
+                />
+              </div>
+            )}
+
             <div className="flex gap-3 w-full">
               <button
-                onClick={onCancel}
+                onClick={() => {
+                  onCancel();
+                  setActionReason('');
+                }}
                 className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all"
               >
                 Cancel
               </button>
               <button
-                autoFocus
+                disabled={showReasonField && !actionReason.trim()}
                 onClick={() => {
-                  alert.onConfirm();
+                  alert.onConfirm(actionReason.trim());
                   onCancel();
+                  setActionReason('');
                 }}
-                className={`flex-1 ${btnClass} py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95`}
+                className={`flex-1 ${btnClass} py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed`}
               >
                 Confirm
               </button>
@@ -3118,7 +3144,7 @@ const App = () => {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified status to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official status granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Verify</button>
-                    <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied verification for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
+                    <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
                   </div>
                 </div>
               ))}
@@ -3430,7 +3456,7 @@ const App = () => {
                           {user.status === 'banned' ? (
                             <button onClick={() => setActiveConfirmAlert({ type: 'UNBAN', title: 'Unban User?', subtitle: `Restore access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); triggerGraphicAlert('UNBAN', 'User Restored', `Access regranted for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
                           ) : user.status === 'active' ? (
-                            <button onClick={() => setActiveConfirmAlert({ type: 'BAN', title: 'Ban User?', subtitle: `Revoke platform access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role})`); triggerGraphicAlert('BAN', 'User Suspended', `Access revoked for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
+                            <button onClick={() => setActiveConfirmAlert({ type: 'BAN', title: 'Ban User?', subtitle: `Revoke platform access for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role}). Reason: ${reason}`); triggerGraphicAlert('BAN', 'User Suspended', `${user.name || user.email} restricted.`); } })} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
                           ) : null}
                         </div>
                       )}
