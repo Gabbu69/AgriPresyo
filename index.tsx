@@ -50,7 +50,14 @@ import {
   Megaphone,
   Flag,
   Eye,
-  AlertCircle
+  AlertCircle,
+  User,
+  Settings,
+  Camera,
+  Loader2,
+  Edit3,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -321,7 +328,6 @@ const CROP_IMAGES: Record<string, string> = {
   'sweet-potato': '/crops/kamote.png',
   'cassava': '/crops/cassava.png',
   'taro-gabi': '/crops/taro.png',
-  'ube': '/crops/ube.png',
 };
 
 const CROP_COLORS: Record<string, [string, string]> = {
@@ -902,6 +908,115 @@ const App = () => {
   const [showAnnouncementsDropdown, setShowAnnouncementsDropdown] = useState(false);
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [complaintForm, setComplaintForm] = useState({ subject: '', message: '' });
+
+  // Profile settings state
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showFullProfilePic, setShowFullProfilePic] = useState(false);
+  const [showDeleteProfilePicModal, setShowDeleteProfilePicModal] = useState(false);
+  const [editingProfileName, setEditingProfileName] = useState(false);
+  const [isSavingProfileName, setIsSavingProfileName] = useState(false);
+  const [profileNameDraft, setProfileNameDraft] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
+  const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem('AP_notifications') !== 'false');
+  const [priceAlertThreshold, setPriceAlertThreshold] = useState(() => Number(localStorage.getItem('AP_priceAlertThreshold') || '10'));
+  const [profilePicture, setProfilePicture] = useState<string | null>(() => localStorage.getItem('AP_profilePicture'));
+
+  useEffect(() => {
+    if (profilePicture) localStorage.setItem('AP_profilePicture', profilePicture);
+    else localStorage.removeItem('AP_profilePicture');
+  }, [profilePicture]);
+
+  useEffect(() => { localStorage.setItem('AP_notifications', String(notificationsEnabled)); }, [notificationsEnabled]);
+  useEffect(() => { localStorage.setItem('AP_priceAlertThreshold', String(priceAlertThreshold)); }, [priceAlertThreshold]);
+
+  const currentUser = useMemo(() => users.find(u => u.email === currentUserEmail), [users, currentUserEmail]);
+
+  const handleSaveProfileName = async () => {
+    if (!profileNameDraft.trim()) return;
+    setIsSavingProfileName(true);
+    await new Promise(resolve => setTimeout(resolve, 600)); // Simulate save delay for UI feedback
+    setUsers(prev => prev.map(u => u.email === currentUserEmail ? { ...u, name: profileNameDraft.trim() } : u));
+    setEditingProfileName(false);
+    setIsSavingProfileName(false);
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordMsg(null);
+    if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm) {
+      setPasswordMsg({ text: 'Please fill in all fields', type: 'error' }); return;
+    }
+    if (passwordForm.newPass.length < 3) {
+      setPasswordMsg({ text: 'New password must be at least 3 characters', type: 'error' }); return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      setPasswordMsg({ text: 'New passwords do not match', type: 'error' }); return;
+    }
+    const encoder = new TextEncoder();
+    const currentHashed = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(passwordForm.current)))).map(b => b.toString(16).padStart(2, '0')).join('');
+    if (currentUser?.password !== currentHashed) {
+      setPasswordMsg({ text: 'Current password is incorrect', type: 'error' }); return;
+    }
+    const newHashed = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(passwordForm.newPass)))).map(b => b.toString(16).padStart(2, '0')).join('');
+    setUsers(prev => prev.map(u => u.email === currentUserEmail ? { ...u, password: newHashed } : u));
+    setPasswordForm({ current: '', newPass: '', confirm: '' });
+    setPasswordMsg({ text: 'Password changed successfully!', type: 'success' });
+    setTimeout(() => { setPasswordMsg(null); setShowChangePassword(false); }, 2000);
+  };
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
+  const cropDragRef = React.useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number }>({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+
+  const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Image must be under 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setCropImageSrc(ev.target?.result as string);
+      setCropZoom(1);
+      setCropOffset({ x: 0, y: 0 });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const cropContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const handleCropSave = () => {
+    if (!cropImageSrc || !cropContainerRef.current) return;
+    const S = cropContainerRef.current.clientWidth;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 512;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+
+      const exportScale = size / (S * 0.76);
+
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.translate(size / 2, size / 2);
+      ctx.scale(exportScale, exportScale);
+      ctx.scale(cropZoom, cropZoom);
+      ctx.translate(cropOffset.x, cropOffset.y);
+
+      const scaleFit = Math.min(S / img.width, S / img.height);
+      const drawW = img.width * scaleFit;
+      const drawH = img.height * scaleFit;
+
+      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+
+      setProfilePicture(canvas.toDataURL('image/jpeg', 0.95));
+      setCropImageSrc(null);
+    };
+    img.src = cropImageSrc;
+  };
 
   // Save favorites to localStorage
   useEffect(() => { localStorage.setItem('AP_favorites', JSON.stringify(favorites)); }, [favorites]);
@@ -2979,6 +3094,214 @@ const App = () => {
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
 
+            {/* Profile Settings Button */}
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileModal(!showProfileModal)}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-sm sm:text-base hover:scale-110 active:scale-95 transition-all shadow-lg shadow-green-500/20 border border-green-400/30 overflow-hidden"
+              >
+                {profilePicture ? (
+                  <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                ) : currentUser?.name ? currentUser.name[0].toUpperCase() : <User size={20} />}
+              </button>
+              {showProfileModal && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowProfileModal(false)} />
+                  <div className="absolute right-0 top-14 sm:top-16 w-80 sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in zoom-in-95 fade-in duration-200 max-h-[85vh] overflow-y-auto scrollbar-hide">
+                    {/* Profile Header */}
+                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/5 p-6 border-b border-zinc-200 dark:border-zinc-800">
+                      <div className="flex items-center gap-4">
+                        <div className="relative group flex flex-col items-center">
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-green-500/30 border-2 border-green-400/30 overflow-hidden">
+                            {profilePicture ? (
+                              <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                            ) : currentUser?.name ? currentUser.name[0].toUpperCase() : <User size={28} />}
+                          </div>
+
+                          <div className="absolute inset-0 w-16 h-16 rounded-2xl bg-black/60 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {profilePicture ? (
+                              <>
+                                <button onClick={(e) => { e.preventDefault(); setShowFullProfilePic(true); }} className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center cursor-pointer transition-colors backdrop-blur-sm shadow-sm" title="View Full Photo">
+                                  <Eye size={12} className="text-white" />
+                                </button>
+                                <label className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center cursor-pointer transition-colors backdrop-blur-sm shadow-sm" title="Change Photo">
+                                  <Edit3 size={12} className="text-white" />
+                                  <input type="file" accept="image/*" className="hidden" onChange={handleProfilePictureUpload} />
+                                </label>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowDeleteProfilePicModal(true);
+                                  }}
+                                  className="w-6 h-6 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center cursor-pointer transition-colors backdrop-blur-sm shadow-sm"
+                                  title="Remove Photo"
+                                >
+                                  <Trash2 size={12} className="text-white" />
+                                </button>
+                              </>
+                            ) : (
+                              <label className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center cursor-pointer transition-colors backdrop-blur-sm" title="Upload Photo">
+                                <Camera size={18} className="text-white" />
+                                <input type="file" accept="image/*" className="hidden" onChange={handleProfilePictureUpload} />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {editingProfileName ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={profileNameDraft}
+                                onChange={e => setProfileNameDraft(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && !isSavingProfileName && handleSaveProfileName()}
+                                disabled={isSavingProfileName}
+                                className="bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-xl px-3 py-1.5 text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400/50 w-full disabled:opacity-50"
+                                autoFocus
+                                placeholder="Your name"
+                              />
+                              <button disabled={isSavingProfileName} onClick={handleSaveProfileName} className="p-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors shrink-0 disabled:opacity-50">
+                                {isSavingProfileName ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                              </button>
+                              <button disabled={isSavingProfileName} onClick={() => setEditingProfileName(false)} className="p-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors shrink-0 disabled:opacity-50"><X size={16} /></button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-black text-zinc-900 dark:text-white truncate">{currentUser?.name || 'Set your name'}</h3>
+                              <button
+                                onClick={() => { setProfileNameDraft(currentUser?.name || ''); setEditingProfileName(true); }}
+                                className="p-1 rounded-lg text-zinc-400 hover:text-green-500 hover:bg-green-500/10 transition-all shrink-0"
+                              ><Edit2 size={14} /></button>
+                            </div>
+                          )}
+                          <p className="text-xs text-zinc-500 truncate mt-0.5">{currentUserEmail}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Profile Info */}
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><ShieldCheck size={16} className="text-blue-500" /></div>
+                          <div>
+                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Role</p>
+                            <p className="text-sm font-black text-zinc-900 dark:text-white">{role}</p>
+                          </div>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${role === UserRole.ADMIN ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
+                          role === UserRole.VENDOR ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' :
+                            'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                          }`}>{role}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center"><Activity size={16} className="text-green-500" /></div>
+                          <div>
+                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Status</p>
+                            <p className="text-sm font-black text-zinc-900 dark:text-white capitalize">{currentUser?.status || 'Active'}</p>
+                          </div>
+                        </div>
+                        <span className={`w-2.5 h-2.5 rounded-full ${currentUser?.status === 'active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' :
+                          currentUser?.status === 'pending' ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]' :
+                            'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                          }`} />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-yellow-500/10 flex items-center justify-center"><Mail size={16} className="text-yellow-500" /></div>
+                          <div>
+                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Email</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white truncate max-w-[200px]">{currentUserEmail}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings Section */}
+                    <div className="px-4 pb-3 space-y-3">
+                      <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest px-1">Settings</p>
+
+                      {/* Change Password */}
+                      <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50 overflow-hidden">
+                        <button
+                          onClick={() => { setShowChangePassword(!showChangePassword); setPasswordMsg(null); setPasswordForm({ current: '', newPass: '', confirm: '' }); }}
+                          className="w-full flex items-center justify-between p-3 hover:bg-zinc-100 dark:hover:bg-zinc-700/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center"><Lock size={16} className="text-red-500" /></div>
+                            <span className="text-sm font-bold text-zinc-900 dark:text-white">Change Password</span>
+                          </div>
+                          <ChevronDown size={16} className={`text-zinc-400 transition-transform ${showChangePassword ? 'rotate-180' : ''}`} />
+                        </button>
+                        {showChangePassword && (
+                          <div className="p-3 pt-0 space-y-2">
+                            <input type="password" placeholder="Current password" value={passwordForm.current} onChange={e => setPasswordForm(p => ({ ...p, current: e.target.value }))} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400/50" />
+                            <input type="password" placeholder="New password" value={passwordForm.newPass} onChange={e => setPasswordForm(p => ({ ...p, newPass: e.target.value }))} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400/50" />
+                            <input type="password" placeholder="Confirm new password" value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} onKeyDown={e => e.key === 'Enter' && handleChangePassword()} className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400/50" />
+                            {passwordMsg && (
+                              <p className={`text-xs font-bold px-1 ${passwordMsg.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>{passwordMsg.text}</p>
+                            )}
+                            <button onClick={handleChangePassword} className="w-full py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-black uppercase tracking-widest transition-colors">Update Password</button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Notifications Toggle */}
+                      <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><Bell size={16} className="text-blue-500" /></div>
+                          <div>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white">Notifications</p>
+                            <p className="text-[10px] text-zinc-400">Price alerts & announcements</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                          className={`w-11 h-6 rounded-full transition-all relative ${notificationsEnabled ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}
+                        >
+                          <div className={`w-5 h-5 rounded-full bg-white shadow-md absolute top-0.5 transition-all ${notificationsEnabled ? 'left-[22px]' : 'left-0.5'}`} />
+                        </button>
+                      </div>
+
+                      {/* Price Alert Threshold */}
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center"><TrendingUp size={16} className="text-orange-500" /></div>
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white">Price Alert Threshold</p>
+                            <p className="text-[10px] text-zinc-400">Notify when prices change by</p>
+                          </div>
+                          <span className="text-sm font-black text-green-500 font-mono bg-green-500/10 px-2 py-0.5 rounded-lg">{priceAlertThreshold}%</span>
+                        </div>
+                        <input
+                          type="range" min={1} max={30} value={priceAlertThreshold}
+                          onChange={e => setPriceAlertThreshold(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 rounded-full"
+                        />
+                        <div className="flex justify-between text-[9px] text-zinc-400 font-bold mt-1">
+                          <span>1%</span><span>15%</span><span>30%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Logout */}
+                    <div className="p-4 pt-1">
+                      <button
+                        onClick={() => { setShowProfileModal(false); handleLogout(); }}
+                        className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest transition-all"
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {role === UserRole.VENDOR && (
               <div className="relative">
                 <button
@@ -3024,7 +3347,6 @@ const App = () => {
                 )}
               </div>
             )}
-            <button onClick={handleLogout} className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition-all hover:border-red-500/30 shadow-xl group"><LogOut size={20} className="group-hover:-translate-x-1 transition-transform" /></button>
           </div>
         </div>
       </header>
@@ -3128,6 +3450,142 @@ const App = () => {
         )}
       </nav>
 
+      {/* Custom Delete Profile Picture Confirmation Modal */}
+      {showDeleteProfilePicModal && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteProfilePicModal(false)}></div>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800 text-center">
+            <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-5 border-[6px] border-red-50 dark:border-red-500/5">
+              <Trash2 size={24} className="text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-zinc-900 dark:text-white mb-2">Remove Photo?</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium">Are you sure you want to remove your profile picture? This action cannot be undone.</p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteProfilePicModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setProfilePicture(null);
+                  setShowDeleteProfilePicModal(false);
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/20 transition-colors border border-red-400/20"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Size Profile Picture Viewer Modal */}
+      {showFullProfilePic && profilePicture && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 animate-in zoom-in-95 duration-300">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowFullProfilePic(false)} />
+          <div className="relative z-10 w-full max-w-lg aspect-square flex items-center justify-center">
+            <img src={profilePicture} alt="Full Profile" className="w-full h-full object-contain rounded-3xl shadow-2xl" />
+            <button
+              onClick={() => setShowFullProfilePic(false)}
+              className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-colors backdrop-blur-sm"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Picture Crop Modal */}
+      {cropImageSrc && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setCropImageSrc(null)} />
+          <div className="relative bg-white dark:bg-zinc-900 rounded-3xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-zinc-900 dark:text-white">Crop Profile Photo</h3>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Drag to reposition • Zoom to resize</p>
+              </div>
+              <button onClick={() => setCropImageSrc(null)} className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div
+              ref={cropContainerRef}
+              className="relative w-full aspect-square bg-zinc-950 overflow-hidden cursor-grab active:cursor-grabbing select-none group/crop flex items-center justify-center touch-none"
+              onPointerDown={(e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                cropDragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: cropOffset.x, origY: cropOffset.y };
+              }}
+              onPointerMove={(e) => {
+                if (!cropDragRef.current.dragging) return;
+                const dx = (e.clientX - cropDragRef.current.startX) / cropZoom;
+                const dy = (e.clientY - cropDragRef.current.startY) / cropZoom;
+                setCropOffset({ x: cropDragRef.current.origX + dx, y: cropDragRef.current.origY + dy });
+              }}
+              onPointerUp={(e) => {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+                cropDragRef.current.dragging = false;
+              }}
+              onPointerCancel={(e) => {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+                cropDragRef.current.dragging = false;
+              }}
+            >
+              <img
+                src={cropImageSrc}
+                alt="Crop preview"
+                className="w-full h-full object-contain pointer-events-none origin-center"
+                style={{
+                  transform: `scale(${cropZoom}) translate(${cropOffset.x}px, ${cropOffset.y}px)`,
+                }}
+                draggable={false}
+              />
+              {/* Square crop guide overlay */}
+              <div className="absolute inset-0 pointer-events-none bg-black/60 shadow-[inset_0_0_0_9999px_rgba(0,0,0,0.65)] backdrop-blur-[2px]" style={{
+                clipPath: 'polygon(0% 0%, 0% 100%, 12% 100%, 12% 12%, 88% 12%, 88% 88%, 12% 88%, 12% 100%, 100% 100%, 100% 0%)'
+              }} />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[76%] h-[76%] rounded-[2rem] border-[3px] border-white/80 shadow-[0_0_0_1px_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.5)] group-active/crop:border-green-400 transition-colors bg-gradient-to-br from-white/10 to-transparent" />
+              </div>
+
+              {/* Directional Pad */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+                <div className="relative w-full h-full max-w-[90%] max-h-[90%] flex items-center justify-center pointer-events-auto">
+                  <button onPointerDown={e => e.stopPropagation()} onClick={() => setCropOffset(p => ({ ...p, y: p.y - 20 / cropZoom }))} className="absolute top-0 w-12 h-12 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 hover:scale-110 active:scale-90"><ChevronUp size={24} /></button>
+                  <button onPointerDown={e => e.stopPropagation()} onClick={() => setCropOffset(p => ({ ...p, y: p.y + 20 / cropZoom }))} className="absolute bottom-0 w-12 h-12 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 hover:scale-110 active:scale-90"><ChevronDown size={24} /></button>
+                  <button onPointerDown={e => e.stopPropagation()} onClick={() => setCropOffset(p => ({ ...p, x: p.x - 20 / cropZoom }))} className="absolute left-0 w-12 h-12 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 hover:scale-110 active:scale-90"><ChevronLeft size={24} /></button>
+                  <button onPointerDown={e => e.stopPropagation()} onClick={() => setCropOffset(p => ({ ...p, x: p.x + 20 / cropZoom }))} className="absolute right-0 w-12 h-12 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-white transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 hover:scale-110 active:scale-90"><ChevronRight size={24} /></button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-zinc-400 font-black uppercase tracking-widest shrink-0">Zoom</span>
+                <input
+                  type="range" min={0.5} max={3} step={0.05} value={cropZoom}
+                  onChange={e => setCropZoom(Number(e.target.value))}
+                  className="flex-1 accent-green-500 h-1.5 rounded-full"
+                />
+                <span className="text-xs font-black text-zinc-500 font-mono w-10 text-right">{Math.round(cropZoom * 100)}%</span>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setCropImageSrc(null)} className="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 font-black text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleCropSave} className="flex-1 py-3 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black text-xs uppercase tracking-widest transition-colors shadow-lg shadow-green-500/20">
+                  Save Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Vendor Detail View Modal */}
       {selectedVendor && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
@@ -3173,19 +3631,14 @@ const App = () => {
                             </button>
                           );
                         })}
-                        <div className="ml-6 sm:ml-8 pl-6 sm:pl-8 border-l border-zinc-200/50 dark:border-zinc-700/50 flex flex-col items-center gap-3">
-                          <div className="relative w-20 h-20 flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-400/20 via-orange-400/10 to-transparent border-2 border-yellow-400/30 animate-pulse" style={{ animationDuration: '3s' }} />
-                            <div className="relative flex flex-col items-center">
-                              <span className="text-3xl font-black text-zinc-900 dark:text-white font-mono leading-none">{selectedVendor.rating}</span>
-                              <span className="text-[8px] text-yellow-500 font-black uppercase tracking-wider mt-0.5">Score</span>
-                            </div>
+                        <div className="ml-6 sm:ml-8 pl-6 sm:pl-8 border-l border-zinc-200/50 dark:border-zinc-700/50 flex flex-col items-center justify-center gap-2">
+                          <span className="text-4xl font-black text-zinc-900 dark:text-white font-mono leading-none">{selectedVendor.rating}</span>
+                          <div className="flex items-center gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={`modal-star-${i}`} size={14} fill={i < Math.round(selectedVendor.rating) ? 'currentColor' : 'none'} className={i < Math.round(selectedVendor.rating) ? 'text-yellow-400' : 'text-zinc-300 dark:text-zinc-600'} />
+                            ))}
                           </div>
-                          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700">
-                            <Activity size={10} className="text-green-500" />
-                            <span className="text-[10px] font-black text-zinc-600 dark:text-zinc-300">{selectedVendor.reviewCount}</span>
-                            <span className="text-[10px] font-bold text-zinc-400 uppercase">Reports</span>
-                          </div>
+                          <span className="text-[10px] text-zinc-400 font-bold bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-700">{selectedVendor.reviewCount} reviews</span>
                         </div>
                       </div>
                     </div>
