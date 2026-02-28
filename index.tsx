@@ -1030,8 +1030,8 @@ const App = () => {
     });
   }, [allVendors, shopFilter, role, currentVendorId]);
 
-  const fruitVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.every((c: any) => c.category === 'Fruit')), [filteredVendors]);
-  const vegetableVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.some((c: any) => c.category !== 'Fruit')), [filteredVendors]);
+  const fruitVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.every((c: any) => c.category === 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
+  const vegetableVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.some((c: any) => c.category !== 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
 
   useEffect(() => {
     if (selectedVendor) {
@@ -1688,14 +1688,23 @@ const App = () => {
               {vendor.name[0]}
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h3 className="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white group-hover:text-green-600 transition-colors">{vendor.name}</h3>
-                {vendor.isHot && <ShieldCheck size={20} className="text-green-500" />}
+                {vendor.rating >= 4.7 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/30 shadow-[0_0_8px_rgba(34,197,94,0.25)] shrink-0">
+                    <ShieldCheck size={14} className="text-green-400 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" />
+                    <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Verified</span>
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-1 text-yellow-500">
-                <Star size={14} fill="currentColor" />
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={13} fill={i < Math.round(vendor.rating) ? 'currentColor' : 'none'} className={i < Math.round(vendor.rating) ? 'text-yellow-400' : 'text-zinc-300 dark:text-zinc-600'} />
+                  ))}
+                </div>
                 <span className="text-sm font-black text-zinc-900 dark:text-white">{vendor.rating}</span>
-                <span className="text-[10px] text-zinc-400 font-bold uppercase ml-1 tracking-widest">{vendor.reviewCount} Reports</span>
+                <span className="text-[9px] text-zinc-400 font-bold bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700">{vendor.reviewCount} reviews</span>
               </div>
             </div>
           </div>
@@ -3132,9 +3141,14 @@ const App = () => {
                     {selectedVendor.name[0]}
                   </div>
                   <div>
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h2 className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white leading-none">{selectedVendor.name}</h2>
-                      {selectedVendor.isHot && <ShieldCheck className="text-green-500 shrink-0" size={28} />}
+                      {selectedVendor.rating >= 4.7 && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/30 shadow-[0_0_12px_rgba(34,197,94,0.3)] shrink-0">
+                          <ShieldCheck size={18} className="text-green-400 drop-shadow-[0_0_6px_rgba(34,197,94,0.7)]" />
+                          <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Verified</span>
+                        </span>
+                      )}
                     </div>
                     <p className="text-zinc-400 dark:text-zinc-500 text-xs font-black uppercase tracking-[0.3em] mb-4">{selectedVendor.specialty}</p>
                     <div className="flex flex-col gap-3">

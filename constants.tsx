@@ -26,8 +26,21 @@ const generateHistory = (base: number) => {
 /**
  * SHOP DIRECTORY:
  * 
- * FRUIT SPECIALISTS (v_fruit_1-4)
- * VEGETABLE SPECIALISTS (v_veg_1-4)
+ * FRUIT SPECIALISTS (v_fruit_1-6)
+ *   v_fruit_1 — Aling Nena's Prutas
+ *   v_fruit_2 — Mang Tomas Fruits
+ *   v_fruit_3 — Nanay Coring's Tropicals
+ *   v_fruit_4 — Kuya Jun's Farm
+ *   v_fruit_5 — Tita Merly's Orchard
+ *   v_fruit_6 — Lolo Pepe's Harvest
+ *
+ * VEGETABLE / SPICE / ROOT SPECIALISTS (v_veg_1-6)
+ *   v_veg_1 — Aling Rosa's Gulay
+ *   v_veg_2 — Mang Erning's Palengke
+ *   v_veg_3 — Nanay Linda's Ugat
+ *   v_veg_4 — Kuya Ben's Highland
+ *   v_veg_5 — Ate Bing's Garden
+ *   v_veg_6 — Tatay Romy's Farm Fresh
  */
 
 export const MOCK_CROPS: Crop[] = [
@@ -43,8 +56,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍍',
     weightPerUnit: 1.8,
     vendors: [
-      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 110, stock: 150, isHot: true },
-      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 125, stock: 80 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 110, stock: 150, isHot: true },
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 125, stock: 80 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 118, stock: 95 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 130, stock: 60 }
     ]
   },
   {
@@ -58,8 +73,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍉',
     weightPerUnit: 5.0,
     vendors: [
-      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 42, stock: 200 },
-      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 48, stock: 300 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 42, stock: 200 },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 48, stock: 300 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 44, stock: 250 }
     ]
   },
   {
@@ -73,8 +89,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍓',
     weightPerUnit: 0.25,
     vendors: [
-      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 460, stock: 40, isHot: true },
-      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 500, stock: 20 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 460, stock: 40, isHot: true },
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 500, stock: 20 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 475, stock: 35 }
     ]
   },
   {
@@ -88,8 +105,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥑',
     weightPerUnit: 0.3,
     vendors: [
-      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 215, stock: 40, isHot: true },
-      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 230, stock: 60 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 215, stock: 40, isHot: true },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 230, stock: 60 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 222, stock: 50 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 235, stock: 30 }
     ]
   },
   {
@@ -100,11 +119,12 @@ export const MOCK_CROPS: Crop[] = [
     change24h: -1.5,
     history: generateHistory(130),
     demand: 'Medium',
-    icon: '🍈',
+    icon: '🍊',
     weightPerUnit: 1.2,
     vendors: [
-      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 125, stock: 100 },
-      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 135, stock: 150 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 125, stock: 100 },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 135, stock: 150 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 128, stock: 80 }
     ]
   },
   {
@@ -118,8 +138,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥭',
     weightPerUnit: 0.25,
     vendors: [
-      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 145, stock: 100, isHot: true },
-      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 155, stock: 200 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 145, stock: 100, isHot: true },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 155, stock: 200 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 148, stock: 120 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 158, stock: 90 }
     ]
   },
   {
@@ -133,8 +155,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍌',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 75, stock: 500 },
-      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 85, stock: 400 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 75, stock: 500 },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 85, stock: 400 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 78, stock: 350 }
     ]
   },
   {
@@ -145,11 +168,12 @@ export const MOCK_CROPS: Crop[] = [
     change24h: -3.1,
     history: generateHistory(100),
     demand: 'High',
-    icon: '🍋',
+    icon: '🟢',
     weightPerUnit: 0.03,
     vendors: [
-      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 95, stock: 600 },
-      { id: 'v_fruit_1', name: 'The Fruit Basket', rating: 4.8, reviewCount: 120, specialty: 'Premium Fruits', price: 108, stock: 350 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 95, stock: 600 },
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 108, stock: 350 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 100, stock: 400 }
     ]
   },
   {
@@ -160,11 +184,13 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 1.5,
     history: generateHistory(60),
     demand: 'Medium',
-    icon: '🍑',
+    icon: '🟠',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 55, stock: 250 },
-      { id: 'v_fruit_2', name: 'Sweet Harvest', rating: 4.5, reviewCount: 85, specialty: 'Direct Orchard', price: 65, stock: 180 }
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 55, stock: 250 },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 65, stock: 180 },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 58, stock: 200 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 62, stock: 150 }
     ]
   },
   {
@@ -178,8 +204,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥥',
     weightPerUnit: 1.5,
     vendors: [
-      { id: 'v_fruit_3', name: 'Tropical Oasis', rating: 4.9, reviewCount: 42, specialty: 'Exotic Delights', price: 30, stock: 400, isHot: true },
-      { id: 'v_fruit_4', name: 'Sun-Kissed Orchard', rating: 4.6, reviewCount: 75, specialty: 'Seasonal Picks', price: 38, stock: 300 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 30, stock: 400, isHot: true },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 38, stock: 300 },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 34, stock: 220 }
     ]
   },
 
@@ -195,8 +222,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍅',
     weightPerUnit: 0.08,
     vendors: [
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 60, stock: 500 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 70, stock: 400 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 60, stock: 500 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 400 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 63, stock: 350 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 68, stock: 280 }
     ]
   },
   {
@@ -210,8 +239,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥬',
     weightPerUnit: 1.5,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 80, stock: 600, isHot: true },
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 90, stock: 450 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 600, isHot: true },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 90, stock: 450 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 84, stock: 380 }
     ]
   },
   {
@@ -225,8 +255,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫛',
     weightPerUnit: 0.02,
     vendors: [
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 50, stock: 800 },
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 58, stock: 1200 }
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 50, stock: 800 },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 58, stock: 1200 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 53, stock: 650 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 56, stock: 700 }
     ]
   },
   {
@@ -240,8 +272,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍆',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 85, stock: 1200 },
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 95, stock: 1000 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 85, stock: 1200 },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 95, stock: 1000 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 88, stock: 900 }
     ]
   },
   {
@@ -252,11 +285,13 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 0.4,
     history: generateHistory(30),
     demand: 'High',
-    icon: '🥬',
+    icon: '🌱',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 25, stock: 1500 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 35, stock: 1200 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 25, stock: 1500 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 35, stock: 1200 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 28, stock: 1100 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 32, stock: 900 }
     ]
   },
   {
@@ -267,11 +302,12 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 6.7,
     history: generateHistory(120),
     demand: 'Medium',
-    icon: '🥒',
+    icon: '🫑',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 115, stock: 400 },
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 125, stock: 350 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 115, stock: 400 },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 125, stock: 350 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 118, stock: 300 }
     ]
   },
   {
@@ -285,8 +321,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫘',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 70, stock: 900 },
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 80, stock: 700 }
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 900 },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 80, stock: 700 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 73, stock: 600 }
     ]
   },
   {
@@ -297,11 +334,13 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 2.3,
     history: generateHistory(45),
     demand: 'High',
-    icon: '🥬',
+    icon: '🥗',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 40, stock: 1000 },
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 50, stock: 800 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 40, stock: 1000 },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 50, stock: 800 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 43, stock: 750 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 48, stock: 600 }
     ]
   },
 
@@ -317,8 +356,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🧄',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 175, stock: 500, isHot: true },
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 190, stock: 300 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 175, stock: 500, isHot: true },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 190, stock: 300 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 182, stock: 400 }
     ]
   },
   {
@@ -332,8 +372,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🧅',
     weightPerUnit: 0.1,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 150, stock: 2000 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 170, stock: 1500 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 150, stock: 2000 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 170, stock: 1500 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 158, stock: 1200 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 165, stock: 900 }
     ]
   },
   {
@@ -347,8 +389,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫚',
     weightPerUnit: 0.1,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 105, stock: 800 },
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 120, stock: 400 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 105, stock: 800 },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 120, stock: 400 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 550 }
     ]
   },
   {
@@ -362,8 +405,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🌶️',
     weightPerUnit: 0.005,
     vendors: [
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 340, stock: 50, isHot: true },
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 370, stock: 30 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 340, stock: 50, isHot: true },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 370, stock: 30 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 345, stock: 40 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 360, stock: 25 }
     ]
   },
   {
@@ -377,8 +422,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🌿',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 22, stock: 2000 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 28, stock: 1500 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 22, stock: 2000 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 28, stock: 1500 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 24, stock: 1800 }
     ]
   },
 
@@ -394,8 +440,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥔',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 90, stock: 2000, isHot: true },
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 100, stock: 1500 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 90, stock: 2000, isHot: true },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 100, stock: 1500 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 93, stock: 1200 }
     ]
   },
   {
@@ -409,8 +456,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥕',
     weightPerUnit: 0.12,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 105, stock: 1200 },
-      { id: 'v_veg_1', name: 'Veggies Plus', rating: 4.7, reviewCount: 156, specialty: 'Highland Greens', price: 115, stock: 800 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 105, stock: 1200 },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 115, stock: 800 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 700 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 112, stock: 600 }
     ]
   },
   {
@@ -424,8 +473,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍠',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 50, stock: 3000 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 60, stock: 1000 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 50, stock: 3000 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 60, stock: 1000 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 53, stock: 2000 }
     ]
   },
   {
@@ -436,11 +486,12 @@ export const MOCK_CROPS: Crop[] = [
     change24h: -1.2,
     history: generateHistory(40),
     demand: 'Low',
-    icon: '🥔',
+    icon: '🪵',
     weightPerUnit: 0.8,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 38, stock: 5000 },
-      { id: 'v_veg_2', name: 'Farm Fresh Greens', rating: 4.4, reviewCount: 92, specialty: 'Hydroponics Specialist', price: 42, stock: 2000 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 38, stock: 5000 },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 42, stock: 2000 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 39, stock: 3000 }
     ]
   },
   {
@@ -451,11 +502,12 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 3.4,
     history: generateHistory(75),
     demand: 'Medium',
-    icon: '🍠',
+    icon: '🟤',
     weightPerUnit: 0.4,
     vendors: [
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 70, stock: 1500 },
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 80, stock: 800 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 70, stock: 1500 },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 800 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 73, stock: 600 }
     ]
   },
   {
@@ -466,11 +518,13 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 7.3,
     history: generateHistory(140),
     demand: 'High',
-    icon: '🍠',
+    icon: '🟣',
     weightPerUnit: 0.5,
     vendors: [
-      { id: 'v_veg_4', name: 'Highland Harvest', rating: 4.8, reviewCount: 110, specialty: 'Mountain Fresh', price: 135, stock: 600, isHot: true },
-      { id: 'v_veg_3', name: 'Root & Stem', rating: 4.6, reviewCount: 310, specialty: 'Bulk Root Crops', price: 145, stock: 450 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 135, stock: 600, isHot: true },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 145, stock: 450 },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 138, stock: 350 },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 148, stock: 280 }
     ]
   }
 ];
