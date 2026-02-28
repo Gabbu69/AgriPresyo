@@ -210,3 +210,52 @@ body {
         opacity: 0.5;
     }
 }
+
+/* Skeleton Shimmer for Loading States */
+@keyframes skeletonShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg,
+            rgba(161, 161, 170, 0.08) 25%,
+            rgba(161, 161, 170, 0.18) 50%,
+            rgba(161, 161, 170, 0.08) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+.dark .skeleton {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 25%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 75%);
+    background-size: 200% 100%;
+}
+
+/* Header scroll shadow */
+.header-scrolled {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .header-scrolled {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Global Button Click Animations */
+button:active:not(:disabled) {
+    transform: scale(0.95);
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tooltip styling for verified badge */
+[title] {
+    position: relative;
+}

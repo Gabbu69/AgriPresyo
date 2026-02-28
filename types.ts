@@ -59,6 +59,8 @@ export interface UserRecord {
   password: string;
   role: UserRole;
   status: 'active' | 'pending' | 'banned';
+  isVerified?: boolean;
+  verificationRequestedAt?: string;
 }
 
 export interface AuditLogEntry {

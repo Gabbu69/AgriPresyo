@@ -921,12 +921,32 @@ const App = () => {
   const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem('AP_notifications') !== 'false');
   const [priceAlertThreshold, setPriceAlertThreshold] = useState(() => Number(localStorage.getItem('AP_priceAlertThreshold') || '10'));
-  const [profilePicture, setProfilePicture] = useState<string | null>(() => localStorage.getItem('AP_profilePicture'));
+  // Profile picture scoped per user (role + email) to prevent cross-account sharing
+  const profilePicKey = currentUserEmail && role ? `AP_profilePicture_${role}_${currentUserEmail}` : null;
+  const [profilePicture, setProfilePicture] = useState<string | null>(() => {
+    if (!profilePicKey) return null;
+    return localStorage.getItem(profilePicKey);
+  });
 
+  // Load correct profile picture when user/role changes (e.g. on login)
   useEffect(() => {
-    if (profilePicture) localStorage.setItem('AP_profilePicture', profilePicture);
-    else localStorage.removeItem('AP_profilePicture');
-  }, [profilePicture]);
+    if (profilePicKey) {
+      setProfilePicture(localStorage.getItem(profilePicKey));
+    } else {
+      setProfilePicture(null);
+    }
+  }, [profilePicKey]);
+
+  // Persist profile picture to the scoped key
+  useEffect(() => {
+    if (!profilePicKey) return;
+    if (profilePicture) localStorage.setItem(profilePicKey, profilePicture);
+    else localStorage.removeItem(profilePicKey);
+  }, [profilePicture, profilePicKey]);
+
+  // Vendor verification modal state
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationChecklist, setVerificationChecklist] = useState<boolean[]>([false, false, false, false, false, false]);
 
   useEffect(() => { localStorage.setItem('AP_notifications', String(notificationsEnabled)); }, [notificationsEnabled]);
   useEffect(() => { localStorage.setItem('AP_priceAlertThreshold', String(priceAlertThreshold)); }, [priceAlertThreshold]);
@@ -937,7 +957,11 @@ const App = () => {
     if (!profileNameDraft.trim()) return;
     setIsSavingProfileName(true);
     await new Promise(resolve => setTimeout(resolve, 600)); // Simulate save delay for UI feedback
-    setUsers(prev => prev.map(u => u.email === currentUserEmail ? { ...u, name: profileNameDraft.trim() } : u));
+    setUsers(prev => {
+      const next = prev.map(u => u.email === currentUserEmail ? { ...u, name: profileNameDraft.trim() } : u);
+      localStorage.setItem('AP_users', JSON.stringify(next));
+      return next;
+    });
     setEditingProfileName(false);
     setIsSavingProfileName(false);
   };
@@ -1067,6 +1091,204 @@ const App = () => {
 
   // Local Market State
   const [crops, setCrops] = useState<Crop[]>(MOCK_CROPS);
+
+  // Header scroll shadow
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Simulated initial loading state for skeleton effect
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Skeleton card component
+  const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
+    <div className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[36px] p-4 sm:p-6 lg:p-8 shadow-lg ${className}`}>
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl skeleton shrink-0" />
+        <div className="flex-1 space-y-3">
+          <div className="h-5 skeleton w-3/4" />
+          <div className="h-3 skeleton w-1/2" />
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div className="h-3 skeleton w-full" />
+        <div className="h-3 skeleton w-5/6" />
+        <div className="h-3 skeleton w-2/3" />
+      </div>
+      <div className="flex gap-3 mt-6">
+        <div className="h-10 skeleton w-20 rounded-xl" />
+        <div className="h-10 skeleton w-20 rounded-xl" />
+      </div>
+    </div>
+  );
+
+  // Empty state component
+  const EmptyState = ({ icon: IconComp, title, subtitle, action }: { icon: any; title: string; subtitle: string; action?: { label: string; onClick: () => void } }) => (
+    <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center">
+      <div className="w-20 h-20 rounded-3xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6">
+        <IconComp size={36} className="text-zinc-300 dark:text-zinc-600" />
+      </div>
+      <h3 className="text-xl font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">{title}</h3>
+      <p className="text-sm text-zinc-400 dark:text-zinc-600 max-w-sm">{subtitle}</p>
+      {action && (
+        <button onClick={action.onClick} className="mt-6 bg-green-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20">
+          {action.label}
+        </button>
+      )}
+    </div>
+  );
+
+  // Full-screen Alert Graphic Component
+  const [activeGraphicAlert, setActiveGraphicAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string } | null>(null);
+  const [activeConfirmAlert, setActiveConfirmAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string, onConfirm: () => void } | null>(null);
+
+  const ActionConfirmModal = ({ alert, onCancel }: { alert: { type: string, title: string, subtitle: string, onConfirm: () => void } | null, onCancel: () => void }) => {
+    if (!alert) return null;
+
+    let Icon = ShieldCheck;
+    let colorClass = '';
+    let bgColorClass = '';
+    let btnClass = '';
+
+    switch (alert.type) {
+      case 'BAN':
+        Icon = Ban;
+        colorClass = 'text-red-500';
+        bgColorClass = 'bg-red-500/20';
+        btnClass = 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]';
+        break;
+      case 'WARN':
+        Icon = AlertTriangle;
+        colorClass = 'text-yellow-500';
+        bgColorClass = 'bg-yellow-500/20';
+        btnClass = 'bg-yellow-500 hover:bg-yellow-600 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)]';
+        break;
+      case 'UNBAN':
+        Icon = CheckCircle;
+        colorClass = 'text-green-500';
+        bgColorClass = 'bg-green-500/20';
+        btnClass = 'bg-green-500 hover:bg-green-600 text-black shadow-[0_0_20px_rgba(34,197,94,0.3)]';
+        break;
+      case 'VERIFY':
+        Icon = ShieldCheck;
+        colorClass = 'text-blue-500';
+        bgColorClass = 'bg-blue-500/20';
+        btnClass = 'bg-blue-500 hover:bg-blue-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]';
+        break;
+      case 'REJECT':
+        Icon = XCircle;
+        colorClass = 'text-red-500';
+        bgColorClass = 'bg-red-500/20';
+        btnClass = 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]';
+        break;
+    }
+
+    return (
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300 px-4">
+        <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-300 max-w-sm w-full">
+          {/* Animated Background Rings */}
+          <div className={`absolute top-0 rounded-full ${bgColorClass} blur-3xl animate-pulse delay-75 w-64 h-64 -translate-y-1/2`} />
+
+          <div className="relative w-full bg-zinc-950 border border-zinc-800 rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center pt-12 pb-8 px-8 overflow-hidden">
+            <div className={`absolute top-0 left-0 right-0 h-2 ${bgColorClass.replace('/20', '')}`} />
+
+            <div className={`relative z-10 w-24 h-24 bg-zinc-900 border-4 border-zinc-800 rounded-full shadow-2xl flex items-center justify-center mb-6`}>
+              <Icon size={40} className={`${colorClass} animate-bounce`} />
+            </div>
+
+            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2 text-center">{alert.title}</h2>
+            <p className="text-zinc-400 text-xs font-medium mb-8 text-center">{alert.subtitle}</p>
+
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={onCancel}
+                className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                autoFocus
+                onClick={() => {
+                  alert.onConfirm();
+                  onCancel();
+                }}
+                className={`flex-1 ${btnClass} py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95`}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ActionGraphicModal = ({ alert }: { alert: { type: string, title: string, subtitle: string } | null }) => {
+    if (!alert) return null;
+
+    let Icon = ShieldCheck;
+    let colorClass = '';
+    let bgColorClass = '';
+
+    switch (alert.type) {
+      case 'BAN':
+        Icon = Ban;
+        colorClass = 'text-red-500';
+        bgColorClass = 'bg-red-500/20';
+        break;
+      case 'WARN':
+        Icon = AlertTriangle;
+        colorClass = 'text-yellow-500';
+        bgColorClass = 'bg-yellow-500/20';
+        break;
+      case 'UNBAN':
+        Icon = CheckCircle;
+        colorClass = 'text-green-500';
+        bgColorClass = 'bg-green-500/20';
+        break;
+      case 'VERIFY':
+        Icon = ShieldCheck;
+        colorClass = 'text-blue-500';
+        bgColorClass = 'bg-blue-500/20';
+        break;
+      case 'REJECT':
+        Icon = XCircle;
+        colorClass = 'text-red-500';
+        bgColorClass = 'bg-red-500/20';
+        break;
+    }
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-500">
+          {/* Animated Background Rings */}
+          <div className={`absolute inset-0 rounded-full ${bgColorClass} blur-3xl animate-pulse delay-75 w-64 h-64`} />
+          <div className={`absolute inset-0 rounded-full ${bgColorClass} blur-2xl animate-ping opacity-50 w-64 h-64`} />
+
+          <div className={`relative z-10 w-48 h-48 bg-zinc-900 border-4 border-zinc-800 rounded-[3rem] shadow-2xl flex items-center justify-center transform transition-transform hover:scale-110`}>
+            <Icon size={80} className={`${colorClass} animate-bounce`} />
+          </div>
+
+          <div className="mt-8 text-center relative z-10 bg-zinc-900/80 px-8 py-6 rounded-3xl border border-zinc-800 backdrop-blur-md shadow-2xl">
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">{alert.title}</h2>
+            <p className={`text-lg font-bold uppercase tracking-widest ${colorClass}`}>{alert.subtitle}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const triggerGraphicAlert = (type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string) => {
+    setActiveGraphicAlert({ type, title, subtitle });
+    setTimeout(() => setActiveGraphicAlert(null), 2500); // Auto-dismiss after 2.5s
+  };
 
   // System Intelligence
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
@@ -1311,6 +1533,7 @@ const App = () => {
     setRole(userRole);
     setIsAuthenticated(true);
     if (email) setCurrentUserEmail(email);
+    // Profile picture will auto-load via the profilePicKey useEffect
     if (userRole === UserRole.VENDOR) {
       setActiveTab('shop');
     } else if (userRole === UserRole.ADMIN) {
@@ -1594,62 +1817,75 @@ const App = () => {
             Terminal Intelligence
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCrops.map(crop => {
-              const season = getSeasonalStatus(crop);
-              const isFav = favorites.includes(crop.id);
-              return (
-                <div
-                  key={crop.id}
-                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
-                  onClick={() => setSelectedCrop(crop)}
-                >
-                  {/* Seasonal badge */}
-                  <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${season.inSeason ? 'bg-green-400/10 text-green-600' : 'bg-red-400/10 text-red-600'}`}>
-                      {season.inSeason ? '🟢' : '🔴'} {season.label}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleFavorite(crop.id); }}
-                      className={`p-1.5 rounded-lg transition-all ${isFav ? 'text-red-500 bg-red-500/10' : 'text-zinc-400 hover:text-red-500 hover:bg-red-500/10'}`}
-                    >
-                      <Heart size={14} fill={isFav ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-start relative z-10 mt-2">
-                    <div className="flex items-center gap-4">
-                      <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
-                      <div>
-                        <h3 className="font-black text-zinc-900 dark:text-white text-lg leading-tight">{crop.name}</h3>
-                        <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{crop.category}</p>
-                      </div>
+            {isInitialLoading ? (
+              [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
+            ) : filteredCrops.length === 0 ? (
+              <div className="col-span-full">
+                <EmptyState
+                  icon={Search}
+                  title="No Markets Found"
+                  subtitle="We couldn't find any commodities matching your current filters."
+                  action={{ label: 'Clear Filters', onClick: () => { setSearch(''); setActiveCategory('All'); } }}
+                />
+              </div>
+            ) : (
+              filteredCrops.map(crop => {
+                const season = getSeasonalStatus(crop);
+                const isFav = favorites.includes(crop.id);
+                return (
+                  <div
+                    key={crop.id}
+                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
+                    onClick={() => setSelectedCrop(crop)}
+                  >
+                    {/* Seasonal badge */}
+                    <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+                      <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${season.inSeason ? 'bg-green-400/10 text-green-600' : 'bg-red-400/10 text-red-600'}`}>
+                        {season.inSeason ? '🟢' : '🔴'} {season.label}
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(crop.id); }}
+                        className={`p-1.5 rounded-lg transition-all ${isFav ? 'text-red-500 bg-red-500/10' : 'text-zinc-400 hover:text-red-500 hover:bg-red-500/10'}`}
+                      >
+                        <Heart size={14} fill={isFav ? 'currentColor' : 'none'} />
+                      </button>
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono text-xl font-bold text-zinc-900 dark:text-white">
-                        {formatPrice(crop.currentPrice)}
-                      </p>
-                      <div className={`flex items-center justify-end text-xs font-bold ${crop.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        {Math.abs(crop.change24h)}%
+                    <div className="flex justify-between items-start relative z-10 mt-2">
+                      <div className="flex items-center gap-4">
+                        <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="lg" /></div>
+                        <div>
+                          <h3 className="font-black text-zinc-900 dark:text-white text-lg leading-tight">{crop.name}</h3>
+                          <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{crop.category}</p>
+                        </div>
                       </div>
-                      {crop.lastUpdated && (
-                        <p className="text-[9px] text-zinc-400 dark:text-zinc-600 font-mono mt-1 flex items-center justify-end gap-1">
-                          <Clock size={9} /> {timeAgo(crop.lastUpdated)}
+                      <div className="text-right">
+                        <p className="font-mono text-xl font-bold text-zinc-900 dark:text-white">
+                          {formatPrice(crop.currentPrice)}
                         </p>
-                      )}
+                        <div className={`flex items-center justify-end text-xs font-bold ${crop.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          {Math.abs(crop.change24h)}%
+                        </div>
+                        {crop.lastUpdated && (
+                          <p className="text-[9px] text-zinc-400 dark:text-zinc-600 font-mono mt-1 flex items-center justify-end gap-1">
+                            <Clock size={9} /> {timeAgo(crop.lastUpdated)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-8 flex items-end justify-between relative z-10">
+                      <Sparkline data={crop.history} color={crop.change24h >= 0 ? '#4ade80' : '#ef4444'} />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToBudget(crop.id); }}
+                        className="bg-zinc-100 dark:bg-zinc-800 hover:bg-green-500 dark:hover:bg-green-500 hover:text-black p-4 rounded-2xl text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-black transition-all shadow-xl active:scale-90 border border-zinc-200 dark:border-zinc-700"
+                      >
+                        <Calculator size={22} />
+                      </button>
                     </div>
                   </div>
-                  <div className="mt-8 flex items-end justify-between relative z-10">
-                    <Sparkline data={crop.history} color={crop.change24h >= 0 ? '#4ade80' : '#ef4444'} />
-                    <button
-                      onClick={(e) => { e.stopPropagation(); addToBudget(crop.id); }}
-                      className="bg-zinc-100 dark:bg-zinc-800 hover:bg-green-500 dark:hover:bg-green-500 hover:text-black p-4 rounded-2xl text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-black transition-all shadow-xl active:scale-90 border border-zinc-200 dark:border-zinc-700"
-                    >
-                      <Calculator size={22} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -1805,8 +2041,8 @@ const App = () => {
             <div>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h3 className="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white group-hover:text-green-600 transition-colors">{vendor.name}</h3>
-                {vendor.rating >= 4.7 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/30 shadow-[0_0_8px_rgba(34,197,94,0.25)] shrink-0">
+                {users.find(u => u.email === vendor.id && u.isVerified) && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/30 shadow-[0_0_8px_rgba(34,197,94,0.25)] shrink-0 relative" title="This vendor has completed identity and business verification.">
                     <ShieldCheck size={14} className="text-green-400 drop-shadow-[0_0_4px_rgba(34,197,94,0.6)]" />
                     <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Verified</span>
                   </span>
@@ -1879,7 +2115,15 @@ const App = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-            {fruitVendors.map(v => <ShopCard key={v.id} vendor={v} icon={ShoppingBag} />)}
+            {isInitialLoading ? (
+              [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+            ) : fruitVendors.length === 0 ? (
+              <div className="col-span-full">
+                <EmptyState icon={ShoppingBag} title="No Fruit Nodes" subtitle="There are currently no active fruit vendors." />
+              </div>
+            ) : (
+              fruitVendors.map(v => <ShopCard key={v.id} vendor={v} icon={ShoppingBag} />)
+            )}
           </div>
         </section>
       )}
@@ -1896,7 +2140,15 @@ const App = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-            {vegetableVendors.map(v => <ShopCard key={v.id} vendor={v} icon={Store} />)}
+            {isInitialLoading ? (
+              [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+            ) : vegetableVendors.length === 0 ? (
+              <div className="col-span-full">
+                <EmptyState icon={Leaf} title="No Vegetable Nodes" subtitle="There are currently no active vegetable vendors." />
+              </div>
+            ) : (
+              vegetableVendors.map(v => <ShopCard key={v.id} vendor={v} icon={Store} />)
+            )}
           </div>
         </section>
       )}
@@ -1915,21 +2167,33 @@ const App = () => {
         </div>
       </div>
       <div className="space-y-4 flex-1">
-        {items.map((crop, idx) => (
-          <div
-            key={crop.id}
-            className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-green-400/30 transition-colors group cursor-pointer"
-            onClick={() => onCropClick?.(crop)}
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-xl font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
-              <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
-              <div>
-                <h4 className="font-black text-zinc-900 dark:text-white text-sm">{crop.name}</h4>
+        {isInitialLoading ? (
+          [...Array(5)].map((_, idx) => (
+            <div key={idx} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+              <div className="flex items-center gap-4 w-full">
+                <span className="text-xl font-black text-zinc-700 font-mono w-6 opacity-30">#{idx + 1}</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl skeleton shrink-0" />
+                <div className="h-4 skeleton w-1/2" />
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          items.map((crop, idx) => (
+            <div
+              key={crop.id}
+              className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-green-400/30 transition-colors group cursor-pointer"
+              onClick={() => onCropClick?.(crop)}
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-xl font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
+                <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
+                <div>
+                  <h4 className="font-black text-zinc-900 dark:text-white text-sm">{crop.name}</h4>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -2095,6 +2359,111 @@ const App = () => {
         </div>
       </div>
 
+      {/* Vendor Verification Status Card */}
+      <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`p-4 rounded-3xl ${currentUser?.isVerified ? 'bg-green-400/10' : currentUser?.verificationRequestedAt ? 'bg-yellow-400/10' : 'bg-blue-400/10'}`}>
+              <ShieldCheck className={currentUser?.isVerified ? 'text-green-400' : currentUser?.verificationRequestedAt ? 'text-yellow-400' : 'text-blue-400'} size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+                {currentUser?.isVerified ? 'Verified Vendor' : 'Vendor Verification'}
+              </h3>
+              <p className="text-zinc-600 dark:text-zinc-500 text-xs font-bold">
+                {currentUser?.isVerified
+                  ? 'Your identity and business have been verified ✔'
+                  : currentUser?.verificationRequestedAt
+                    ? 'Your application is under review by the admin team'
+                    : 'Get a verified badge to build trust with customers'}
+              </p>
+            </div>
+          </div>
+          <div>
+            {currentUser?.isVerified ? (
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-500 font-black text-xs uppercase tracking-widest">
+                <CheckCircle size={16} /> Verified
+              </span>
+            ) : currentUser?.verificationRequestedAt ? (
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 font-black text-xs uppercase tracking-widest">
+                <Clock size={16} /> Pending Review
+              </span>
+            ) : (
+              <button
+                onClick={() => { setShowVerificationModal(true); setVerificationChecklist([false, false, false, false, false, false]); }}
+                className="bg-green-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-green-500/20"
+              >
+                <ShieldCheck size={16} /> Apply for Verification
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Verification Checklist Modal */}
+      {showVerificationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <ShieldCheck className="text-green-500" size={32} />
+              </div>
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Apply for Verification</h2>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Please confirm you meet all requirements below</p>
+            </div>
+            <div className="space-y-3 mb-6">
+              {[
+                'Government-issued ID submitted',
+                'Business registration document submitted',
+                'Verified email address',
+                'Verified phone number',
+                'Complete store profile (logo, description, address)',
+                'Minimum of 5 listed products'
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setVerificationChecklist(prev => prev.map((v, i) => i === idx ? !v : v))}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${verificationChecklist[idx]
+                    ? 'bg-green-500/5 border-green-500/30 dark:bg-green-500/10'
+                    : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'}`}
+                >
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${verificationChecklist[idx]
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+                    : 'bg-zinc-200 dark:bg-zinc-800 text-transparent'}`}>
+                    <CheckCircle size={14} />
+                  </div>
+                  <span className={`text-sm font-bold ${verificationChecklist[idx] ? 'text-green-600 dark:text-green-400' : 'text-zinc-600 dark:text-zinc-400'}`}>{item}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowVerificationModal(false)}
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-200 dark:border-zinc-800 transition-all text-sm"
+              >Cancel</button>
+              <button
+                onClick={() => {
+                  if (verificationChecklist.every(Boolean)) {
+                    setUsers(prev => {
+                      const next = prev.map(u => u.email === currentUserEmail ? { ...u, verificationRequestedAt: new Date().toISOString() } : u);
+                      localStorage.setItem('AP_users', JSON.stringify(next));
+                      return next;
+                    });
+                    setShowVerificationModal(false);
+                  }
+                }}
+                disabled={!verificationChecklist.every(Boolean)}
+                className={`flex-1 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm flex items-center justify-center gap-2 ${verificationChecklist.every(Boolean)
+                  ? 'bg-green-500 text-black hover:scale-105 shadow-lg shadow-green-500/20'
+                  : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'}`}
+              >
+                <ShieldCheck size={16} /> Submit Application
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Revenue & Performance Stats */}
       {vendorInventory.length > 0 && (() => {
         const portfolioValue = vendorInventory.reduce((acc, c) => {
@@ -2171,30 +2540,41 @@ const App = () => {
                 </tr>
               </thead>
               <tbody>
-                {vendorInventory.map(crop => {
-                  const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
-                  const marketAvg = crop.vendors.length > 0
-                    ? crop.vendors.reduce((sum, v) => sum + v.price, 0) / crop.vendors.length
-                    : crop.currentPrice;
-                  const diff = ((myEntry.price - marketAvg) / marketAvg) * 100;
-                  return (
-                    <tr key={crop.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                      <td className="py-4 pr-4">
-                        <div className="flex items-center gap-3">
-                          <CropIcon crop={crop} size="sm" />
-                          <span className="font-bold text-white text-sm">{myEntry.listingName || crop.name}</span>
-                        </div>
-                      </td>
-                      <td className="text-right font-mono font-bold text-green-400 py-4 px-4">{formatPrice(myEntry.price)}</td>
-                      <td className="text-right font-mono font-bold text-zinc-400 py-4 px-4">{formatPrice(Math.round(marketAvg * 100) / 100)}</td>
-                      <td className="text-right py-4 pl-4">
-                        <span className={`font-mono font-black text-sm px-3 py-1.5 rounded-xl ${diff > 0 ? 'text-red-400 bg-red-400/10' : diff < 0 ? 'text-green-400 bg-green-400/10' : 'text-zinc-400 bg-zinc-800'}`}>
-                          {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
-                        </span>
-                      </td>
+                {isInitialLoading ? (
+                  [...Array(3)].map((_, i) => (
+                    <tr key={`skel-${i}`} className="border-b border-zinc-800/50">
+                      <td className="py-4 pr-4"><div className="h-8 skeleton w-32" /></td>
+                      <td className="py-4 px-4 text-right"><div className="h-6 skeleton w-16 ml-auto" /></td>
+                      <td className="py-4 px-4 text-right"><div className="h-6 skeleton w-16 ml-auto" /></td>
+                      <td className="py-4 pl-4 text-right"><div className="h-8 skeleton w-20 ml-auto rounded-xl" /></td>
                     </tr>
-                  );
-                })}
+                  ))
+                ) : (
+                  vendorInventory.map(crop => {
+                    const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
+                    const marketAvg = crop.vendors.length > 0
+                      ? crop.vendors.reduce((sum, v) => sum + v.price, 0) / crop.vendors.length
+                      : crop.currentPrice;
+                    const diff = ((myEntry.price - marketAvg) / marketAvg) * 100;
+                    return (
+                      <tr key={crop.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-4 pr-4">
+                          <div className="flex items-center gap-3">
+                            <CropIcon crop={crop} size="sm" />
+                            <span className="font-bold text-zinc-900 dark:text-white text-sm">{myEntry.listingName || crop.name}</span>
+                          </div>
+                        </td>
+                        <td className="text-right font-mono font-bold text-green-400 py-4 px-4">{formatPrice(myEntry.price)}</td>
+                        <td className="text-right font-mono font-bold text-zinc-400 py-4 px-4">{formatPrice(Math.round(marketAvg * 100) / 100)}</td>
+                        <td className="text-right py-4 pl-4">
+                          <span className={`font-mono font-black text-sm px-3 py-1.5 rounded-xl ${diff > 0 ? 'text-red-400 bg-red-400/10' : diff < 0 ? 'text-green-400 bg-green-400/10' : 'text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800'}`}>
+                            {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -2638,6 +3018,7 @@ const App = () => {
 
   const renderAdminView = () => {
     const pendingUsers = users.filter(u => u.status === 'pending');
+    const pendingVerifications = users.filter(u => u.role === UserRole.VENDOR && u.verificationRequestedAt && !u.isVerified);
     return (
       <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
         <div>
@@ -2671,6 +3052,12 @@ const App = () => {
             <p className="text-3xl font-black font-mono text-red-500 tracking-tight">{complaints.filter(c => c.status === 'open').length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Need Attention</p>
           </div>
+          <div onClick={() => document.getElementById('admin-verification-requests')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-emerald-400/40 transition-all">
+            <ShieldCheck className="text-emerald-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Verification</p>
+            <p className="text-3xl font-black font-mono text-emerald-500 tracking-tight">{pendingVerifications.length}</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Pending Verify</p>
+          </div>
         </div>
 
         {/* Approval Queue */}
@@ -2702,6 +3089,42 @@ const App = () => {
             </div>
           </div>
         )}
+
+        {/* Vendor Verification Requests */}
+        <div id="admin-verification-requests" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20"><ShieldCheck className="text-emerald-400" size={24} /></div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Verification Requests</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingVerifications.length} vendor{pendingVerifications.length !== 1 ? 's' : ''} awaiting verification &bull; {users.filter(u => u.isVerified).length} verified</p>
+            </div>
+          </div>
+          {pendingVerifications.length === 0 ? (
+            <div className="text-center py-12 text-zinc-400">
+              <ShieldCheck size={40} className="mx-auto mb-3 opacity-30" />
+              <p className="font-black uppercase tracking-widest text-sm">No pending requests</p>
+              <p className="text-xs text-zinc-500 mt-1">Vendor verification requests will appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingVerifications.map((user, idx) => (
+                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center font-bold text-emerald-500">{(user.name || user.email)[0].toUpperCase()}</div>
+                    <div>
+                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
+                      <p className="text-xs text-zinc-500">{user.email} &bull; Applied {user.verificationRequestedAt ? new Date(user.verificationRequestedAt).toLocaleDateString() : ''}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified status to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official status granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Verify</button>
+                    <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied verification for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Price Override */}
         <div id="admin-price-override" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
@@ -3005,9 +3428,9 @@ const App = () => {
                       {user.role !== UserRole.ADMIN && (
                         <div className="flex gap-2 justify-end">
                           {user.status === 'banned' ? (
-                            <button onClick={() => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
+                            <button onClick={() => setActiveConfirmAlert({ type: 'UNBAN', title: 'Unban User?', subtitle: `Restore access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); triggerGraphicAlert('UNBAN', 'User Restored', `Access regranted for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
                           ) : user.status === 'active' ? (
-                            <button onClick={() => { if (!confirm(`Ban ${user.name || user.email}?`)) return; setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role})`); }} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
+                            <button onClick={() => setActiveConfirmAlert({ type: 'BAN', title: 'Ban User?', subtitle: `Revoke platform access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role})`); triggerGraphicAlert('BAN', 'User Suspended', `Access revoked for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
                           ) : null}
                         </div>
                       )}
@@ -3059,6 +3482,7 @@ const App = () => {
     setBudgetItems([]);
     setUserVendorRatings({});
     setActiveTab('market');
+    setProfilePicture(null); // Clear in-memory but keep in localStorage for next login
     setRole(UserRole.CONSUMER);
     setCurrentUserEmail('');
     setIsAdminUnlocked(false);
@@ -3068,9 +3492,11 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 animate-in fade-in duration-1000">
+      <ActionGraphicModal alert={activeGraphicAlert} />
+      <ActionConfirmModal alert={activeConfirmAlert} onCancel={() => setActiveConfirmAlert(null)} />
       <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
-      <header className="sticky top-10 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5">
+      <header className={`sticky top-10 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`}>
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-12">
             <div className="flex items-center gap-4 group cursor-pointer" onClick={() => setActiveTab('market')}>

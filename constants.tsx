@@ -518,7 +518,7 @@ export const MOCK_CROPS: Crop[] = [
     change24h: 7.3,
     history: generateHistory(140),
     demand: 'High',
-    icon: '🟣',
+    icon: '🍠',
     weightPerUnit: 0.5,
     vendors: [
       { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 135, stock: 600, isHot: true },
