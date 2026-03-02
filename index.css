@@ -249,10 +249,262 @@ body {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Global Button Click Animations */
+/* ============================================
+   MODAL ANIMATIONS (replaces missing tailwindcss-animate)
+   ============================================ */
+
+/* Fade In Overlay */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Zoom In Content */
+@keyframes modalZoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalZoomOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+}
+
+/* Slide up entrance */
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-overlay-enter {
+    animation: modalFadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-overlay-exit {
+    animation: modalFadeOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-content-enter {
+    animation: modalZoomIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-content-exit {
+    animation: modalZoomOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-slide-up {
+    animation: modalSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ============================================
+   PROFESSIONAL BUTTON ANIMATIONS
+   ============================================ */
+
+/* Base button transitions */
+button {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover lift + glow */
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* Press feedback */
 button:active:not(:disabled) {
-    transform: scale(0.95);
+    transform: translateY(0px) scale(0.97);
     transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ripple effect on click */
+@keyframes btnRipple {
+    0% {
+        transform: scale(0);
+        opacity: 0.4;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+button .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    animation: btnRipple 0.6s ease-out forwards;
+    transform: translate(-50%, -50%);
+}
+
+/* Primary Action Button (green) glow */
+button.btn-primary-glow:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.1);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Danger Button (red) glow */
+button.btn-danger-glow:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), 0 0 40px rgba(239, 68, 68, 0.1);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Subtle hover highlight for icon/secondary buttons */
+@keyframes btnShine {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+button:hover:not(:disabled)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    animation: btnShine 0.6s ease-out forwards;
+    pointer-events: none;
+}
+
+/* ============================================
+   SIGN OUT / PAGE EXIT ANIMATION
+   ============================================ */
+
+@keyframes pageExitFade {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.97);
+        filter: blur(4px);
+    }
+}
+
+.page-exit-animation {
+    animation: pageExitFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    pointer-events: none;
+}
+
+/* Sign out button specific hover */
+button.btn-signout:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25);
+    transform: translateY(-2px) scale(1.03);
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+button.btn-signout:active:not(:disabled) {
+    transform: scale(0.95);
+    box-shadow: none;
+}
+
+/* ============================================
+   GRAPHIC ALERT ANIMATIONS
+   ============================================ */
+
+@keyframes graphicAlertPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 50px rgba(34, 197, 94, 0.4);
+    }
+}
+
+@keyframes graphicAlertIconBounce {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+
+    30% {
+        transform: translateY(-12px) scale(1.1);
+    }
+
+    60% {
+        transform: translateY(-4px) scale(1.02);
+    }
+}
+
+.graphic-alert-container {
+    animation: graphicAlertPulse 1.5s ease-in-out infinite;
+}
+
+.graphic-alert-icon {
+    animation: graphicAlertIconBounce 1s ease-in-out infinite;
+}
+
+/* Click to dismiss hint */
+@keyframes dismissHintPulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.dismiss-hint {
+    animation: dismissHintPulse 1.5s ease-in-out infinite;
 }
 
 /* Tooltip styling for verified badge */

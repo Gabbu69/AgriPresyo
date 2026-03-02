@@ -57,7 +57,9 @@ import {
   Loader2,
   Edit3,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Upload,
+  XCircle
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -473,7 +475,7 @@ const LoginPage = ({
 }: {
   onLogin: (role: UserRole, email?: string) => void,
   attemptLogin: (email: string, password: string, role: UserRole) => Promise<string>,
-  onRegister: (name: string, email: string, password: string, role: UserRole) => Promise<string>,
+  onRegister: (name: string, email: string, password: string, role: UserRole, docs?: string[]) => Promise<string>,
   isAdminUnlocked: boolean,
   onUnlock: () => void
 }) => {
@@ -489,6 +491,32 @@ const LoginPage = ({
   const [otpInput, setOtpInput] = useState('');
   const [otpError, setOtpError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [regDocs, setRegDocs] = useState<string[]>([]);
+
+  const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const maxFiles = 5;
+    const maxSize = 5 * 1024 * 1024; // 5MB per file
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    const remaining = maxFiles - regDocs.length;
+    const filesToProcess = (Array.from(files) as File[]).slice(0, remaining);
+    filesToProcess.forEach(file => {
+      if (!allowedTypes.includes(file.type)) return;
+      if (file.size > maxSize) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        setRegDocs(prev => prev.length < maxFiles ? [...prev, dataUrl] : prev);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const removeDoc = (idx: number) => {
+    setRegDocs(prev => prev.filter((_, i) => i !== idx));
+  };
   const [showUnlockedModal, setShowUnlockedModal] = useState(false);
 
   const STATIC_OTP = '143143';
@@ -527,7 +555,7 @@ const LoginPage = ({
     } else if (result === 'pending') {
       setError('⏳ Your account is pending admin approval. Please wait.');
     } else {
-      setError('Invalid credentials — please create an account or try again.');
+      setError('Invalid credentials. Please create an account or try again.');
     }
     setIsLoading(false);
   };
@@ -536,9 +564,13 @@ const LoginPage = ({
     e.preventDefault();
     if (isLoading) return;
     setError('');
+    if (regPassword.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
     setIsLoading(true);
     await new Promise(r => setTimeout(r, 1200));
-    const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role);
+    const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role, role === UserRole.VENDOR ? regDocs : undefined);
     if (result === 'ok') {
       onLogin(role, regEmail.trim().toLowerCase());
     } else if (result === 'pending') {
@@ -612,6 +644,48 @@ const LoginPage = ({
                     onChange={(e) => setRegPassword(e.target.value)}
                   />
                 </div>
+
+                {/* Vendor Document Upload */}
+                {role === UserRole.VENDOR && (
+                  <div className="space-y-3">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload Documents (JPEG, PNG, PDF) — Required for vendor approval</p>
+                    <label className="flex items-center justify-center gap-3 w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
+                      <Upload className="w-5 h-5 text-zinc-600 group-hover:text-green-400 transition-colors" />
+                      <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files</span>
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        multiple
+                        onChange={handleDocUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {regDocs.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {regDocs.map((doc, i) => (
+                          <div key={i} className="relative group/doc">
+                            {doc.startsWith('data:application/pdf') ? (
+                              <div className="w-16 h-16 rounded-xl bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center">
+                                <FileText size={20} className="text-red-400" />
+                                <span className="text-[8px] text-zinc-500 mt-0.5">PDF</span>
+                              </div>
+                            ) : (
+                              <img src={doc} alt={`Doc ${i + 1}`} className="w-16 h-16 rounded-xl object-cover border border-zinc-700" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeDoc(i)}
+                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/doc:opacity-100 transition-opacity shadow-lg"
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-zinc-600">{regDocs.length}/5 files uploaded</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4">
@@ -821,6 +895,9 @@ const App = () => {
   const [role, setRole] = useState<UserRole>(() => (localStorage.getItem('AP_role') as UserRole) || UserRole.CONSUMER);
   const [currentUserEmail, setCurrentUserEmail] = useState(() => localStorage.getItem('AP_currentUserEmail') || '');
 
+  // Sign-out exit animation state
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   // Secret Admin Access State
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => localStorage.getItem('AP_admin_unlocked') === 'true');
 
@@ -831,7 +908,7 @@ const App = () => {
   const SEEDED_ADMIN: UserRecord = {
     name: 'Gab The Admin',
     email: 'gabtheadmin@yahoo.com',
-    password: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // SHA-256 of '123'
+    password: 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', // SHA-256 of '12345678'
     role: UserRole.ADMIN,
     status: 'active',
   };
@@ -839,7 +916,7 @@ const App = () => {
   const MOCK_VENDOR_GAB: UserRecord = {
     name: 'Gab The Vendor',
     email: 'gab@test.com',
-    password: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // SHA-256 of '123'
+    password: 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', // SHA-256 of '12345678'
     role: UserRole.VENDOR,
     status: 'active',
   };
@@ -979,8 +1056,8 @@ const App = () => {
     if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm) {
       setPasswordMsg({ text: 'Please fill in all fields', type: 'error' }); return;
     }
-    if (passwordForm.newPass.length < 3) {
-      setPasswordMsg({ text: 'New password must be at least 3 characters', type: 'error' }); return;
+    if (passwordForm.newPass.length < 8) {
+      setPasswordMsg({ text: 'New password must be at least 8 characters', type: 'error' }); return;
     }
     if (passwordForm.newPass !== passwordForm.confirm) {
       setPasswordMsg({ text: 'New passwords do not match', type: 'error' }); return;
@@ -1153,6 +1230,9 @@ const App = () => {
     </div>
   );
 
+  // Document lightbox state for admin review
+  const [docLightbox, setDocLightbox] = useState<string | null>(null);
+
   // Full-screen Alert Graphic Component
   const [activeGraphicAlert, setActiveGraphicAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string } | null>(null);
   const [activeConfirmAlert, setActiveConfirmAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string, onConfirm: (reason?: string) => void } | null>(null);
@@ -1163,93 +1243,91 @@ const App = () => {
 
     let Icon = ShieldCheck;
     let colorClass = '';
-    let bgColorClass = '';
+    let accentBorder = '';
     let btnClass = '';
+    let iconBg = '';
     const showReasonField = ['BAN', 'REJECT', 'WARN'].includes(alert.type);
 
     switch (alert.type) {
       case 'BAN':
         Icon = Ban;
-        colorClass = 'text-red-500';
-        bgColorClass = 'bg-red-500/20';
-        btnClass = 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]';
+        colorClass = 'text-red-400';
+        accentBorder = 'border-t-red-500';
+        iconBg = 'bg-red-500/10';
+        btnClass = 'bg-red-500 hover:bg-red-600 text-white';
         break;
       case 'WARN':
         Icon = AlertTriangle;
-        colorClass = 'text-yellow-500';
-        bgColorClass = 'bg-yellow-500/20';
-        btnClass = 'bg-yellow-500 hover:bg-yellow-600 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)]';
+        colorClass = 'text-yellow-400';
+        accentBorder = 'border-t-yellow-500';
+        iconBg = 'bg-yellow-500/10';
+        btnClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
         break;
       case 'UNBAN':
         Icon = CheckCircle;
-        colorClass = 'text-green-500';
-        bgColorClass = 'bg-green-500/20';
-        btnClass = 'bg-green-500 hover:bg-green-600 text-black shadow-[0_0_20px_rgba(34,197,94,0.3)]';
+        colorClass = 'text-green-400';
+        accentBorder = 'border-t-green-500';
+        iconBg = 'bg-green-500/10';
+        btnClass = 'bg-green-500 hover:bg-green-600 text-black';
         break;
       case 'VERIFY':
         Icon = ShieldCheck;
-        colorClass = 'text-blue-500';
-        bgColorClass = 'bg-blue-500/20';
-        btnClass = 'bg-blue-500 hover:bg-blue-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]';
+        colorClass = 'text-emerald-400';
+        accentBorder = 'border-t-emerald-500';
+        iconBg = 'bg-emerald-500/10';
+        btnClass = 'bg-emerald-500 hover:bg-emerald-600 text-white';
         break;
       case 'REJECT':
         Icon = XCircle;
-        colorClass = 'text-red-500';
-        bgColorClass = 'bg-red-500/20';
-        btnClass = 'bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]';
+        colorClass = 'text-red-400';
+        accentBorder = 'border-t-red-500';
+        iconBg = 'bg-red-500/10';
+        btnClass = 'bg-red-500 hover:bg-red-600 text-white';
         break;
     }
 
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300 px-4">
-        <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-300 max-w-sm w-full">
-          {/* Animated Background Rings */}
-          <div className={`absolute top-0 rounded-full ${bgColorClass} blur-3xl animate-pulse delay-75 w-64 h-64 -translate-y-1/2`} />
-
-          <div className="relative w-full bg-zinc-950 border border-zinc-800 rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center pt-12 pb-8 px-8 overflow-hidden">
-            <div className={`absolute top-0 left-0 right-0 h-2 ${bgColorClass.replace('/20', '')}`} />
-
-            <div className={`relative z-10 w-24 h-24 bg-zinc-900 border-4 border-zinc-800 rounded-full shadow-2xl flex items-center justify-center mb-6`}>
-              <Icon size={40} className={`${colorClass} animate-bounce`} />
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4">
+        <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`}>
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+              <Icon size={22} className={colorClass} />
             </div>
-
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2 text-center">{alert.title}</h2>
-            <p className="text-zinc-400 text-xs font-medium mb-8 text-center">{alert.subtitle}</p>
-
-            {showReasonField && (
-              <div className="w-full mb-6 text-left">
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2 ml-1">Internal Reason (Required)</p>
-                <textarea
-                  value={actionReason}
-                  onChange={(e) => setActionReason(e.target.value)}
-                  placeholder="e.g. Terms of Service violation, Spamming..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-green-400/50 resize-none h-20"
-                />
-              </div>
-            )}
-
-            <div className="flex gap-3 w-full">
-              <button
-                onClick={() => {
-                  onCancel();
-                  setActionReason('');
-                }}
-                className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={showReasonField && !actionReason.trim()}
-                onClick={() => {
-                  alert.onConfirm(actionReason.trim());
-                  onCancel();
-                  setActionReason('');
-                }}
-                className={`flex-1 ${btnClass} py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed`}
-              >
-                Confirm
-              </button>
+            <div>
+              <h2 className="text-lg font-bold text-white">{alert.title}</h2>
+              <p className="text-zinc-400 text-xs mt-0.5">{alert.subtitle}</p>
             </div>
+          </div>
+
+          {/* Reason field */}
+          {showReasonField && (
+            <div className="px-6 pb-4">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Reason (Required)</p>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="e.g. Terms of Service violation..."
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-zinc-600 resize-none h-20 transition-colors"
+              />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="px-6 pb-6 flex gap-3">
+            <button
+              onClick={() => { onCancel(); setActionReason(''); }}
+              className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={showReasonField && !actionReason.trim()}
+              onClick={() => { alert.onConfirm(actionReason.trim()); onCancel(); setActionReason(''); }}
+              className={`flex-1 ${btnClass} py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed`}
+            >
+              Confirm
+            </button>
           </div>
         </div>
       </div>
@@ -1257,55 +1335,71 @@ const App = () => {
   };
 
   const ActionGraphicModal = ({ alert }: { alert: { type: string, title: string, subtitle: string } | null }) => {
+    const [dismissing, setDismissing] = React.useState(false);
+
+    React.useEffect(() => {
+      setDismissing(false);
+    }, [alert]);
+
     if (!alert) return null;
 
     let Icon = ShieldCheck;
     let colorClass = '';
-    let bgColorClass = '';
+    let bgClass = '';
+    let borderClass = '';
 
     switch (alert.type) {
       case 'BAN':
         Icon = Ban;
-        colorClass = 'text-red-500';
-        bgColorClass = 'bg-red-500/20';
+        colorClass = 'text-red-400';
+        bgClass = 'bg-red-500/10';
+        borderClass = 'border-red-500/30';
         break;
       case 'WARN':
         Icon = AlertTriangle;
-        colorClass = 'text-yellow-500';
-        bgColorClass = 'bg-yellow-500/20';
+        colorClass = 'text-yellow-400';
+        bgClass = 'bg-yellow-500/10';
+        borderClass = 'border-yellow-500/30';
         break;
       case 'UNBAN':
         Icon = CheckCircle;
-        colorClass = 'text-green-500';
-        bgColorClass = 'bg-green-500/20';
+        colorClass = 'text-green-400';
+        bgClass = 'bg-green-500/10';
+        borderClass = 'border-green-500/30';
         break;
       case 'VERIFY':
         Icon = ShieldCheck;
-        colorClass = 'text-blue-500';
-        bgColorClass = 'bg-blue-500/20';
+        colorClass = 'text-emerald-400';
+        bgClass = 'bg-emerald-500/10';
+        borderClass = 'border-emerald-500/30';
         break;
       case 'REJECT':
         Icon = XCircle;
-        colorClass = 'text-red-500';
-        bgColorClass = 'bg-red-500/20';
+        colorClass = 'text-red-400';
+        bgClass = 'bg-red-500/10';
+        borderClass = 'border-red-500/30';
         break;
     }
 
+    const handleDismiss = () => {
+      setDismissing(true);
+      setTimeout(() => setActiveGraphicAlert(null), 250);
+    };
+
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-        <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-500">
-          {/* Animated Background Rings */}
-          <div className={`absolute inset-0 rounded-full ${bgColorClass} blur-3xl animate-pulse delay-75 w-64 h-64`} />
-          <div className={`absolute inset-0 rounded-full ${bgColorClass} blur-2xl animate-ping opacity-50 w-64 h-64`} />
-
-          <div className={`relative z-10 w-48 h-48 bg-zinc-900 border-4 border-zinc-800 rounded-[3rem] shadow-2xl flex items-center justify-center transform transition-transform hover:scale-110`}>
-            <Icon size={80} className={`${colorClass} animate-bounce`} />
+      <div
+        className={`fixed inset-x-0 top-16 z-[100] flex justify-center px-4 cursor-pointer ${dismissing ? 'modal-overlay-exit' : 'modal-slide-up'}`}
+        onClick={handleDismiss}
+      >
+        <div className={`flex items-center gap-4 ${bgClass} border ${borderClass} backdrop-blur-xl rounded-2xl px-6 py-4 shadow-2xl max-w-md w-full`}>
+          <div className={`w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0`}>
+            <Icon size={20} className={colorClass} />
           </div>
-
-          <div className="mt-8 text-center relative z-10 bg-zinc-900/80 px-8 py-6 rounded-3xl border border-zinc-800 backdrop-blur-md shadow-2xl">
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">{alert.title}</h2>
-            <p className={`text-lg font-bold uppercase tracking-widest ${colorClass}`}>{alert.subtitle}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white truncate">{alert.title}</p>
+            <p className={`text-xs ${colorClass} truncate`}>{alert.subtitle}</p>
           </div>
+          <X size={16} className="text-zinc-500 hover:text-white transition-colors shrink-0" />
         </div>
       </div>
     );
@@ -1527,28 +1621,34 @@ const App = () => {
   };
 
   const clearUsers = () => {
-    if (window.confirm('Are you sure you want to clear the User Registry? This cannot be undone.')) {
-      setUsers([]);
-      localStorage.removeItem('AP_users');
-    }
+    setActiveConfirmAlert({
+      type: 'REJECT',
+      title: 'Clear User Registry?',
+      subtitle: 'This will permanently delete all user accounts. This action cannot be undone.',
+      onConfirm: () => {
+        setUsers([]);
+        localStorage.removeItem('AP_users');
+        triggerGraphicAlert('REJECT', 'Registry Cleared', 'All user data has been removed');
+      }
+    });
   };
 
   const handleAlertAction = (alert: SystemAlert) => {
     switch (alert.type) {
       case 'OPPORTUNITY':
-        window.alert(`✅ Badge granted to high-performing user!`);
+        triggerGraphicAlert('VERIFY', 'Badge Granted', 'High-performing user recognized!');
         break;
       case 'SECURITY':
-        window.alert(`🛡️ Machine ID blocked from future registration.`);
+        triggerGraphicAlert('BAN', 'Machine Blocked', 'ID blocked from future registration');
         break;
       case 'PERFORMANCE':
-        window.alert(`🗄️ Old records archived. Database size reduced by 15%.`);
+        triggerGraphicAlert('VERIFY', 'Records Archived', 'Database size reduced by 15%');
         break;
       case 'HEALTH':
-        window.alert(`⚡ Cache cleared. Response times normalized.`);
+        triggerGraphicAlert('VERIFY', 'Cache Cleared', 'Response times normalized');
         break;
       case 'COMMUNITY':
-        window.alert(`⚠️ Official Warning sent to Vendor for Code of Conduct violation.`);
+        triggerGraphicAlert('WARN', 'Warning Sent', 'Official warning issued to vendor');
         break;
     }
     // Remove the alert after action
@@ -1572,7 +1672,7 @@ const App = () => {
   const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
     // Static admin login — hardcoded credentials
     if (userRole === UserRole.ADMIN) {
-      if (email === 'gabtheadmin@yahoo.com' && password === '123') return 'ok';
+      if (email === 'gabtheadmin@yahoo.com' && password === '12345678') return 'ok';
       return 'not_found';
     }
     const hashed = await simpleHash(password);
@@ -1583,12 +1683,14 @@ const App = () => {
     return 'ok';
   };
 
-  const registerUser = async (name: string, email: string, password: string, userRole: UserRole): Promise<string> => {
+  const registerUser = async (name: string, email: string, password: string, userRole: UserRole, docs?: string[]): Promise<string> => {
     if (userRole === UserRole.ADMIN) return 'forbidden';
     if (users.find(u => u.email === email)) return 'exists';
     const hashed = await simpleHash(password);
     const status = userRole === UserRole.VENDOR ? 'pending' : 'active';
-    const next: UserRecord[] = [...users, { name: name || undefined, email, password: hashed, role: userRole, status: status as any }];
+    const newUser: UserRecord = { name: name || undefined, email, password: hashed, role: userRole, status: status as any };
+    if (docs && docs.length > 0) newUser.verificationDocs = docs;
+    const next: UserRecord[] = [...users, newUser];
     setUsers(next);
     try { localStorage.setItem('AP_users', JSON.stringify(next)); } catch (e) { }
     if (userRole === UserRole.VENDOR) return 'pending';
@@ -3098,18 +3200,40 @@ const App = () => {
             </div>
             <div className="space-y-3">
               {pendingUsers.map((user, idx) => (
-                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-yellow-400/10 flex items-center justify-center font-bold text-yellow-500">{(user.name || user.email)[0].toUpperCase()}</div>
-                    <div>
-                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
-                      <p className="text-xs text-zinc-500">{user.email} &bull; {user.role}</p>
+                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-yellow-400/10 flex items-center justify-center font-bold text-yellow-500">{(user.name || user.email)[0].toUpperCase()}</div>
+                      <div>
+                        <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
+                        <p className="text-xs text-zinc-500">{user.email} &bull; {user.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Approve Vendor?', subtitle: `Grant access to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('APPROVE_USER', user.email, `Approved vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Approved', `Access granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Approve</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Vendor?', subtitle: `Deny registration for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.filter(u => u.email !== user.email); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_USER', user.email, `Rejected vendor: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Vendor Rejected', `Registration denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Reject</button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('APPROVE_USER', user.email, `Approved vendor: ${user.name || user.email}`); }} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Approve</button>
-                    <button onClick={() => { setUsers(prev => { const next = prev.filter(u => u.email !== user.email); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_USER', user.email, `Rejected vendor: ${user.name || user.email}`); }} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
-                  </div>
+                  {/* Uploaded Documents */}
+                  {user.verificationDocs && user.verificationDocs.length > 0 && (
+                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700/50">
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Submitted Documents ({user.verificationDocs.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {user.verificationDocs.map((doc, di) => (
+                          <button key={di} onClick={() => setDocLightbox(doc)} className="group/docthumb hover:scale-105 transition-transform">
+                            {doc.startsWith('data:application/pdf') ? (
+                              <div className="w-14 h-14 rounded-xl bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center group-hover/docthumb:border-yellow-400/50 transition-colors">
+                                <FileText size={18} className="text-red-400" />
+                                <span className="text-[7px] text-zinc-500 mt-0.5">PDF</span>
+                              </div>
+                            ) : (
+                              <img src={doc} alt={`Doc ${di + 1}`} className="w-14 h-14 rounded-xl object-cover border border-zinc-300 dark:border-zinc-700 group-hover/docthumb:border-yellow-400/50 transition-colors" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -3134,18 +3258,40 @@ const App = () => {
           ) : (
             <div className="space-y-3">
               {pendingVerifications.map((user, idx) => (
-                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center font-bold text-emerald-500">{(user.name || user.email)[0].toUpperCase()}</div>
-                    <div>
-                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
-                      <p className="text-xs text-zinc-500">{user.email} &bull; Applied {user.verificationRequestedAt ? new Date(user.verificationRequestedAt).toLocaleDateString() : ''}</p>
+                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center font-bold text-emerald-500">{(user.name || user.email)[0].toUpperCase()}</div>
+                      <div>
+                        <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
+                        <p className="text-xs text-zinc-500">{user.email} &bull; Applied {user.verificationRequestedAt ? new Date(user.verificationRequestedAt).toLocaleDateString() : ''}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified status to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official status granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Verify</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Reject</button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified status to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official status granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Verify</button>
-                    <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><X size={14} /> Reject</button>
-                  </div>
+                  {/* Uploaded Documents */}
+                  {user.verificationDocs && user.verificationDocs.length > 0 && (
+                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700/50">
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Submitted Documents ({user.verificationDocs.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {user.verificationDocs.map((doc, di) => (
+                          <button key={di} onClick={() => setDocLightbox(doc)} className="group/docthumb hover:scale-105 transition-transform">
+                            {doc.startsWith('data:application/pdf') ? (
+                              <div className="w-14 h-14 rounded-xl bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center group-hover/docthumb:border-emerald-400/50 transition-colors">
+                                <FileText size={18} className="text-red-400" />
+                                <span className="text-[7px] text-zinc-500 mt-0.5">PDF</span>
+                              </div>
+                            ) : (
+                              <img src={doc} alt={`Doc ${di + 1}`} className="w-14 h-14 rounded-xl object-cover border border-zinc-300 dark:border-zinc-700 group-hover/docthumb:border-emerald-400/50 transition-colors" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -3504,20 +3650,25 @@ const App = () => {
 
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    setBudgetItems([]);
-    setUserVendorRatings({});
-    setActiveTab('market');
-    setProfilePicture(null); // Clear in-memory but keep in localStorage for next login
-    setRole(UserRole.CONSUMER);
-    setCurrentUserEmail('');
-    setIsAdminUnlocked(false);
+    setIsLoggingOut(true);
+    setShowProfileModal(false);
+    setTimeout(() => {
+      setIsAuthenticated(false);
+      setBudgetItems([]);
+      setUserVendorRatings({});
+      setActiveTab('market');
+      setProfilePicture(null);
+      setRole(UserRole.CONSUMER);
+      setCurrentUserEmail('');
+      setIsAdminUnlocked(false);
+      setIsLoggingOut(false);
+    }, 500);
   };
 
   if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 animate-in fade-in duration-1000">
+    <div className={`min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
       <ActionGraphicModal alert={activeGraphicAlert} />
       <ActionConfirmModal alert={activeConfirmAlert} onCancel={() => setActiveConfirmAlert(null)} />
       <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
@@ -3742,8 +3893,8 @@ const App = () => {
                     {/* Logout */}
                     <div className="p-4 pt-1">
                       <button
-                        onClick={() => { setShowProfileModal(false); handleLogout(); }}
-                        className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest transition-all"
+                        onClick={() => handleLogout()}
+                        className="btn-signout w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest transition-all"
                       >
                         <LogOut size={16} />
                         Sign Out
@@ -4485,6 +4636,30 @@ const App = () => {
                 }} className="flex-1 bg-green-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-green-500/20 flex items-center justify-center gap-2 text-sm"><CheckCircle size={18} /> Resolve</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Lightbox */}
+      {docLightbox && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300 p-4" onClick={() => setDocLightbox(null)}>
+          <button onClick={() => setDocLightbox(null)} className="absolute top-4 right-4 z-20 w-12 h-12 rounded-2xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all">
+            <X size={24} />
+          </button>
+          <div className="max-w-4xl max-h-[90vh] w-full animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            {docLightbox.startsWith('data:application/pdf') ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-32 h-32 rounded-3xl bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center">
+                  <FileText size={48} className="text-red-400" />
+                  <span className="text-xs text-zinc-500 mt-1">PDF Document</span>
+                </div>
+                <a href={docLightbox} download="document.pdf" className="bg-green-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2">
+                  <Download size={16} /> Download PDF
+                </a>
+              </div>
+            ) : (
+              <img src={docLightbox} alt="Document" className="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl" />
+            )}
           </div>
         </div>
       )}

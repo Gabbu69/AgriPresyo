@@ -61,6 +61,7 @@ export interface UserRecord {
   status: 'active' | 'pending' | 'banned';
   isVerified?: boolean;
   verificationRequestedAt?: string;
+  verificationDocs?: string[]; // base64 data URLs of uploaded documents (JPEG/PNG/PDF)
 }
 
 export interface AuditLogEntry {
