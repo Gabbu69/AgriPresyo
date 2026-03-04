@@ -62,6 +62,10 @@ export interface UserRecord {
   isVerified?: boolean;
   verificationRequestedAt?: string;
   verificationDocs?: string[]; // base64 data URLs of uploaded documents (JPEG/PNG/PDF)
+  shopName?: string;         // Custom vendor shop/store name
+  specialty?: string;        // e.g. "Organic Fruits", "Farm-fresh Vegetables"
+  shopDescription?: string;  // Short bio / tagline
+  shopLocation?: string;     // Market stall or address
 }
 
 export interface AuditLogEntry {

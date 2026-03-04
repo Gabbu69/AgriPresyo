@@ -59,7 +59,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
-  XCircle
+  XCircle,
+  MapPin
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -568,6 +569,10 @@ const LoginPage = ({
       setError('Password must be at least 8 characters long.');
       return;
     }
+    if (role === UserRole.VENDOR && regDocs.length === 0) {
+      setError('📎 Please upload at least one document (ID, permit, etc.) for vendor verification.');
+      return;
+    }
     setIsLoading(true);
     await new Promise(r => setTimeout(r, 1200));
     const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role, role === UserRole.VENDOR ? regDocs : undefined);
@@ -978,6 +983,10 @@ const App = () => {
   const [adminNoteComplaintId, setAdminNoteComplaintId] = useState<string | null>(null);
   const [adminNoteText, setAdminNoteText] = useState('');
 
+  // Shop profile editing state
+  const [editingShopProfile, setEditingShopProfile] = useState(false);
+  const [shopProfileDraft, setShopProfileDraft] = useState({ shopName: '', specialty: '', shopDescription: '', shopLocation: '' });
+
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
   // Consumer features
@@ -1032,6 +1041,7 @@ const App = () => {
   // Vendor verification modal state
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationChecklist, setVerificationChecklist] = useState<boolean[]>([false, false, false, false, false, false]);
+  const [verificationModalDocs, setVerificationModalDocs] = useState<string[]>([]);
 
   useEffect(() => { localStorage.setItem('AP_notifications', String(notificationsEnabled)); }, [notificationsEnabled]);
   useEffect(() => { localStorage.setItem('AP_priceAlertThreshold', String(priceAlertThreshold)); }, [priceAlertThreshold]);
@@ -1049,6 +1059,21 @@ const App = () => {
     });
     setEditingProfileName(false);
     setIsSavingProfileName(false);
+  };
+
+  const handleSaveShopProfile = () => {
+    setUsers(prev => {
+      const next = prev.map(u => u.email === currentUserEmail ? {
+        ...u,
+        shopName: shopProfileDraft.shopName.trim() || undefined,
+        specialty: shopProfileDraft.specialty.trim() || undefined,
+        shopDescription: shopProfileDraft.shopDescription.trim() || undefined,
+        shopLocation: shopProfileDraft.shopLocation.trim() || undefined,
+      } : u);
+      localStorage.setItem('AP_users', JSON.stringify(next));
+      return next;
+    });
+    setEditingShopProfile(false);
   };
 
   const handleChangePassword = async () => {
@@ -1287,8 +1312,8 @@ const App = () => {
     }
 
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4">
-        <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`}>
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+        <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="px-6 pt-6 pb-4 flex items-center gap-4">
             <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
@@ -1302,13 +1327,16 @@ const App = () => {
 
           {/* Reason field */}
           {showReasonField && (
-            <div className="px-6 pb-4">
+            <div className="px-6 pb-4" onClick={(e) => e.stopPropagation()}>
               <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Reason (Required)</p>
               <textarea
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
+                onFocus={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 placeholder="e.g. Terms of Service violation..."
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-zinc-600 resize-none h-20 transition-colors"
+                autoFocus
               />
             </div>
           )}
@@ -1446,10 +1474,10 @@ const App = () => {
     users.filter(u => u.role === UserRole.VENDOR).forEach(u => {
       vendorMap.set(u.email, {
         id: u.email,
-        name: u.name || u.email.split('@')[0],
+        name: u.shopName || u.name || u.email.split('@')[0],
         rating: vendorRatingData[u.email]?.rating ?? 5.0,
         reviewCount: vendorRatingData[u.email]?.reviewCount ?? 0,
-        specialty: 'New Market Partner',
+        specialty: u.specialty || 'New Market Partner',
         price: 0,
         stock: 0,
         cropsSold: []
@@ -1473,6 +1501,23 @@ const App = () => {
         existing.reviewCount = v.reviewCount;
       });
     });
+
+    // Auto-verify vendors with 10+ reviews
+    const vendorsToVerify: string[] = [];
+    vendorMap.forEach((v, id) => {
+      if (v.reviewCount >= 10) {
+        const userRecord = users.find(u => u.email === id);
+        if (userRecord && !userRecord.isVerified) {
+          vendorsToVerify.push(id);
+        }
+      }
+    });
+    if (vendorsToVerify.length > 0) {
+      const nextUsers = users.map(u => vendorsToVerify.includes(u.email) ? { ...u, isVerified: true } : u);
+      localStorage.setItem('AP_users', JSON.stringify(nextUsers));
+      // Trigger state update on next tick to avoid render-during-render
+      setTimeout(() => setUsers(nextUsers), 0);
+    }
 
     return Array.from(vendorMap.values());
   }, [crops, users, vendorRatingData]);
@@ -1689,7 +1734,10 @@ const App = () => {
     const hashed = await simpleHash(password);
     const status = userRole === UserRole.VENDOR ? 'pending' : 'active';
     const newUser: UserRecord = { name: name || undefined, email, password: hashed, role: userRole, status: status as any };
-    if (docs && docs.length > 0) newUser.verificationDocs = docs;
+    if (docs && docs.length > 0) {
+      newUser.verificationDocs = docs;
+      newUser.isVerified = true; // Auto-verify vendors who upload documents
+    }
     const next: UserRecord[] = [...users, newUser];
     setUsers(next);
     try { localStorage.setItem('AP_users', JSON.stringify(next)); } catch (e) { }
@@ -2487,6 +2535,136 @@ const App = () => {
         </div>
       </div>
 
+      {/* Shop Profile Card */}
+      <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-purple-400/10 border border-purple-400/20">
+              <Store className="text-purple-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Shop Profile</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">How customers see your shop</p>
+            </div>
+          </div>
+          {!editingShopProfile ? (
+            <button
+              onClick={() => {
+                setShopProfileDraft({
+                  shopName: currentUser?.shopName || '',
+                  specialty: currentUser?.specialty || '',
+                  shopDescription: currentUser?.shopDescription || '',
+                  shopLocation: currentUser?.shopLocation || '',
+                });
+                setEditingShopProfile(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-purple-500 hover:border-purple-400/30 font-bold text-xs uppercase tracking-wider transition-all"
+            >
+              <Edit2 size={14} /> Edit
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditingShopProfile(false)}
+                className="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-400 font-bold text-xs uppercase tracking-wider hover:text-zinc-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveShopProfile}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-green-500 text-black font-bold text-xs uppercase tracking-wider hover:scale-105 transition-all shadow-lg shadow-green-500/20"
+              >
+                <CheckCircle size={14} /> Save
+              </button>
+            </div>
+          )}
+        </div>
+
+        {editingShopProfile ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Shop Name</label>
+              <input
+                type="text"
+                value={shopProfileDraft.shopName}
+                onChange={e => setShopProfileDraft(p => ({ ...p, shopName: e.target.value }))}
+                placeholder={currentUser?.name || 'My Shop Name'}
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Specialty</label>
+              <input
+                type="text"
+                value={shopProfileDraft.specialty}
+                onChange={e => setShopProfileDraft(p => ({ ...p, specialty: e.target.value }))}
+                placeholder="e.g. Organic Fruits, Farm-fresh Vegetables"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Location</label>
+              <input
+                type="text"
+                value={shopProfileDraft.shopLocation}
+                onChange={e => setShopProfileDraft(p => ({ ...p, shopLocation: e.target.value }))}
+                placeholder="e.g. Stall #12, Farmers Market"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Description</label>
+              <input
+                type="text"
+                value={shopProfileDraft.shopDescription}
+                onChange={e => setShopProfileDraft(p => ({ ...p, shopDescription: e.target.value }))}
+                placeholder="Short tagline about your shop"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+              <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <Store size={16} className="text-purple-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Shop Name</p>
+                <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{currentUser?.shopName || currentUser?.name || 'Not set'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+                <Zap size={16} className="text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Specialty</p>
+                <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{currentUser?.specialty || 'New Market Partner'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <MapPin size={16} className="text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Location</p>
+                <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{currentUser?.shopLocation || 'Not set'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+              <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                <FileText size={16} className="text-green-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Description</p>
+                <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{currentUser?.shopDescription || 'Not set'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Vendor Verification Status Card */}
       <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl">
         <div className="flex items-center justify-between">
@@ -2528,64 +2706,106 @@ const App = () => {
         </div>
       </div>
 
-      {/* Verification Checklist Modal */}
+      {/* Verification Document Upload Modal */}
       {showVerificationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 px-4">
           <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
             <div className="flex flex-col items-center mb-6">
               <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
                 <ShieldCheck className="text-green-500" size={32} />
               </div>
               <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Apply for Verification</h2>
-              <p className="text-zinc-500 text-xs mt-1 text-center">Please confirm you meet all requirements below</p>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Upload documents to verify your identity and business</p>
             </div>
-            <div className="space-y-3 mb-6">
-              {[
-                'Government-issued ID submitted',
-                'Business registration document submitted',
-                'Verified email address',
-                'Verified phone number',
-                'Complete store profile (logo, description, address)',
-                'Minimum of 5 listed products'
-              ].map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setVerificationChecklist(prev => prev.map((v, i) => i === idx ? !v : v))}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${verificationChecklist[idx]
-                    ? 'bg-green-500/5 border-green-500/30 dark:bg-green-500/10'
-                    : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'}`}
-                >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${verificationChecklist[idx]
-                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
-                    : 'bg-zinc-200 dark:bg-zinc-800 text-transparent'}`}>
-                    <CheckCircle size={14} />
-                  </div>
-                  <span className={`text-sm font-bold ${verificationChecklist[idx] ? 'text-green-600 dark:text-green-400' : 'text-zinc-600 dark:text-zinc-400'}`}>{item}</span>
-                </button>
-              ))}
+
+            {/* Document Upload Area */}
+            <div className="space-y-4 mb-6">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload Documents (ID, Business Permit, etc.)</p>
+              <label className="flex items-center justify-center gap-3 w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-green-500/40 rounded-2xl py-6 cursor-pointer transition-all group">
+                <Upload className="w-5 h-5 text-zinc-400 group-hover:text-green-400 transition-colors" />
+                <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files (JPEG, PNG, PDF)</span>
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  multiple
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (!files) return;
+                    const maxFiles = 5;
+                    const maxSize = 5 * 1024 * 1024;
+                    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                    const remaining = maxFiles - verificationModalDocs.length;
+                    const filesToProcess = (Array.from(files) as File[]).slice(0, remaining);
+                    filesToProcess.forEach(file => {
+                      if (!allowedTypes.includes(file.type)) return;
+                      if (file.size > maxSize) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        const dataUrl = ev.target?.result as string;
+                        setVerificationModalDocs(prev => prev.length < maxFiles ? [...prev, dataUrl] : prev);
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+                />
+              </label>
+              {verificationModalDocs.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {verificationModalDocs.map((doc, i) => (
+                    <div key={i} className="relative group/doc">
+                      {doc.startsWith('data:application/pdf') ? (
+                        <div className="w-16 h-16 rounded-xl bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center">
+                          <FileText size={20} className="text-red-400" />
+                          <span className="text-[8px] text-zinc-500 mt-0.5">PDF</span>
+                        </div>
+                      ) : (
+                        <img src={doc} alt={`Doc ${i + 1}`} className="w-16 h-16 rounded-xl object-cover border border-zinc-300 dark:border-zinc-700" />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setVerificationModalDocs(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/doc:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <X size={10} className="text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-zinc-500">{verificationModalDocs.length}/5 files uploaded</p>
             </div>
+
             <div className="flex gap-3">
               <button
-                onClick={() => setShowVerificationModal(false)}
+                onClick={() => { setShowVerificationModal(false); setVerificationModalDocs([]); }}
                 className="flex-1 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-200 dark:border-zinc-800 transition-all text-sm"
               >Cancel</button>
               <button
                 onClick={() => {
-                  if (verificationChecklist.every(Boolean)) {
+                  if (verificationModalDocs.length > 0) {
                     setUsers(prev => {
-                      const next = prev.map(u => u.email === currentUserEmail ? { ...u, verificationRequestedAt: new Date().toISOString() } : u);
+                      const next = prev.map(u => u.email === currentUserEmail ? {
+                        ...u,
+                        verificationDocs: [...(u.verificationDocs || []), ...verificationModalDocs],
+                        isVerified: true,
+                        verificationRequestedAt: new Date().toISOString(),
+                      } : u);
                       localStorage.setItem('AP_users', JSON.stringify(next));
                       return next;
                     });
                     setShowVerificationModal(false);
+                    setVerificationModalDocs([]);
+                    triggerGraphicAlert('VERIFY', 'Verified!', 'Your documents have been submitted and verified.');
                   }
                 }}
-                disabled={!verificationChecklist.every(Boolean)}
-                className={`flex-1 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm flex items-center justify-center gap-2 ${verificationChecklist.every(Boolean)
+                disabled={verificationModalDocs.length === 0}
+                className={`flex-1 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm flex items-center justify-center gap-2 ${verificationModalDocs.length > 0
                   ? 'bg-green-500 text-black hover:scale-105 shadow-lg shadow-green-500/20'
                   : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'}`}
               >
-                <ShieldCheck size={16} /> Submit Application
+                <ShieldCheck size={16} /> Submit & Verify
               </button>
             </div>
           </div>
@@ -3670,7 +3890,105 @@ const App = () => {
   return (
     <div className={`min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
       <ActionGraphicModal alert={activeGraphicAlert} />
-      <ActionConfirmModal alert={activeConfirmAlert} onCancel={() => setActiveConfirmAlert(null)} />
+      {/* Inline ActionConfirmModal to prevent re-mount on state change */}
+      {activeConfirmAlert && (() => {
+        const alert = activeConfirmAlert;
+        const onCancel = () => setActiveConfirmAlert(null);
+        let Icon = ShieldCheck;
+        let colorClass = '';
+        let accentBorder = '';
+        let btnClass = '';
+        let iconBg = '';
+        const showReasonField = ['BAN', 'REJECT', 'WARN'].includes(alert.type);
+
+        switch (alert.type) {
+          case 'BAN':
+            Icon = Ban;
+            colorClass = 'text-red-400';
+            accentBorder = 'border-t-red-500';
+            iconBg = 'bg-red-500/10';
+            btnClass = 'bg-red-500 hover:bg-red-600 text-white';
+            break;
+          case 'WARN':
+            Icon = AlertTriangle;
+            colorClass = 'text-yellow-400';
+            accentBorder = 'border-t-yellow-500';
+            iconBg = 'bg-yellow-500/10';
+            btnClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
+            break;
+          case 'UNBAN':
+            Icon = CheckCircle;
+            colorClass = 'text-green-400';
+            accentBorder = 'border-t-green-500';
+            iconBg = 'bg-green-500/10';
+            btnClass = 'bg-green-500 hover:bg-green-600 text-black';
+            break;
+          case 'VERIFY':
+            Icon = ShieldCheck;
+            colorClass = 'text-emerald-400';
+            accentBorder = 'border-t-emerald-500';
+            iconBg = 'bg-emerald-500/10';
+            btnClass = 'bg-emerald-500 hover:bg-emerald-600 text-white';
+            break;
+          case 'REJECT':
+            Icon = XCircle;
+            colorClass = 'text-red-400';
+            accentBorder = 'border-t-red-500';
+            iconBg = 'bg-red-500/10';
+            btnClass = 'bg-red-500 hover:bg-red-600 text-white';
+            break;
+        }
+
+        return (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+            <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="px-6 pt-6 pb-4 flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+                  <Icon size={22} className={colorClass} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">{alert.title}</h2>
+                  <p className="text-zinc-400 text-xs mt-0.5">{alert.subtitle}</p>
+                </div>
+              </div>
+
+              {/* Reason field */}
+              {showReasonField && (
+                <div className="px-6 pb-4" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Reason (Required)</p>
+                  <textarea
+                    value={actionReason}
+                    onChange={(e) => setActionReason(e.target.value)}
+                    onFocus={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="e.g. Terms of Service violation..."
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-zinc-600 resize-none h-20 transition-colors"
+                    autoFocus
+                  />
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="px-6 pb-6 flex gap-3">
+                <button
+                  onClick={() => { onCancel(); setActionReason(''); }}
+                  className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={showReasonField && !actionReason.trim()}
+                  onClick={() => { alert.onConfirm(actionReason.trim()); onCancel(); setActionReason(''); }}
+                  className={`flex-1 ${btnClass} py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed`}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
       <header className={`sticky top-10 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`}>
