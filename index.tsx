@@ -447,7 +447,7 @@ const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setR
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="w-full flex items-center justify-between bg-black border border-zinc-800 rounded-2xl px-5 py-3.5 hover:border-green-500/40 transition-all group"
+        className="w-full flex items-center justify-between bg-stone-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-3.5 hover:border-green-500/40 transition-all group shadow-sm"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl">{current.icon}</span>
@@ -464,7 +464,7 @@ const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setR
 
       {/* Dropdown options */}
       <div
-        className={`absolute top-full left-0 right-0 mt-2 bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden z-50 shadow-[0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300 origin-top ${isOpen
+        className={`absolute top-full left-0 right-0 mt-2 bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden z-50 shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300 origin-top ${isOpen
           ? 'opacity-100 scale-y-100 translate-y-0'
           : 'opacity-0 scale-y-75 -translate-y-2 pointer-events-none'
           }`}
@@ -477,12 +477,12 @@ const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setR
               setRole(key);
               setIsOpen(false);
             }}
-            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-green-500/10 transition-colors text-left border-b border-zinc-800/50 last:border-b-0"
+            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-zinc-50 dark:hover:bg-green-500/10 transition-colors text-left border-b border-zinc-100 dark:border-zinc-800/50 last:border-b-0"
           >
             <span className="text-xl">{info.icon}</span>
             <div>
-              <p className="text-xs font-black text-zinc-400 tracking-widest">{info.label}</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">{info.desc}</p>
+              <p className="text-xs font-black text-zinc-900 dark:text-zinc-400 tracking-widest">{info.label}</p>
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-600 mt-0.5">{info.desc}</p>
             </div>
           </button>
         ))}
@@ -604,7 +604,7 @@ const LoginPage = ({
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
+    <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden text-zinc-900 dark:text-white">
       <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
 
@@ -619,48 +619,48 @@ const LoginPage = ({
               setOtpError('');
             }}
           />
-          <h1 className="text-5xl font-black tracking-tighter text-white">
+          <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-white">
             <span className="text-green-500">Agri</span>
-            <span className="text-white/80">Presyo</span>
+            <span className="text-zinc-700 dark:text-white/80">Presyo</span>
           </h1>
-          <p className="text-zinc-500 dark:text-zinc-400 font-bold mt-2 uppercase tracking-widest text-[10px]">A Website for Real-Time Market Prices.</p>
+          <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">A Website for Real-Time Market Prices.</p>
         </div>
 
-        <div className="bg-zinc-950 dark:bg-black border border-zinc-800 rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
+        <div className="bg-stone-50/80 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
           <RoleDropdown role={role} setRole={setRole} isAdminUnlocked={isAdminUnlocked} />
 
           {showRegister ? (
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="space-y-4">
                 <div className="relative">
-                  <Logo size={20} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 grayscale brightness-200" />
+                  <Logo size={20} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 grayscale dark:brightness-200" />
                   <input
                     type="text"
                     placeholder="Full Name"
                     required
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white transition-all placeholder:text-zinc-600 shadow-inner"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                   />
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
                     type="email"
                     placeholder="Email Address"
                     required
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white transition-all placeholder:text-zinc-600 shadow-inner"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                   />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
                     type="password"
                     placeholder="Password"
                     required
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white transition-all placeholder:text-zinc-600 shadow-inner"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                   />
@@ -686,12 +686,12 @@ const LoginPage = ({
                         {regDocs.map((doc, i) => (
                           <div key={i} className="relative group/doc">
                             {doc.startsWith('data:application/pdf') ? (
-                              <div className="w-16 h-16 rounded-xl bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center">
+                              <div className="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex flex-col items-center justify-center">
                                 <FileText size={20} className="text-red-400" />
                                 <span className="text-[8px] text-zinc-500 mt-0.5">PDF</span>
                               </div>
                             ) : (
-                              <img src={doc} alt={`Doc ${i + 1}`} className="w-16 h-16 rounded-xl object-cover border border-zinc-700" />
+                              <img src={doc} alt={`Doc ${i + 1}`} className="w-16 h-16 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700" />
                             )}
                             <button
                               type="button"
@@ -720,23 +720,23 @@ const LoginPage = ({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                     <input
                       type="email"
                       placeholder="Email Address"
                       required
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white transition-all placeholder:text-zinc-600 shadow-inner"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                     <input
                       type="password"
                       placeholder="Password"
                       required
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white transition-all placeholder:text-zinc-600 shadow-inner"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -746,7 +746,7 @@ const LoginPage = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-black text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
+                  className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-stone-50 dark:bg-black text-green-600 dark:text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
                   {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Authenticating...</span></> : 'Access Terminal'}
                 </button>
@@ -764,23 +764,23 @@ const LoginPage = ({
 
         {/* OTP Verification Modal */}
         {showOtpModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/70 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
               <div className="flex flex-col items-center mb-6">
                 <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
                   <ShieldCheck className="text-green-500" size={32} />
                 </div>
-                <h2 className="text-xl font-black text-white tracking-tight">Admin Verification</h2>
+                <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Verification</h2>
                 <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
               </div>
               <div className="space-y-4">
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
                     type="text"
                     placeholder="Enter OTP"
                     maxLength={6}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
                     value={otpInput}
                     onChange={(e) => {
                       setOtpInput(e.target.value.replace(/[^0-9]/g, ''));
@@ -1347,8 +1347,8 @@ const App = () => {
     }
 
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
-        <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-zinc-900/60 dark:bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+        <div className={`modal-content-enter max-w-sm w-full bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="px-6 pt-6 pb-4 flex items-center gap-4">
             <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
@@ -2535,7 +2535,7 @@ const App = () => {
               </div>
             </div>
           </div>
-          <div className="mt-8 flex bg-zinc-950 p-1.5 rounded-2xl border border-zinc-800">
+          <div className="mt-8 flex bg-zinc-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => setVendorShopType('Fruit')}
               className={`flex-1 py-2.5 rounded-xl text-[10px] font-black transition-all ${vendorShopType === 'Fruit' ? 'bg-orange-400 text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
@@ -2785,7 +2785,7 @@ const App = () => {
 
       {/* Verification Document Upload Modal */}
       {showVerificationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/70 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 px-4">
           <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
             <div className="flex flex-col items-center mb-6">
               <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
@@ -3929,7 +3929,7 @@ const App = () => {
   if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
 
   return (
-    <div className={`min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
+    <div className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ActionGraphicModal alert={activeGraphicAlert} />
       {/* Inline ActionConfirmModal to prevent re-mount on state change */}
@@ -3982,8 +3982,8 @@ const App = () => {
         }
 
         return (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
-            <div className={`modal-content-enter max-w-sm w-full bg-zinc-950 border border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-zinc-900/60 dark:bg-black/60 backdrop-blur-sm modal-overlay-enter px-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+            <div className={`modal-content-enter max-w-sm w-full bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 ${accentBorder} border-t-2 rounded-2xl shadow-2xl overflow-hidden`} onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="px-6 pt-6 pb-4 flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
@@ -4328,7 +4328,7 @@ const App = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-800 mt-20 hidden lg:block">
+      <footer className="bg-stone-50 dark:bg-black border-t border-zinc-200 dark:border-zinc-800 mt-20 hidden lg:block">
         <div className="max-w-[1400px] mx-auto px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
@@ -4419,7 +4419,7 @@ const App = () => {
       {/* Custom Delete Profile Picture Confirmation Modal */}
       {showDeleteProfilePicModal && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteProfilePicModal(false)}></div>
+          <div className="absolute inset-0 bg-zinc-900/60 dark:bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteProfilePicModal(false)}></div>
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 sm:p-8 w-full max-w-sm relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800 text-center">
             <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-5 border-[6px] border-red-50 dark:border-red-500/5">
               <Trash2 size={24} className="text-red-500" />
@@ -4451,7 +4451,7 @@ const App = () => {
       {/* Full Size Profile Picture Viewer Modal */}
       {showFullProfilePic && profilePicture && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 animate-in zoom-in-95 duration-300">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowFullProfilePic(false)} />
+          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-md" onClick={() => setShowFullProfilePic(false)} />
           <div className="relative z-10 w-full max-w-lg aspect-square flex items-center justify-center">
             <img src={profilePicture} alt="Full Profile" className="w-full h-full object-contain rounded-3xl shadow-2xl" />
             <button
@@ -5005,7 +5005,7 @@ const App = () => {
 
       {/* Document Lightbox */}
       {docLightbox && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300 p-4" onClick={() => setDocLightbox(null)}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/90 dark:bg-black/90 backdrop-blur-sm animate-in fade-in duration-300 p-4" onClick={() => setDocLightbox(null)}>
           <button onClick={() => setDocLightbox(null)} className="absolute top-4 right-4 z-20 w-12 h-12 rounded-2xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all">
             <X size={24} />
           </button>
