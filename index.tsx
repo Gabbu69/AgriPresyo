@@ -553,8 +553,6 @@ const LoginPage = ({
       onLogin(role, email.trim().toLowerCase());
     } else if (result === 'banned') {
       setError('🚫 Your account has been banned. Contact support for assistance.');
-    } else if (result === 'pending') {
-      setError('⏳ Your account is pending admin approval. Please wait.');
     } else {
       setError('Invalid credentials. Please create an account or try again.');
     }
@@ -569,18 +567,12 @@ const LoginPage = ({
       setError('Password must be at least 8 characters long.');
       return;
     }
-    if (role === UserRole.VENDOR && regDocs.length === 0) {
-      setError('📎 Please upload at least one document (ID, permit, etc.) for vendor verification.');
-      return;
-    }
+    // Documents are optional at registration for vendors
     setIsLoading(true);
     await new Promise(r => setTimeout(r, 1200));
     const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role, role === UserRole.VENDOR ? regDocs : undefined);
     if (result === 'ok') {
       onLogin(role, regEmail.trim().toLowerCase());
-    } else if (result === 'pending') {
-      setError('✅ Registration submitted! Your vendor account is pending admin approval.');
-      setShowRegister(false);
     } else if (result === 'exists') {
       setError('Account already exists with that email.');
     }
@@ -653,7 +645,7 @@ const LoginPage = ({
                 {/* Vendor Document Upload */}
                 {role === UserRole.VENDOR && (
                   <div className="space-y-3">
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload Documents (JPEG, PNG, PDF) — Required for vendor approval</p>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload Documents (JPEG, PNG, PDF) — Optional, submit now or later from dashboard</p>
                     <label className="flex items-center justify-center gap-3 w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
                       <Upload className="w-5 h-5 text-zinc-600 group-hover:text-green-400 transition-colors" />
                       <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files</span>
@@ -916,6 +908,8 @@ const App = () => {
     password: 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', // SHA-256 of '12345678'
     role: UserRole.ADMIN,
     status: 'active',
+    isVerified: false,
+    verificationStatus: 'none',
   };
 
   const MOCK_VENDOR_GAB: UserRecord = {
@@ -924,14 +918,28 @@ const App = () => {
     password: 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', // SHA-256 of '12345678'
     role: UserRole.VENDOR,
     status: 'active',
+    isVerified: false,
+    verificationStatus: 'none',
   };
 
   const [users, setUsers] = useState<UserRecord[]>(() => {
     try {
       const raw = localStorage.getItem('AP_users');
       const parsed: UserRecord[] = raw ? JSON.parse(raw) : [];
-      // Migrate old users without status
-      const migrated = parsed.map((u: any) => ({ ...u, status: u.status || 'active' }));
+      // Migrate old users without status; also migrate pending vendors to active and set verificationStatus
+      const migrated = parsed.map((u: any) => {
+        let s = u.status || 'active';
+        // Vendors no longer need admin approval to log in — migrate pending to active
+        if (u.role === 'VENDOR' && s === 'pending') s = 'active';
+        // Set verificationStatus based on legacy fields
+        let vs = u.verificationStatus;
+        if (!vs) {
+          if (u.isVerified) vs = 'verified';
+          else if (u.verificationRequestedAt && !u.isVerified) vs = 'pending_review';
+          else vs = 'none';
+        }
+        return { ...u, status: s, verificationStatus: vs };
+      });
       // Ensure seeded admin always exists
       if (!migrated.find(u => u.email === SEEDED_ADMIN.email)) {
         const withSeeds = [...migrated, SEEDED_ADMIN, MOCK_VENDOR_GAB];
@@ -1040,7 +1048,6 @@ const App = () => {
 
   // Vendor verification modal state
   const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [verificationChecklist, setVerificationChecklist] = useState<boolean[]>([false, false, false, false, false, false]);
   const [verificationModalDocs, setVerificationModalDocs] = useState<string[]>([]);
 
   useEffect(() => { localStorage.setItem('AP_notifications', String(notificationsEnabled)); }, [notificationsEnabled]);
@@ -1093,7 +1100,11 @@ const App = () => {
       setPasswordMsg({ text: 'Current password is incorrect', type: 'error' }); return;
     }
     const newHashed = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(passwordForm.newPass)))).map(b => b.toString(16).padStart(2, '0')).join('');
-    setUsers(prev => prev.map(u => u.email === currentUserEmail ? { ...u, password: newHashed } : u));
+    setUsers(prev => {
+      const next = prev.map(u => u.email === currentUserEmail ? { ...u, password: newHashed } : u);
+      localStorage.setItem('AP_users', JSON.stringify(next));
+      return next;
+    });
     setPasswordForm({ current: '', newPass: '', confirm: '' });
     setPasswordMsg({ text: 'Password changed successfully!', type: 'success' });
     setTimeout(() => { setPasswordMsg(null); setShowChangePassword(false); }, 2000);
@@ -1724,7 +1735,6 @@ const App = () => {
     const found = users.find(u => u.email === email && u.password === hashed && u.role === userRole);
     if (!found) return 'not_found';
     if (found.status === 'banned') return 'banned';
-    if (found.status === 'pending') return 'pending';
     return 'ok';
   };
 
@@ -1732,16 +1742,25 @@ const App = () => {
     if (userRole === UserRole.ADMIN) return 'forbidden';
     if (users.find(u => u.email === email)) return 'exists';
     const hashed = await simpleHash(password);
-    const status = userRole === UserRole.VENDOR ? 'pending' : 'active';
-    const newUser: UserRecord = { name: name || undefined, email, password: hashed, role: userRole, status: status as any };
-    if (docs && docs.length > 0) {
+    // Vendors are active immediately — no admin approval needed to log in
+    const newUser: UserRecord = {
+      name: name || undefined,
+      email,
+      password: hashed,
+      role: userRole,
+      status: 'active',
+      isVerified: false,
+      verificationStatus: 'none',
+    };
+    // If vendor uploaded docs at registration, submit them for review
+    if (userRole === UserRole.VENDOR && docs && docs.length > 0) {
       newUser.verificationDocs = docs;
-      newUser.isVerified = true; // Auto-verify vendors who upload documents
+      newUser.verificationStatus = 'pending_review';
+      newUser.verificationSubmittedAt = new Date().toISOString();
     }
     const next: UserRecord[] = [...users, newUser];
     setUsers(next);
     try { localStorage.setItem('AP_users', JSON.stringify(next)); } catch (e) { }
-    if (userRole === UserRole.VENDOR) return 'pending';
     return 'ok';
   };
 
@@ -1875,7 +1894,7 @@ const App = () => {
     const newComplaint: Complaint = {
       id: `comp-${Date.now()}`,
       from: currentUserEmail,
-      fromRole: UserRole.VENDOR,
+      fromRole: role,
       subject: complaintForm.subject,
       message: complaintForm.message,
       status: 'open',
@@ -2666,37 +2685,61 @@ const App = () => {
       </div>
 
       {/* Vendor Verification Status Card */}
-      <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className={`bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border relative overflow-hidden group shadow-2xl ${currentUser?.verificationStatus === 'verified' ? 'border-green-400/30' :
+        currentUser?.verificationStatus === 'rejected' ? 'border-red-400/30' :
+          currentUser?.verificationStatus === 'pending_review' ? 'border-yellow-400/30' :
+            'border-zinc-200 dark:border-zinc-800'
+        }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-4 rounded-3xl ${currentUser?.isVerified ? 'bg-green-400/10' : currentUser?.verificationRequestedAt ? 'bg-yellow-400/10' : 'bg-blue-400/10'}`}>
-              <ShieldCheck className={currentUser?.isVerified ? 'text-green-400' : currentUser?.verificationRequestedAt ? 'text-yellow-400' : 'text-blue-400'} size={32} />
+            <div className={`p-4 rounded-3xl ${currentUser?.verificationStatus === 'verified' ? 'bg-green-400/10' :
+              currentUser?.verificationStatus === 'rejected' ? 'bg-red-400/10' :
+                currentUser?.verificationStatus === 'pending_review' ? 'bg-yellow-400/10' :
+                  'bg-blue-400/10'
+              }`}>
+              <ShieldCheck className={`${currentUser?.verificationStatus === 'verified' ? 'text-green-400' :
+                currentUser?.verificationStatus === 'rejected' ? 'text-red-400' :
+                  currentUser?.verificationStatus === 'pending_review' ? 'text-yellow-400' :
+                    'text-blue-400'
+                }`} size={32} />
             </div>
             <div>
               <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
-                {currentUser?.isVerified ? 'Verified Vendor' : 'Vendor Verification'}
+                {currentUser?.verificationStatus === 'verified' ? 'Verified Vendor' :
+                  currentUser?.verificationStatus === 'rejected' ? 'Verification Rejected' :
+                    currentUser?.verificationStatus === 'pending_review' ? 'Under Review' :
+                      'Vendor Verification'}
               </h3>
               <p className="text-zinc-600 dark:text-zinc-500 text-xs font-bold">
-                {currentUser?.isVerified
+                {currentUser?.verificationStatus === 'verified'
                   ? 'Your identity and business have been verified ✔'
-                  : currentUser?.verificationRequestedAt
-                    ? 'Your application is under review by the admin team'
-                    : 'Get a verified badge to build trust with customers'}
+                  : currentUser?.verificationStatus === 'pending_review'
+                    ? `Documents submitted${currentUser?.verificationSubmittedAt ? ` on ${new Date(currentUser.verificationSubmittedAt).toLocaleDateString()}` : ''} — awaiting admin review`
+                    : currentUser?.verificationStatus === 'rejected'
+                      ? 'Your verification request was declined — you can re-submit new documents'
+                      : 'Submit documents to get a verified badge and build trust with customers'}
               </p>
             </div>
           </div>
-          <div>
-            {currentUser?.isVerified ? (
+          <div className="shrink-0">
+            {currentUser?.verificationStatus === 'verified' ? (
               <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-500 font-black text-xs uppercase tracking-widest">
                 <CheckCircle size={16} /> Verified
               </span>
-            ) : currentUser?.verificationRequestedAt ? (
+            ) : currentUser?.verificationStatus === 'pending_review' ? (
               <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 font-black text-xs uppercase tracking-widest">
                 <Clock size={16} /> Pending Review
               </span>
+            ) : currentUser?.verificationStatus === 'rejected' ? (
+              <button
+                onClick={() => { setShowVerificationModal(true); setVerificationModalDocs([]); }}
+                className="bg-orange-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-orange-500/20"
+              >
+                <Upload size={16} /> Re-Submit Documents
+              </button>
             ) : (
               <button
-                onClick={() => { setShowVerificationModal(true); setVerificationChecklist([false, false, false, false, false, false]); }}
+                onClick={() => { setShowVerificationModal(true); setVerificationModalDocs([]); }}
                 className="bg-green-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-green-500/20"
               >
                 <ShieldCheck size={16} /> Apply for Verification
@@ -2704,6 +2747,16 @@ const App = () => {
             )}
           </div>
         </div>
+        {/* Show rejection reason */}
+        {currentUser?.verificationStatus === 'rejected' && currentUser?.verificationRejectedReason && (
+          <div className="mt-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4 flex items-start gap-3">
+            <div className="p-1.5 rounded-lg bg-red-500/10 shrink-0 mt-0.5"><XCircle size={14} className="text-red-500" /></div>
+            <div>
+              <p className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-0.5">Reason for Rejection</p>
+              <p className="text-xs text-red-700 dark:text-red-300">{currentUser.verificationRejectedReason}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Verification Document Upload Modal */}
@@ -2788,16 +2841,18 @@ const App = () => {
                     setUsers(prev => {
                       const next = prev.map(u => u.email === currentUserEmail ? {
                         ...u,
-                        verificationDocs: [...(u.verificationDocs || []), ...verificationModalDocs],
-                        isVerified: true,
-                        verificationRequestedAt: new Date().toISOString(),
+                        verificationDocs: verificationModalDocs,
+                        isVerified: false,
+                        verificationStatus: 'pending_review' as const,
+                        verificationSubmittedAt: new Date().toISOString(),
+                        verificationRejectedReason: undefined,
                       } : u);
                       localStorage.setItem('AP_users', JSON.stringify(next));
                       return next;
                     });
                     setShowVerificationModal(false);
                     setVerificationModalDocs([]);
-                    triggerGraphicAlert('VERIFY', 'Verified!', 'Your documents have been submitted and verified.');
+                    triggerGraphicAlert('VERIFY', 'Documents Submitted!', 'Your documents are now under admin review.');
                   }
                 }}
                 disabled={verificationModalDocs.length === 0}
@@ -2805,7 +2860,7 @@ const App = () => {
                   ? 'bg-green-500 text-black hover:scale-105 shadow-lg shadow-green-500/20'
                   : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'}`}
               >
-                <ShieldCheck size={16} /> Submit & Verify
+                <Upload size={16} /> Submit for Review
               </button>
             </div>
           </div>
@@ -3365,8 +3420,8 @@ const App = () => {
   );
 
   const renderAdminView = () => {
-    const pendingUsers = users.filter(u => u.status === 'pending');
-    const pendingVerifications = users.filter(u => u.role === UserRole.VENDOR && u.verificationRequestedAt && !u.isVerified);
+    const pendingVerifications = users.filter(u => u.role === UserRole.VENDOR && u.verificationStatus === 'pending_review');
+    const verifiedVendors = users.filter(u => u.role === UserRole.VENDOR && u.verificationStatus === 'verified');
     return (
       <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
         <div>
@@ -3382,10 +3437,10 @@ const App = () => {
             <p className="text-3xl font-black font-mono text-zinc-900 dark:text-white tracking-tight">{users.length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Registered</p>
           </div>
-          <div onClick={() => document.getElementById('admin-approval-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-yellow-400/40 transition-all">
+          <div onClick={() => document.getElementById('admin-verification-requests')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-yellow-400/40 transition-all">
             <Clock className="text-yellow-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Pending</p>
-            <p className="text-3xl font-black font-mono text-yellow-500 tracking-tight">{pendingUsers.length}</p>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Doc Reviews</p>
+            <p className="text-3xl font-black font-mono text-yellow-500 tracking-tight">{pendingVerifications.length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Awaiting Review</p>
           </div>
           <div onClick={() => document.getElementById('admin-price-override')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-orange-400/40 transition-all">
@@ -3408,72 +3463,22 @@ const App = () => {
           </div>
         </div>
 
-        {/* Approval Queue */}
-        {pendingUsers.length > 0 && (
-          <div id="admin-approval-queue" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-yellow-400/30 shadow-xl scroll-mt-24">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/20"><Clock className="text-yellow-400" size={24} /></div>
-              <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Approval Queue</h3>
-                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingUsers.length} vendor{pendingUsers.length !== 1 ? 's' : ''} awaiting approval</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {pendingUsers.map((user, idx) => (
-                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-yellow-400/10 flex items-center justify-center font-bold text-yellow-500">{(user.name || user.email)[0].toUpperCase()}</div>
-                      <div>
-                        <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
-                        <p className="text-xs text-zinc-500">{user.email} &bull; {user.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Approve Vendor?', subtitle: `Grant access to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('APPROVE_USER', user.email, `Approved vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Approved', `Access granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Approve</button>
-                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Vendor?', subtitle: `Deny registration for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.filter(u => u.email !== user.email); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_USER', user.email, `Rejected vendor: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Vendor Rejected', `Registration denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Reject</button>
-                    </div>
-                  </div>
-                  {/* Uploaded Documents */}
-                  {user.verificationDocs && user.verificationDocs.length > 0 && (
-                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700/50">
-                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Submitted Documents ({user.verificationDocs.length})</p>
-                      <div className="flex flex-wrap gap-2">
-                        {user.verificationDocs.map((doc, di) => (
-                          <button key={di} onClick={() => setDocLightbox(doc)} className="group/docthumb hover:scale-105 transition-transform">
-                            {doc.startsWith('data:application/pdf') ? (
-                              <div className="w-14 h-14 rounded-xl bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center group-hover/docthumb:border-yellow-400/50 transition-colors">
-                                <FileText size={18} className="text-red-400" />
-                                <span className="text-[7px] text-zinc-500 mt-0.5">PDF</span>
-                              </div>
-                            ) : (
-                              <img src={doc} alt={`Doc ${di + 1}`} className="w-14 h-14 rounded-xl object-cover border border-zinc-300 dark:border-zinc-700 group-hover/docthumb:border-yellow-400/50 transition-colors" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Vendor Verification Requests */}
+        {/* Vendor Document Verification Requests */}
         <div id="admin-verification-requests" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20"><ShieldCheck className="text-emerald-400" size={24} /></div>
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Verification Requests</h3>
-              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingVerifications.length} vendor{pendingVerifications.length !== 1 ? 's' : ''} awaiting verification &bull; {users.filter(u => u.isVerified).length} verified</p>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Document Verification</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingVerifications.length} pending review &bull; {verifiedVendors.length} verified vendors</p>
             </div>
           </div>
           {pendingVerifications.length === 0 ? (
             <div className="text-center py-12 text-zinc-400">
               <ShieldCheck size={40} className="mx-auto mb-3 opacity-30" />
-              <p className="font-black uppercase tracking-widest text-sm">No pending requests</p>
-              <p className="text-xs text-zinc-500 mt-1">Vendor verification requests will appear here</p>
+              <p className="font-black uppercase tracking-widest text-sm">No pending reviews</p>
+              <p className="text-xs text-zinc-500 mt-1">Vendor document submissions will appear here for review</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -3484,12 +3489,12 @@ const App = () => {
                       <div className="w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center font-bold text-emerald-500">{(user.name || user.email)[0].toUpperCase()}</div>
                       <div>
                         <p className="font-bold text-zinc-900 dark:text-white text-sm">{user.name || 'Unnamed'}</p>
-                        <p className="text-xs text-zinc-500">{user.email} &bull; Applied {user.verificationRequestedAt ? new Date(user.verificationRequestedAt).toLocaleDateString() : ''}</p>
+                        <p className="text-xs text-zinc-500">{user.email} &bull; Submitted {user.verificationSubmittedAt ? new Date(user.verificationSubmittedAt).toLocaleDateString() : ''}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified status to ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official status granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Verify</button>
-                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Reject Request?', subtitle: `Deny verification for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, verificationRequestedAt: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected verification for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Request Rejected', `Denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Reject</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified badge to ${user.name || user.email}? This confirms their business documents are valid.`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationStatus: 'verified' as const, verificationRejectedReason: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official badge granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Accept</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Decline Documents?', subtitle: `Reject verification documents from ${user.name || user.email}? Please provide a reason.`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: false, verificationStatus: 'rejected' as const, verificationRejectedReason: reason || 'Documents did not meet requirements' } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected documents for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Documents Declined', `Verification denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Decline</button>
                     </div>
                   </div>
                   {/* Uploaded Documents */}
@@ -3798,6 +3803,7 @@ const App = () => {
                   <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">User</th>
                   <th className="text-left text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Role</th>
                   <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Status</th>
+                  <th className="text-center text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Verified</th>
                   <th className="text-right text-[10px] text-zinc-500 font-black uppercase tracking-widest pb-4 px-4">Actions</th>
                 </tr>
               </thead>
@@ -3815,6 +3821,17 @@ const App = () => {
                     </td>
                     <td className="py-4 px-4 text-center">
                       <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${user.status === 'active' ? 'text-green-500 bg-green-500/10' : user.status === 'pending' ? 'text-yellow-500 bg-yellow-500/10' : 'text-red-500 bg-red-500/10'}`}>{user.status}</span>
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {user.role === UserRole.VENDOR ? (
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${user.verificationStatus === 'verified' ? 'text-green-500 bg-green-500/10' :
+                          user.verificationStatus === 'pending_review' ? 'text-yellow-500 bg-yellow-500/10' :
+                            user.verificationStatus === 'rejected' ? 'text-red-500 bg-red-500/10' :
+                              'text-zinc-400 bg-zinc-100 dark:bg-zinc-800'
+                          }`}>{user.verificationStatus === 'verified' ? '✓ Verified' : user.verificationStatus === 'pending_review' ? '⏳ Pending' : user.verificationStatus === 'rejected' ? '✗ Rejected' : 'None'}</span>
+                      ) : (
+                        <span className="text-zinc-300 dark:text-zinc-700">—</span>
+                      )}
                     </td>
                     <td className="py-4 px-4 text-right">
                       {user.role !== UserRole.ADMIN && (

@@ -60,8 +60,11 @@ export interface UserRecord {
   role: UserRole;
   status: 'active' | 'pending' | 'banned';
   isVerified?: boolean;
+  verificationStatus?: 'none' | 'pending_review' | 'verified' | 'rejected'; // document review lifecycle
   verificationRequestedAt?: string;
+  verificationSubmittedAt?: string; // ISO timestamp of when documents were submitted for review
   verificationDocs?: string[]; // base64 data URLs of uploaded documents (JPEG/PNG/PDF)
+  verificationRejectedReason?: string; // reason given by admin when rejecting documents
   shopName?: string;         // Custom vendor shop/store name
   specialty?: string;        // e.g. "Organic Fruits", "Farm-fresh Vegetables"
   shopDescription?: string;  // Short bio / tagline
