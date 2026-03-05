@@ -188,6 +188,30 @@ const formatPrice = (price: number) => {
   return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
+// Animated counter component — counts up from 0 to target
+const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 1200 }: { value: number; prefix?: string; suffix?: string; duration?: number }) => {
+  const [display, setDisplay] = useState(0);
+  const ref = React.useRef<number>(0);
+  useEffect(() => {
+    const start = ref.current;
+    const diff = value - start;
+    if (diff === 0) return;
+    const startTime = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = start + diff * eased;
+      setDisplay(current);
+      ref.current = current;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [value, duration]);
+  const formatted = Number.isInteger(value) ? Math.round(display).toLocaleString() : display.toFixed(2);
+  return <span>{prefix}{formatted}{suffix}</span>;
+};
+
 const timeAgo = (isoString: string): string => {
   const now = Date.now();
   const then = new Date(isoString).getTime();
@@ -1955,7 +1979,7 @@ const App = () => {
             </div>
           </div>
           <div
-            className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all"
+            className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group cursor-pointer hover:border-green-400/30 transition-all glass-card card-tilt"
             onClick={() => analyticsData.topGainer && setSelectedCrop(analyticsData.topGainer)}
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
@@ -2030,7 +2054,7 @@ const App = () => {
                 return (
                   <div
                     key={crop.id}
-                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 hover:-translate-y-1"
+                    className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 card-tilt stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
                     onClick={() => setSelectedCrop(crop)}
                   >
                     {/* Seasonal badge */}
@@ -2351,7 +2375,7 @@ const App = () => {
   );
 
   const RankingCard = ({ title, items, color, subtitle, onCropClick }: { title: string, items: Crop[], color: string, subtitle: string, onCropClick?: (crop: Crop) => void }) => (
-    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[40px] p-4 sm:p-6 lg:p-8 shadow-2xl flex flex-col">
+    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[40px] p-4 sm:p-6 lg:p-8 shadow-2xl flex flex-col glass-card">
       <div className="flex items-center gap-4 mb-8">
         <div className={`p-3 rounded-2xl border ${color === 'yellow' ? 'bg-yellow-400/20 border-yellow-400/30' : 'bg-green-400/20 border-green-400/30'}`}>
           {color === 'yellow' ? <Trophy className="text-yellow-400" size={28} /> : <Award className="text-green-500" size={28} />}
@@ -2473,21 +2497,21 @@ const App = () => {
 
         {aggregateVolatilityData.stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg glass-card stagger-item stagger-1">
               <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest mb-2">Period</p>
               <p className="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white">{aggregateVolatilityData.stats.date}</p>
             </div>
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg glass-card stagger-item stagger-2">
               <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest mb-2">Average Price</p>
-              <p className="text-lg sm:text-2xl font-mono font-black text-green-400">₱{aggregateVolatilityData.stats.price}</p>
+              <p className="text-lg sm:text-2xl font-mono font-black text-green-400"><AnimatedCounter value={aggregateVolatilityData.stats.price} prefix="₱" /></p>
             </div>
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg glass-card stagger-item stagger-3">
               <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest mb-2">Price Range</p>
               <p className="text-sm font-mono text-zinc-900 dark:text-white">₱{aggregateVolatilityData.stats.min} - ₱{aggregateVolatilityData.stats.max}</p>
             </div>
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg">
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg glass-card stagger-item stagger-4">
               <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest mb-2">Change</p>
-              <p className={`text-lg sm:text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}{aggregateVolatilityData.stats.change}%</p>
+              <p className={`text-lg sm:text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}<AnimatedCounter value={aggregateVolatilityData.stats.change} suffix="%" />%</p>
             </div>
           </div>
         )}
@@ -3906,6 +3930,7 @@ const App = () => {
 
   return (
     <div className={`min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <ActionGraphicModal alert={activeGraphicAlert} />
       {/* Inline ActionConfirmModal to prevent re-mount on state change */}
       {activeConfirmAlert && (() => {
@@ -4019,8 +4044,8 @@ const App = () => {
                 <span className="text-zinc-400 dark:text-zinc-500">Presyo</span>
               </h1>
             </div>
-            <nav className="hidden lg:flex items-center gap-4">
-              <button onClick={() => setActiveTab('market')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'market' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>MARKET</button>
+            <nav className="hidden lg:flex items-center gap-4" aria-label="Main navigation">
+              <button onClick={() => setActiveTab('market')} aria-current={activeTab === 'market' ? 'page' : undefined} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'market' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>MARKET</button>
               {role !== UserRole.VENDOR && (
                 <button onClick={() => setActiveTab('shops')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${activeTab === 'shops' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>SHOPS</button>
               )}
@@ -4030,12 +4055,13 @@ const App = () => {
             </nav>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeToggle />
+            <ThemeToggle aria-label="Toggle dark mode" />
 
             {/* Profile Settings Button */}
             <div className="relative">
               <button
                 onClick={() => setShowProfileModal(!showProfileModal)}
+                aria-label="Open profile settings"
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-sm sm:text-base hover:scale-110 active:scale-95 transition-all shadow-lg shadow-green-500/20 border border-green-400/30 overflow-hidden"
               >
                 {profilePicture ? (
@@ -4289,14 +4315,16 @@ const App = () => {
         </div>
       </header>
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full">
+      <main id="main-content" className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full" role="main">
         {isAuthenticated && <AnnouncementBanner announcements={announcements} dismissedIds={dismissedIds} onDismiss={handleDismissAnnouncement} />}
-        {activeTab === 'market' && renderConsumerView()}
-        {activeTab === 'market' && renderCalculatorWidget()}
-        {activeTab === 'shops' && role !== UserRole.VENDOR && renderShopsView()}
-        {activeTab === 'analytics' && renderAnalyticsDashboard()}
-        {activeTab === 'shop' && role === UserRole.VENDOR && renderVendorView()}
-        {activeTab === 'admin' && role === UserRole.ADMIN && renderAdminView()}
+        <div key={activeTab} className="page-transition-enter">
+          {activeTab === 'market' && renderConsumerView()}
+          {activeTab === 'market' && renderCalculatorWidget()}
+          {activeTab === 'shops' && role !== UserRole.VENDOR && renderShopsView()}
+          {activeTab === 'analytics' && renderAnalyticsDashboard()}
+          {activeTab === 'shop' && role === UserRole.VENDOR && renderVendorView()}
+          {activeTab === 'admin' && role === UserRole.ADMIN && renderAdminView()}
+        </div>
       </main>
 
       {/* Footer */}
@@ -4359,29 +4387,29 @@ const App = () => {
         </div>
       </footer>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
-        <button onClick={() => setActiveTab('market')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'market' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
+        <button onClick={() => setActiveTab('market')} aria-current={activeTab === 'market' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <Store size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Market</span>
         </button>
         {role !== UserRole.VENDOR && role !== UserRole.ADMIN && (
-          <button onClick={() => setActiveTab('shops')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'shops' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
+          <button onClick={() => setActiveTab('shops')} aria-current={activeTab === 'shops' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'shops' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <ShoppingBag size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shops</span>
           </button>
         )}
-        <button onClick={() => setActiveTab('analytics')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'analytics' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
+        <button onClick={() => setActiveTab('analytics')} aria-current={activeTab === 'analytics' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'analytics' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <BarChart3 size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats</span>
         </button>
         {role === UserRole.VENDOR && (
-          <button onClick={() => setActiveTab('shop')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'shop' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
+          <button onClick={() => setActiveTab('shop')} aria-current={activeTab === 'shop' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'shop' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <LayoutGrid size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dash</span>
           </button>
         )}
         {role === UserRole.ADMIN && isAdminUnlocked && (
-          <button onClick={() => setActiveTab('admin')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'admin' ? 'text-green-500 scale-110' : 'text-zinc-400 hover:text-zinc-600'}`}>
+          <button onClick={() => setActiveTab('admin')} aria-current={activeTab === 'admin' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'admin' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <ShieldCheck size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Admin</span>
           </button>
