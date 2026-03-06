@@ -78,6 +78,7 @@ import { MOCK_CROPS } from './constants';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import FuturisticVinesBackground from './components/ui/FuturisticVinesBackground';
 
 // Simulated Intelligence Engine
 const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
@@ -637,7 +638,8 @@ const LoginPage = ({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
+      <FuturisticVinesBackground interactive={true} />
       <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
 
@@ -4001,6 +4003,7 @@ const App = () => {
 
   return (
     <div className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
+      <FuturisticVinesBackground />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ActionGraphicModal alert={activeGraphicAlert} />
       {/* Inline ActionConfirmModal to prevent re-mount on state change */}
