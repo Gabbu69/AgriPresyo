@@ -356,13 +356,11 @@ const FallingLeafElement: React.FC<{ leaf: FallingLeaf }> = ({ leaf }) => {
       // Rotation: gentle rocking
       const rotation = Math.sin(progress * Math.PI * swaySpeed * 1.3 + leaf.swayOffset) * 15;
 
-      // Scale: shrink slightly
-      const scale = 1 - progress * 0.35;
 
       // Opacity: fade out in last 40%
       const opacity = progress > 0.6 ? 1 - (progress - 0.6) / 0.4 : 0.9;
 
-      el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg) scale(${scale})`;
+      el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;
       el.style.opacity = `${Math.max(0, opacity)}`;
 
       if (progress < 1) {

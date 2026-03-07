@@ -1093,6 +1093,7 @@ const App = () => {
   const [shopProfileDraft, setShopProfileDraft] = useState({ shopName: '', specialty: '', shopDescription: '', shopLocation: '' });
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [volatilityRange, setVolatilityRange] = useState<'3m' | '6m' | '1y' | 'all'>('all');
 
   // Consumer features
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -1680,7 +1681,7 @@ const App = () => {
       });
     });
 
-    const data = Object.entries(months)
+    let data = Object.entries(months)
       .sort((a, b) => new Date(a[0] + ' 1').getTime() - new Date(b[0] + ' 1').getTime())
       .map(([key, mData]) => {
         const avg = Math.round((mData.prices.reduce((a, b) => a + b) / mData.prices.length) * 100) / 100;
@@ -1698,9 +1699,16 @@ const App = () => {
         };
       });
 
-    const selectedData = data.find(d => d.fullKey === selectedPeriod);
+    // Apply time-range filter
+    if (volatilityRange !== 'all' && data.length > 0) {
+      const rangeMonths = volatilityRange === '3m' ? 3 : volatilityRange === '6m' ? 6 : 12;
+      data = data.slice(-rangeMonths);
+    }
+
+    // Auto-select latest period if nothing is selected
+    const selectedData = data.find(d => d.fullKey === selectedPeriod) || (data.length > 0 ? data[data.length - 1] : null);
     return { data, stats: selectedData };
-  }, [crops, selectedPeriod]);
+  }, [crops, selectedPeriod, volatilityRange]);
 
   const [isAddCropModalOpen, setIsAddCropModalOpen] = useState(false);
   const [editingInventoryCrop, setEditingInventoryCrop] = useState<Crop | null>(null);
@@ -2534,8 +2542,16 @@ const App = () => {
             <BarChart3 className="text-green-500" size={24} />
             <h3 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">Aggregate Market Volatility</h3>
           </div>
-          <div className="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 shadow-inner">
-            <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-zinc-800 text-green-500 shadow-xl">Monthly</div>
+          <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-inner">
+            {(['3m', '6m', '1y', 'all'] as const).map(range => (
+              <button
+                key={range}
+                onClick={() => setVolatilityRange(range)}
+                className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${volatilityRange === range ? 'bg-white dark:bg-zinc-800 text-green-600 dark:text-green-500 shadow-xl' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                {range === 'all' ? 'All' : range.toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
         <div className="h-80 mb-8">
@@ -2547,7 +2563,7 @@ const App = () => {
                   <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#c7c7cc' }} angle={-45} height={80} interval={0} />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#c7c7cc' }} angle={-45} height={80} interval="equidistantPreserveStart" />
               <YAxis tick={{ fontSize: 12, fill: '#c7c7cc' }} />
               <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
               <Tooltip
@@ -2584,7 +2600,7 @@ const App = () => {
             </div>
             <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-lg glass-card stagger-item stagger-4">
               <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-black uppercase tracking-widest mb-2">Change</p>
-              <p className={`text-lg sm:text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}<AnimatedCounter value={aggregateVolatilityData.stats.change} suffix="%" />%</p>
+              <p className={`text-lg sm:text-2xl font-mono font-black ${aggregateVolatilityData.stats.change >= 0 ? 'text-green-400' : 'text-red-500'}`}>{aggregateVolatilityData.stats.change >= 0 ? '+' : ''}<AnimatedCounter value={aggregateVolatilityData.stats.change} suffix="%" /></p>
             </div>
           </div>
         )}
@@ -3822,16 +3838,16 @@ const App = () => {
         </div>
 
         {/* Market Report Export */}
-        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20"><FileText className="text-emerald-400" size={24} /></div>
+        <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-400/10 border border-emerald-400/20 shrink-0"><FileText className="text-emerald-400" size={20} /></div>
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Market Reports</h3>
-                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Generate downloadable CSV</p>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Market Reports</h3>
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Generate downloadable reports</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button onClick={() => {
                 const doc = new jsPDF();
                 doc.setFontSize(18);
@@ -3870,9 +3886,9 @@ const App = () => {
 
                 doc.save(`agripresyo_report_${new Date().toISOString().split('T')[0]}.pdf`);
                 addAuditEntry('EXPORT_REPORT_PDF', 'Market Report', 'PDF Export Generated');
-              }} className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-red-500/10"><FileText size={16} /> Export PDF</button>
+              }} className="flex-1 sm:flex-none bg-red-500 text-white px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-red-500/10"><FileText size={14} /> <span>PDF</span></button>
 
-              <button onClick={() => { const headers = ['Crop', 'Category', 'Price', 'Change24h', 'Demand', 'Vendors', 'AvgVendorPrice']; const rows = crops.map(c => { const avg = c.vendors.length > 0 ? (c.vendors.reduce((s: number, v: any) => s + v.price, 0) / c.vendors.length).toFixed(2) : c.currentPrice.toFixed(2); return [c.name, c.category, c.currentPrice, c.change24h, c.demand, c.vendors.length, avg]; }); const csv = [headers, ...rows, [], ['USER SUMMARY'], ['Total Users', users.length], ['Active', users.filter(u => u.status === 'active').length], ['Pending', users.filter(u => u.status === 'pending').length], ['Banned', users.filter(u => u.status === 'banned').length]].map(r => r.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `agripresyo_report_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url); addAuditEntry('EXPORT_REPORT', 'Market Report', `CSV with ${crops.length} crops`); }} className="bg-emerald-500 text-black px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-emerald-500/10"><Download size={16} /> Export CSV</button>
+              <button onClick={() => { const headers = ['Crop', 'Category', 'Price', 'Change24h', 'Demand', 'Vendors', 'AvgVendorPrice']; const rows = crops.map(c => { const avg = c.vendors.length > 0 ? (c.vendors.reduce((s: number, v: any) => s + v.price, 0) / c.vendors.length).toFixed(2) : c.currentPrice.toFixed(2); return [c.name, c.category, c.currentPrice, c.change24h, c.demand, c.vendors.length, avg]; }); const csv = [headers, ...rows, [], ['USER SUMMARY'], ['Total Users', users.length], ['Active', users.filter(u => u.status === 'active').length], ['Pending', users.filter(u => u.status === 'pending').length], ['Banned', users.filter(u => u.status === 'banned').length]].map(r => r.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `agripresyo_report_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url); addAuditEntry('EXPORT_REPORT', 'Market Report', `CSV with ${crops.length} crops`); }} className="flex-1 sm:flex-none bg-emerald-500 text-black px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/10"><Download size={14} /> <span>CSV</span></button>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -3949,28 +3965,30 @@ const App = () => {
         </div>
 
         {/* Audit Log */}
-        <div className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-2xl bg-purple-400/10 border border-purple-400/20"><FileText className="text-purple-400" size={24} /></div>
+        <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-purple-400/10 border border-purple-400/20 shrink-0"><FileText className="text-purple-400" size={20} /></div>
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Audit Log</h3>
+                <h3 className="text-lg sm:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Audit Log</h3>
                 <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{auditLog.length} entries</p>
               </div>
             </div>
-            {auditLog.length > 0 && <button onClick={() => setAuditLog([])} className="text-xs text-zinc-500 font-bold uppercase tracking-widest hover:text-red-400 transition-colors border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-xl hover:border-red-400/30">Clear Log</button>}
+            {auditLog.length > 0 && <button onClick={() => setAuditLog([])} className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest hover:text-red-400 transition-colors border border-zinc-200 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:border-red-400/30 self-start sm:self-auto">Clear Log</button>}
           </div>
           {auditLog.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400"><FileText size={40} className="mx-auto mb-3 opacity-30" /><p className="font-black uppercase tracking-widest text-sm">No actions recorded</p><p className="text-xs text-zinc-500 mt-1">Admin actions appear here</p></div>
+            <div className="text-center py-8 sm:py-12 text-zinc-400"><FileText size={32} className="mx-auto mb-3 opacity-30" /><p className="font-black uppercase tracking-widest text-xs sm:text-sm">No actions recorded</p><p className="text-[10px] sm:text-xs text-zinc-500 mt-1">Admin actions appear here</p></div>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-hide">
               {auditLog.map(entry => {
                 const clr = entry.action.includes('BAN') || entry.action.includes('REJECT') || entry.action.includes('DISMISS') ? 'text-red-500 bg-red-500/10' : entry.action.includes('APPROVE') || entry.action.includes('RESOLVE') || entry.action.includes('UNBAN') ? 'text-green-500 bg-green-500/10' : entry.action.includes('PRICE') ? 'text-orange-500 bg-orange-500/10' : entry.action.includes('EXPORT') ? 'text-emerald-500 bg-emerald-500/10' : entry.action.includes('ANNOUNCEMENT') ? 'text-blue-500 bg-blue-500/10' : 'text-purple-500 bg-purple-500/10';
                 return (
-                  <div key={entry.id} className="flex items-center gap-4 p-3 bg-zinc-50 dark:bg-black/30 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shrink-0 ${clr}`}>{entry.action}</span>
-                    <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white font-bold truncate">{entry.details}</p><p className="text-[10px] text-zinc-400 font-mono">{entry.target}</p></div>
-                    <span className="text-[10px] text-zinc-500 font-mono shrink-0">{entry.timestamp}</span>
+                  <div key={entry.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 bg-zinc-50 dark:bg-black/30 border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                      <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg shrink-0 ${clr}`}>{entry.action}</span>
+                      <div className="flex-1 min-w-0"><p className="text-[11px] sm:text-xs text-zinc-900 dark:text-white font-bold truncate">{entry.details}</p><p className="text-[10px] text-zinc-400 font-mono truncate">{entry.target}</p></div>
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono shrink-0 pl-[calc(0.5rem+var(--badge-w,0px))] sm:pl-0">{entry.timestamp}</span>
                   </div>
                 );
               })}
