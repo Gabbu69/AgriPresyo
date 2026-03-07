@@ -229,21 +229,23 @@ const timeAgo = (isoString: string): string => {
 
 const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (crop: Crop) => void }) => {
   return (
-    <div className="bg-zinc-900 border-b border-zinc-800 h-10 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-md">
-      <div className="animate-marquee flex gap-8 px-4">
-        {[...crops, ...crops].map((crop, idx) => (
-          <div
-            key={`${crop.id}-${idx}`}
-            className="flex items-center gap-2 font-mono text-sm cursor-pointer hover:bg-zinc-800/60 rounded-lg px-2 py-1 transition-colors"
-            onClick={() => onCropClick?.(crop)}
-          >
-            <span className="text-zinc-500 font-bold uppercase">{crop.name}</span>
-            <span className="font-bold text-white">{formatPrice(crop.currentPrice)}</span>
-            <span className={crop.change24h >= 0 ? 'text-green-400' : 'text-red-500'}>
-              {crop.change24h >= 0 ? '▲' : '▼'} {Math.abs(crop.change24h)}%
-            </span>
-          </div>
-        ))}
+    <div className="bg-zinc-950/90 backdrop-blur-md border-b border-zinc-900 h-11 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
+      <div className="ticker-mask w-full h-full flex items-center">
+        <div className="animate-marquee flex px-4">
+          {[...crops, ...crops, ...crops, ...crops].map((crop, idx) => (
+            <div
+              key={`${crop.id}-${idx}`}
+              className="flex items-center gap-3 font-mono text-sm cursor-pointer hover:bg-zinc-800/80 rounded-xl px-3 py-1.5 transition-all mx-2 group"
+              onClick={() => onCropClick?.(crop)}
+            >
+              <span className="text-zinc-500 font-extrabold uppercase group-hover:text-zinc-300 transition-colors">{crop.name}</span>
+              <span className="font-bold text-white tracking-tight">{formatPrice(crop.currentPrice)}</span>
+              <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold ${crop.change24h >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                {crop.change24h >= 0 ? '▲' : '▼'} {Math.abs(crop.change24h)}%
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

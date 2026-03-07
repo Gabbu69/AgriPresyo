@@ -69,17 +69,23 @@
 
     @keyframes marquee {
       0% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
       }
 
       100% {
-        transform: translateX(-50%);
+        transform: translate3d(-50%, 0, 0);
       }
     }
 
     .animate-marquee {
       display: flex;
-      animation: marquee 60s linear infinite;
+      animation: marquee 200s linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-mask {
+      -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
     }
   </style>
   <link rel="stylesheet" href="/index.css">
