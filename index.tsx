@@ -77,6 +77,8 @@ import {
 } from 'recharts';
 import { UserRole, Crop, BudgetListItem, Vendor, SystemAlert, UserRecord, AuditLogEntry, Announcement, Complaint } from './types';
 import { MOCK_CROPS } from './constants';
+import { MarketsIcon, ShopsIcon, BudgetIcon, VendorIcon, AdminIcon, ConsumerRoleIcon, VendorRoleIcon, AdminRoleIcon } from './components/ui/NavIcons';
+import { Ticker } from './components/ui/Ticker';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -234,29 +236,6 @@ const timeAgo = (isoString: string): string => {
   return new Date(isoString).toLocaleDateString();
 };
 
-const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (crop: Crop) => void }) => {
-  return (
-    <div className="bg-gradient-to-r from-zinc-950/95 via-zinc-950/90 to-zinc-950/95 backdrop-blur-md border-b border-zinc-800/50 h-11 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
-      <div className="ticker-mask w-full h-full flex items-center">
-        <div className="animate-marquee flex px-4">
-          {[...crops, ...crops, ...crops, ...crops].map((crop, idx) => (
-            <div
-              key={`${crop.id}-${idx}`}
-              className="flex items-center gap-3 font-mono text-sm cursor-pointer hover:bg-zinc-800/50 rounded-lg px-3 py-1.5 transition-all mx-2 group"
-              onClick={() => onCropClick?.(crop)}
-            >
-              <span className="text-zinc-400 font-bold uppercase group-hover:text-zinc-200 transition-colors">{crop.name}</span>
-              <span className="font-black text-white tracking-tight">{formatPrice(crop.currentPrice)}</span>
-              <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold transition-colors ${crop.change24h >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
-                {crop.change24h >= 0 ? '▲' : '▼'} {Math.abs(crop.change24h)}%
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 type Theme = 'dark' | 'light';
 
@@ -425,10 +404,10 @@ const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg'
 };
 
 
-const ROLE_LABELS: Record<UserRole, { label: string; icon: string; desc: string }> = {
-  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: '🛒', desc: 'Browse prices & build budgets' },
-  [UserRole.VENDOR]: { label: 'VENDOR', icon: '🏪', desc: 'Manage your shop & inventory' },
-  [UserRole.ADMIN]: { label: 'ADMIN', icon: '🛡️', desc: 'System administration & analytics' },
+const ROLE_LABELS: Record<UserRole, { label: string; icon: React.ReactNode; desc: string }> = {
+  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: <ConsumerRoleIcon size={24} />, desc: 'Browse prices & build budgets' },
+  [UserRole.VENDOR]: { label: 'VENDOR', icon: <VendorRoleIcon size={24} />, desc: 'Manage your shop & inventory' },
+  [UserRole.ADMIN]: { label: 'ADMIN', icon: <AdminRoleIcon size={24} />, desc: 'System administration & analytics' },
 };
 
 const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setRole: (r: UserRole) => void; isAdminUnlocked: boolean }) => {
@@ -3415,7 +3394,7 @@ const App = () => {
           </div>
           <div className="space-y-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <input id="ann-title" type="text" placeholder="Announcement title..." className="col-span-1 md:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50" />
+              <input id="ann-title" type="text" placeholder="Announcement title..." className="col-span-1 md:col-span-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50 transition-colors" />
               <input id="ann-duration" type="number" placeholder="Duration (sec, optional)" className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-blue-400/50" />
               <select id="ann-priority" className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none">
                 <option value="low">Low Priority</option>
@@ -3423,20 +3402,57 @@ const App = () => {
                 <option value="high">High Priority</option>
               </select>
             </div>
-            <textarea id="ann-message" placeholder="Announcement message..." rows={3} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-blue-400/50 resize-none" />
+            <textarea id="ann-message" placeholder="Announcement message..." rows={3} className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-blue-400/50 resize-none transition-colors" />
+            <div id="ann-error" className="hidden items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-2xl">
+              <AlertTriangle size={14} className="text-red-500 shrink-0" />
+              <span id="ann-error-text" className="text-red-500 text-xs font-bold"></span>
+            </div>
             <button onClick={() => {
-              const title = (document.getElementById('ann-title') as HTMLInputElement).value.trim();
-              const message = (document.getElementById('ann-message') as HTMLTextAreaElement).value.trim();
+              const titleEl = document.getElementById('ann-title') as HTMLInputElement;
+              const messageEl = document.getElementById('ann-message') as HTMLTextAreaElement;
+              const errorEl = document.getElementById('ann-error') as HTMLDivElement;
+              const errorTextEl = document.getElementById('ann-error-text') as HTMLSpanElement;
+              const title = titleEl.value.trim();
+              const message = messageEl.value.trim();
               const durationStr = (document.getElementById('ann-duration') as HTMLInputElement).value.trim();
               const duration = durationStr ? parseInt(durationStr) : undefined;
               const priority = (document.getElementById('ann-priority') as HTMLSelectElement).value as 'high' | 'medium' | 'low';
 
-              if (!title || !message) { alert('Please fill in title and message.'); return; }
+              // Clear previous error styles
+              titleEl.style.borderColor = '';
+              messageEl.style.borderColor = '';
+              errorEl.style.display = 'none';
+
+              if (!title && !message) {
+                errorTextEl.textContent = 'Please fill in title and message.';
+                errorEl.style.display = 'flex';
+                titleEl.style.borderColor = '#ef4444';
+                messageEl.style.borderColor = '#ef4444';
+                titleEl.focus();
+                setTimeout(() => { errorEl.style.display = 'none'; titleEl.style.borderColor = ''; messageEl.style.borderColor = ''; }, 3000);
+                return;
+              }
+              if (!title) {
+                errorTextEl.textContent = 'Please fill in title.';
+                errorEl.style.display = 'flex';
+                titleEl.style.borderColor = '#ef4444';
+                titleEl.focus();
+                setTimeout(() => { errorEl.style.display = 'none'; titleEl.style.borderColor = ''; }, 3000);
+                return;
+              }
+              if (!message) {
+                errorTextEl.textContent = 'Please fill in message.';
+                errorEl.style.display = 'flex';
+                messageEl.style.borderColor = '#ef4444';
+                messageEl.focus();
+                setTimeout(() => { errorEl.style.display = 'none'; messageEl.style.borderColor = ''; }, 3000);
+                return;
+              }
 
               setAnnouncements(prev => [{ id: `ann-${Date.now()}`, title, message, timestamp: new Date().toLocaleString(), priority, active: true, duration }, ...prev]);
               addAuditEntry('CREATE_ANNOUNCEMENT', title, `Posted ${priority} announcement${duration ? ` (${duration}s)` : ''}`);
-              (document.getElementById('ann-title') as HTMLInputElement).value = '';
-              (document.getElementById('ann-message') as HTMLTextAreaElement).value = '';
+              titleEl.value = '';
+              messageEl.value = '';
               (document.getElementById('ann-duration') as HTMLInputElement).value = '';
             }} className="bg-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"><Megaphone size={16} /> Post Announcement</button>
           </div>
@@ -4234,28 +4250,28 @@ const App = () => {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
         <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
-          <Store size={26} />
+          <MarketsIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Mkts</span>
         </button>
         {role !== UserRole.VENDOR && role !== UserRole.ADMIN && (
           <button onClick={() => navigate('/vendors')} aria-current={location.pathname === '/vendors' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/vendors' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
-            <ShoppingBag size={26} />
+            <ShopsIcon size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shops</span>
           </button>
         )}
         <button onClick={() => navigate('/budget')} aria-current={location.pathname === '/budget' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/budget' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
-          <BarChart3 size={26} />
+          <BudgetIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats</span>
         </button>
         {role === UserRole.VENDOR && (
           <button onClick={() => navigate('/')} aria-current={location.pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
-            <LayoutGrid size={26} />
+            <VendorIcon size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dash</span>
           </button>
         )}
         {role === UserRole.ADMIN && isAdminUnlocked && (
           <button onClick={() => navigate('/admin')} aria-current={location.pathname === '/admin' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/admin' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
-            <ShieldCheck size={26} />
+            <AdminIcon size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Admin</span>
           </button>
         )}
