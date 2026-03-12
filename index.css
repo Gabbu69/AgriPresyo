@@ -1,0 +1,1038 @@
+/* AgriPresyo Global Styles */
+/* This file is intentionally minimal — Tailwind CDN handles utility classes. */
+
+/* Hide scrollbar but remain scrollable */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ============================================
+   SMOOTH SCROLLING & SCROLL POLISH
+   ============================================ */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+    /* Account for fixed header */
+}
+
+html,
+body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth momentum scrolling on iOS */
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent overscroll bounce propagation for a cleaner feel */
+html {
+    overscroll-behavior-y: contain;
+}
+
+/* Smooth scroll for all scrollable containers */
+* {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrollbar thumb transition */
+::-webkit-scrollbar-thumb {
+    transition: background 0.2s ease, border-radius 0.2s ease;
+}
+
+/* Horizontal carousel — smooth snap (add scroll-snap-x to use) */
+.scroll-snap-x {
+    scroll-snap-type: x proximity;
+    scroll-behavior: smooth;
+}
+
+.scroll-snap-x>* {
+    scroll-snap-align: start;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 640px) {
+
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        touch-action: manipulation;
+    }
+}
+
+/* Light mode scrollbar */
+:root:not(.dark) ::-webkit-scrollbar-track,
+html:not(.dark) ::-webkit-scrollbar-track {
+    background: #f4f4f5;
+}
+
+:root:not(.dark) ::-webkit-scrollbar-thumb,
+html:not(.dark) ::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 10px;
+}
+
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover,
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+}
+
+/* ============================================
+   OAUTH / SOCIAL SIGN-IN BUTTONS
+   ============================================ */
+.btn-oauth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-oauth:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.btn-oauth:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-oauth-google {
+    background: #ffffff;
+    color: #1f1f1f;
+    border-color: #dadce0;
+}
+
+.dark .btn-oauth-google {
+    background: #131314;
+    color: #e3e3e3;
+    border-color: #3c4043;
+}
+
+.btn-oauth-google:hover {
+    background: #f8f9fa;
+    border-color: #c6c8cb;
+}
+
+.dark .btn-oauth-google:hover {
+    background: #1f2023;
+    border-color: #5f6368;
+}
+
+.btn-oauth-facebook {
+    background: #1877f2;
+    color: #ffffff;
+    border-color: #1877f2;
+}
+
+.dark .btn-oauth-facebook {
+    background: #1877f2;
+    color: #ffffff;
+    border-color: #1877f2;
+}
+
+.btn-oauth-facebook:hover {
+    background: #166fe5;
+}
+
+.dark .btn-oauth-facebook:hover {
+    background: #166fe5;
+}
+
+.btn-oauth svg {
+    flex-shrink: 0;
+}
+
+/* OAuth divider */
+.oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4d4d8, transparent);
+}
+
+.dark .oauth-divider::before,
+.dark .oauth-divider::after {
+    background: linear-gradient(90deg, transparent, #3f3f46, transparent);
+}
+
+.oauth-divider span {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #a1a1aa;
+    white-space: nowrap;
+}
+
+/* ============================================
+   MOBILE FULL-SCREEN MODAL
+   ============================================ */
+@media (max-width: 640px) {
+    .mobile-fullscreen-modal {
+        position: fixed !important;
+        inset: 0 !important;
+        border-radius: 0 !important;
+        max-height: 100vh !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+    }
+
+    .mobile-fullscreen-modal>div {
+        border-radius: 0 !important;
+    }
+}
+
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Button Loading Spinner */
+@keyframes btn-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes btn-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), 0 0 60px rgba(34, 197, 94, 0.15);
+    }
+}
+
+@keyframes btn-shimmer {
+    0% {
+        background-position: -200% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
+}
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.15) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: btn-shimmer 1.5s ease-in-out infinite;
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: btn-spinner 0.6s linear infinite;
+    vertical-align: middle;
+}
+
+.btn-loading-glow {
+    animation: btn-glow 1.5s ease-in-out infinite;
+}
+
+/* Admin Unlock Modal Animations */
+@keyframes adminUnlockFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes adminUnlockScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes adminUnlockBurstSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes adminUnlockBurstPulse {
+
+    0%,
+    100% {
+        opacity: 0.15;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes adminUnlockFloat {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: translateY(-30px) scale(1.3);
+        opacity: 0.8;
+    }
+}
+
+@keyframes adminUnlockGlowPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes adminUnlockShieldPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 40px rgba(34, 197, 94, 0.3), inset 0 0 30px rgba(34, 197, 94, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 60px rgba(34, 197, 94, 0.5), inset 0 0 40px rgba(34, 197, 94, 0.2);
+    }
+}
+
+@keyframes adminUnlockRingExpand {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+@keyframes adminUnlockDotPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+}
+
+/* Skeleton Shimmer for Loading States */
+@keyframes skeletonShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg,
+            rgba(161, 161, 170, 0.08) 25%,
+            rgba(161, 161, 170, 0.18) 50%,
+            rgba(161, 161, 170, 0.08) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+.dark .skeleton {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 25%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 75%);
+    background-size: 200% 100%;
+}
+
+/* Header scroll shadow — smooth transition */
+header {
+    transition: box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-scrolled {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .header-scrolled {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   MODAL ANIMATIONS (replaces missing tailwindcss-animate)
+   ============================================ */
+
+/* Fade In Overlay */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Zoom In Content */
+@keyframes modalZoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalZoomOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+}
+
+/* Slide up entrance */
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-overlay-enter {
+    animation: modalFadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-overlay-exit {
+    animation: modalFadeOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-content-enter {
+    animation: modalZoomIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-content-exit {
+    animation: modalZoomOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.modal-slide-up {
+    animation: modalSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ============================================
+   PROFESSIONAL BUTTON ANIMATIONS
+   ============================================ */
+
+/* Base button transitions */
+button {
+    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Smooth input/select transitions */
+input,
+select,
+textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Smooth link transitions */
+a {
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Hover lift + glow */
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* Press feedback */
+button:active:not(:disabled) {
+    transform: translateY(0px) scale(0.97);
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ripple effect on click */
+@keyframes btnRipple {
+    0% {
+        transform: scale(0);
+        opacity: 0.4;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+button .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    animation: btnRipple 0.6s ease-out forwards;
+    transform: translate(-50%, -50%);
+}
+
+/* Primary Action Button (green) glow */
+button.btn-primary-glow:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.1);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Danger Button (red) glow */
+button.btn-danger-glow:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3), 0 0 40px rgba(239, 68, 68, 0.1);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Subtle hover highlight for icon/secondary buttons */
+@keyframes btnShine {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+button:hover:not(:disabled)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    animation: btnShine 0.6s ease-out forwards;
+    pointer-events: none;
+}
+
+/* ============================================
+   SIGN OUT / PAGE EXIT ANIMATION
+   ============================================ */
+
+@keyframes pageExitFade {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.97);
+        filter: blur(4px);
+    }
+}
+
+.page-exit-animation {
+    animation: pageExitFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    pointer-events: none;
+}
+
+/* Sign out button specific hover */
+button.btn-signout:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25);
+    transform: translateY(-2px) scale(1.03);
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+button.btn-signout:active:not(:disabled) {
+    transform: scale(0.95);
+    box-shadow: none;
+}
+
+/* ============================================
+   GRAPHIC ALERT ANIMATIONS
+   ============================================ */
+
+@keyframes graphicAlertPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 50px rgba(34, 197, 94, 0.4);
+    }
+}
+
+@keyframes graphicAlertIconBounce {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+
+    30% {
+        transform: translateY(-12px) scale(1.1);
+    }
+
+    60% {
+        transform: translateY(-4px) scale(1.02);
+    }
+}
+
+.graphic-alert-container {
+    animation: graphicAlertPulse 1.5s ease-in-out infinite;
+}
+
+.graphic-alert-icon {
+    animation: graphicAlertIconBounce 1s ease-in-out infinite;
+}
+
+/* Click to dismiss hint */
+@keyframes dismissHintPulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.dismiss-hint {
+    animation: dismissHintPulse 1.5s ease-in-out infinite;
+}
+
+/* Tooltip styling for verified badge */
+[title] {
+    position: relative;
+}
+
+/* ============================================
+   GLASSMORPHISM CARDS
+   ============================================ */
+.glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Light mode glassmorphism */
+:root:not(.dark) .glass-card,
+html:not(.dark) .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================
+   STAGGERED ENTRANCE ANIMATIONS
+   ============================================ */
+@keyframes staggerFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stagger-item {
+    opacity: 0;
+    animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.stagger-1 {
+    animation-delay: 0.05s;
+}
+
+.stagger-2 {
+    animation-delay: 0.1s;
+}
+
+.stagger-3 {
+    animation-delay: 0.15s;
+}
+
+.stagger-4 {
+    animation-delay: 0.2s;
+}
+
+.stagger-5 {
+    animation-delay: 0.25s;
+}
+
+.stagger-6 {
+    animation-delay: 0.3s;
+}
+
+.stagger-7 {
+    animation-delay: 0.35s;
+}
+
+.stagger-8 {
+    animation-delay: 0.4s;
+}
+
+/* ============================================
+   PAGE / VIEW TRANSITIONS
+   ============================================ */
+@keyframes pageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-transition-enter {
+    animation: pageSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Main content area — smooth scroll container */
+#main-content {
+    scroll-behavior: smooth;
+}
+
+/* ============================================
+   3D CARD TILT ON HOVER
+   ============================================ */
+.card-tilt {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+}
+
+.card-tilt:hover {
+    transform: perspective(800px) rotateX(2deg) rotateY(-2deg) translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-tilt:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   MOBILE BOTTOM NAV GLOW INDICATOR
+   ============================================ */
+.nav-active-glow {
+    position: relative;
+}
+
+.nav-active-glow::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
+    animation: navDotPulse 2s ease-in-out infinite;
+}
+
+@keyframes navDotPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.4), 0 0 16px rgba(34, 197, 94, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 14px rgba(34, 197, 94, 0.7), 0 0 28px rgba(34, 197, 94, 0.4);
+    }
+}
+
+/* Safe area padding for mobile devices with notch/home indicator */
+.safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================
+   BOTTOM SHEET MODAL (mobile)
+   ============================================ */
+@keyframes bottomSheetSlideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bottomSheetSlideDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .modal-bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto !important;
+        border-radius: 24px 24px 0 0;
+        max-height: 85vh;
+        animation: bottomSheetSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .modal-bottom-sheet-exit {
+        animation: bottomSheetSlideDown 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY — FOCUS VISIBLE
+   ============================================ */
+*:focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+button:focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 0px;
+}
+
+/* Skip-to-content link (screen readers + keyboard users) */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    z-index: 10000;
+    background: #22c55e;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 0 0 12px 12px;
+    font-weight: 900;
+    font-size: 14px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ============================================
+   SMOOTH MARKET TICKER ANIMATION
+   ============================================ */
+@keyframes smoothMarquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    animation: smoothMarquee 150s linear infinite;
+    will-change: transform;
+    /* Smooth hardware acceleration */
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    image-rendering: crisp-edges;
+    /* Prevent sub-pixel issues */
+    transform: translateZ(0);
+}
+
+/* Gradient mask for smooth fade at edges */
+.ticker-mask {
+    mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 5%,
+            black 95%,
+            transparent 100%);
+    -webkit-mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 5%,
+            black 95%,
+            transparent 100%);
+}
+
+/* ============================================
+   PREFERS REDUCED MOTION
+   Disables ALL animations for accessibility
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .stagger-item {
+        opacity: 1;
+    }
+
+    .card-tilt:hover {
+        transform: none;
+    }
+
+    .nav-active-glow::after {
+        animation: none;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    .animate-marquee {
+        animation: none;
+    }
+}
