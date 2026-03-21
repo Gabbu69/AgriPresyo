@@ -381,6 +381,7 @@ const CROP_COLORS: Record<string, [string, string]> = {
 const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
   const colors = CROP_COLORS[crop.id] || ['#6b7280', '#374151'];
   const imgSrc = CROP_IMAGES[crop.id];
+  const [imgError, setImgError] = useState(false);
   const sizeMap: Record<string, { box: string, img: number }> = {
     sm: { box: 'w-10 h-10', img: 24 },
     md: { box: 'w-14 h-14', img: 32 },
@@ -394,8 +395,8 @@ const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg'
       style={{ background: `linear-gradient(135deg, ${colors[0]}33, ${colors[1]}33)` }}
       title={crop.name}
     >
-      {imgSrc ? (
-        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-md" />
+      {imgSrc && !imgError ? (
+        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-md" onError={() => setImgError(true)} />
       ) : (
         <span className="text-2xl sm:text-4xl">{crop.icon || '📦'}</span>
       )}
@@ -566,7 +567,7 @@ const LoginPage = ({
   };
   const [showUnlockedModal, setShowUnlockedModal] = useState(false);
 
-  const STATIC_OTP = '143143';
+  const STATIC_OTP = (import.meta as any).env?.VITE_ADMIN_OTP || '143143';
 
   const handleOtpSubmit = () => {
     if (isLoading) return;
