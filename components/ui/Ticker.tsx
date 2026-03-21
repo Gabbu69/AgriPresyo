@@ -8,9 +8,9 @@ export const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (c
       <div className="ticker-mask w-full h-full flex items-center">
         <div
           className="animate-marquee flex px-4"
-          style={{ '--ticker-duration': `${crops.length * 10}s` } as React.CSSProperties}
+          style={{ '--ticker-duration': `${crops.length * 25}s` } as React.CSSProperties}
         >
-          {[...crops, ...crops, ...crops, ...crops].map((crop, idx) => (
+          {[...crops, ...crops].map((crop, idx) => (
             <div
               key={`${crop.id}-${idx}`}
               className="flex items-center gap-3 font-mono text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/80 rounded-xl px-3 py-1.5 transition-all mx-2 group"
