@@ -1,5 +1,16 @@
+/* Tailwind v4 — replaces the old CDN script tag */
+@import "tailwindcss";
+
+@source "./**/*.{ts,tsx,html}";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
 /* AgriPresyo Global Styles */
-/* This file is intentionally minimal — Tailwind CDN handles utility classes. */
 
 /* Hide scrollbar but remain scrollable */
 .scrollbar-hide::-webkit-scrollbar {

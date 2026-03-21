@@ -16,7 +16,7 @@ export const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (c
               className="flex items-center gap-3 font-mono text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/80 rounded-xl px-3 py-1.5 transition-all mx-2 group"
               onClick={() => onCropClick?.(crop)}
             >
-              <span className="text-zinc-500 font-extrabold uppercase group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">{crop.name}</span>
+              <span className="text-zinc-500 font-extrabold uppercase group-hover:text-zinc-700 dark:text-zinc-400 dark:group-hover:text-zinc-300 transition-colors">{crop.name}</span>
               <span className="font-bold text-zinc-900 dark:text-white tracking-tight">{formatPrice(crop.currentPrice)}</span>
               <span className={`text-[11px] px-1.5 py-0.5 rounded-md font-bold ${crop.change24h >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                 {crop.change24h >= 0 ? '▲' : '▼'} {Math.abs(crop.change24h)}%
