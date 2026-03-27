@@ -3,7 +3,7 @@
 
 The name "AgriPresyo" combines "Agriculture" and "Presyo" (the Filipino word for Price), embodying our mission to ensure fair and transparent pricing across the local food ecosystem.
 
-## ✨ Features
+Features
 
 - **Real-time Market Ticker:** Live stream of commodity ask indexes, localized market data, and 24-hour change percentages.
 - **AI Intelligence Alerts:** Smart contextual notifications, opportunity spotting, and system health checks out of the box.
@@ -12,7 +12,7 @@ The name "AgriPresyo" combines "Agriculture" and "Presyo" (the Filipino word for
 - **Roles & Permissions:** Robust consumer, vendor, and admin flows with comprehensive audit logging, verification workflows, and personalized dashboards.
 - **Stunning UI/UX:** A visually impressive interface featuring glassmorphism, responsive animations, customized charting, and a sophisticated dark mode.
 
-## 🛠 Tech Stack
+Tech Stack
 
 - **Framework:** React 18 + Vite
 - **Styling:** Tailwind CSS + Vanilla CSS (for custom keyframes and micro-animations)
@@ -21,7 +21,7 @@ The name "AgriPresyo" combines "Agriculture" and "Presyo" (the Filipino word for
 - **Routing:** React Router DOM
 - **Deployment & Tooling:** PostCSS, Autoprefixer, ESLint
 
-## 🚀 Installation & Setup
+Installation & Setup
 
 1. **Clone the repository:**
    ```bash
@@ -44,15 +44,15 @@ The name "AgriPresyo" combines "Agriculture" and "Presyo" (the Filipino word for
    npm run build
    ```
 
-## 📸 Screenshots
+Screenshots
 
 *(Add your screenshots here via markdown image tags `![Alt text](url)` to showcase the beautiful UI!)*
 
-## 🧩 Architecture
+Architecture
 
 AgriPresyo operates entirely on the client-side for demonstration purposes, heavily utilizing React hooks (`useState`, `useEffect`, `useMemo`) to handle complex state like the real-time ticker data, dynamic vendor inventories, charting histories, and interactive order-building budgets. State is purposefully separated to handle independent views across Consumers, Specialized Vendors, and system Administrators.
 
-## 🤝 Contributing
+Contributing
 
 Contributions, issues, and feature requests are welcome!
 Feel free to check [issues page](https://github.com/Gabbu69/AgriPresyo/issues).
@@ -60,5 +60,5 @@ Feel free to check [issues page](https://github.com/Gabbu69/AgriPresyo/issues).
 ---
 
 <div align="center">
-  <p>Built with ❤️ for a more transparent agricultural future.</p>
+  <p>Built with for a more transparent agricultural future.</p>
 </div>
