@@ -1,19 +1,3 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/leaf.svg" alt="AgriPresyo Logo" width="80" height="80" />
-  <h1>AgriPresyo</h1>
-  <p><strong>A Modern, AI-Powered Agricultural Commodity Trading & Intelligence Terminal</strong></p>
-
-  <p>
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#installation">Installation</a> •
-    <a href="#architecture">Architecture</a>
-  </p>
-</div>
-
----
-
-## 🌾 Overview
 
 **AgriPresyo** is a state-of-the-art agricultural supply chain intelligence platform designed to bridge the gap between farmers, vendors, and consumers. Blending real-time market data, AI-driven analytics, and an intuitive, modern user interface, AgriPresyo empowers agricultural stakeholders with data transparency, demand forecasting, and seamless connections to specialized produce nodes.
 
