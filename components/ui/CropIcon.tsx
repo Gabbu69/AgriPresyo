@@ -38,10 +38,10 @@ const CROP_IMAGES: Record<string, string> = {
   'atsal': '/crops/bell-pepper.png',
   'grapes': '/crops/grapes.png',
   'fuji-apple': '/crops/apple.png',
-  'poncan': '/crops/poncan_final.png',
+  'poncan': '/crops/poncan.png',
   'upo': '/crops/upo.png',
   'kalabasa': '/crops/kalabasa.png',
-  'pipino': '/crops/pickle_final.png',
+  'pipino': '/crops/pickle.png',
 };
 
 const CROP_COLORS: Record<string, [string, string]> = {
