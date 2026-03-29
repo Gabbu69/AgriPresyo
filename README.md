@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/agripresyo-logo.png" alt="AgriPresyo" width="140" />
+  <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo" width="140" />
   <h1>AgriPresyo</h1>
   <p><em>Agricultural commodity intelligence for the Philippine market</em></p>
 
