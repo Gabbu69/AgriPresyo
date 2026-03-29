@@ -1,3 +1,14 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+
+# Environment
+.env
+*.local
+
 # Logs
 logs
 *.log
@@ -7,10 +18,27 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Python (image processing scripts and virtual environment)
+*.py
+venv/
+__pycache__/
+
+# Test and debug images
+carrot_test.png
+scale_output.txt
+public/crops/*_debug*.png
+public/crops/*_test*.png
+public/crops/*_cropped*.png
+public/crops/*_final*.png
+public/crops/*_flood*.png
+public/crops/*_grabcut*.png
+public/crops/*_isnet*.png
+public/crops/*_gc*.png
+public/crops/*_contour*.png
+public/crops/*_premium*.png
+public/crops/*_ultimate*.png
+public/crops/*_cleaned*.png
+public/crops/new_uploads/
 
 # Backup files
 *.bak
@@ -28,3 +56,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Antigravity / tooling metadata
+metadata.json
+tracked_files.txt

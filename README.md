@@ -1,80 +1,144 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/leaf.svg" alt="AgriPresyo Logo" width="80" height="80" />
+  <img src="public/agripresyo-logo.png" alt="AgriPresyo" width="140" />
   <h1>AgriPresyo</h1>
-  <p><strong>A Modern, AI-Powered Agricultural Commodity Trading & Intelligence Terminal</strong></p>
+  <p><em>Agricultural commodity intelligence for the Philippine market</em></p>
 
   <p>
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#installation">Installation</a> •
-    <a href="#architecture">Architecture</a>
+    <a href="#about">About</a> &middot;
+    <a href="#features">Features</a> &middot;
+    <a href="#getting-started">Getting Started</a> &middot;
+    <a href="#tech-stack">Tech Stack</a> &middot;
+    <a href="#project-structure">Project Structure</a> &middot;
+    <a href="#contributing">Contributing</a>
   </p>
 </div>
 
 ---
 
-## 🌾 Overview
+## About
 
-**AgriPresyo** is a state-of-the-art agricultural supply chain intelligence platform designed to bridge the gap between farmers, vendors, and consumers. Blending real-time market data, AI-driven analytics, and an intuitive, modern user interface, AgriPresyo empowers agricultural stakeholders with data transparency, demand forecasting, and seamless connections to specialized produce nodes.
+AgriPresyo is a market intelligence platform built for the Philippine agricultural supply chain. It gives farmers, vendors, and everyday consumers a shared window into commodity pricing, so that everyone involved in getting food from the farm to the table can make better-informed decisions.
 
-The name "AgriPresyo" combines "Agriculture" and "Presyo" (the Filipino word for Price), embodying our mission to ensure fair and transparent pricing across the local food ecosystem.
+The name comes from combining "Agriculture" with "Presyo," the Filipino word for price. That is the core idea behind the project: making agricultural pricing more visible and more fair.
 
-## ✨ Features
+The platform simulates a real-time trading terminal, complete with live price tickers, vendor discovery, budget planning tools, and role-based dashboards for consumers, vendors, and administrators. It is designed as a fully client-side demonstration, but the architecture is built to support a real backend when the time comes.
 
-- **Real-time Market Ticker:** Live stream of commodity ask indexes, localized market data, and 24-hour change percentages.
-- **AI Intelligence Alerts:** Smart contextual notifications, opportunity spotting, and system health checks out of the box.
-- **Dynamic Vendor Discovery:** Effortlessly search and filter specialized hardware "Nodes" (Vendors) based on categories like Fruits, Vegetables, and Spices.
-- **Market Leaderboards:** At-a-glance analytics for the most traded, hot, and highly-demanded commodities.
-- **Roles & Permissions:** Robust consumer, vendor, and admin flows with comprehensive audit logging, verification workflows, and personalized dashboards.
-- **Stunning UI/UX:** A visually impressive interface featuring glassmorphism, responsive animations, customized charting, and a sophisticated dark mode.
+## Features
 
-## 🛠 Tech Stack
+**Market Intelligence**
+- Live commodity ticker with 24-hour price changes across dozens of Philippine crops
+- Interactive price history charts with weekly data points spanning multiple years
+- Market leaderboards highlighting the most traded and highest-demand commodities
+- Category filtering across Fruits, Vegetables, Spices, and Root Crops
 
-- **Framework:** React 18 + Vite
-- **Styling:** Tailwind CSS + Vanilla CSS (for custom keyframes and micro-animations)
-- **Icons:** Lucide React
-- **Charting:** Recharts (responsive market data visualization)
-- **Routing:** React Router DOM
-- **Deployment & Tooling:** PostCSS, Autoprefixer, ESLint
+**Vendor Network**
+- Searchable vendor directory organized by specialty (organic, highland, tropical, and more)
+- Vendor profiles with ratings, review counts, stock levels, and competitive pricing
+- Direct comparison of prices across multiple vendors for any given commodity
 
-## 🚀 Installation & Setup
+**Budget Planning**
+- Built-in budget calculator for planning market purchases
+- Unit and kilogram-based quantity selection
+- Real-time cost estimation against current market prices
 
-1. **Clone the repository:**
-   ```bash
+**User Roles and Administration**
+- Consumer, Vendor, and Admin role separation with distinct dashboards
+- Vendor verification workflow with document submission and admin review
+- Admin panel with user management, announcement broadcasting, and complaint handling
+- Full audit logging for administrative actions
+
+**Design and Experience**
+- Dark and light mode with system preference detection
+- Glassmorphism UI with smooth micro-animations throughout
+- Animated background with generative vine patterns
+- Fully responsive layout from mobile to desktop
+- Custom scrollbar styling and marquee ticker with hover-to-pause
+
+## Getting Started
+
+**Prerequisites:** Node.js 18 or later and npm.
+
+1. Clone the repository:
+   ```
    git clone https://github.com/Gabbu69/AgriPresyo.git
    cd AgriPresyo
    ```
 
-2. **Install dependencies:**
-   ```bash
+2. Install dependencies:
+   ```
    npm install
    ```
 
-3. **Start the development server:**
-   ```bash
+3. Start the development server:
+   ```
    npm run dev
    ```
 
-4. **Build for production:**
-   ```bash
-   npm run build
-   ```
+4. Open your browser to the address shown in the terminal (usually `http://localhost:3000`).
 
-## 📸 Screenshots
+To create a production build:
+```
+npm run build
+```
 
-*(Add your screenshots here via markdown image tags `![Alt text](url)` to showcase the beautiful UI!)*
+The output will be in the `dist` directory, ready for static hosting or deployment to platforms like Vercel.
 
-## 🧩 Architecture
+### Environment Variables
 
-AgriPresyo operates entirely on the client-side for demonstration purposes, heavily utilizing React hooks (`useState`, `useEffect`, `useMemo`) to handle complex state like the real-time ticker data, dynamic vendor inventories, charting histories, and interactive order-building budgets. State is purposefully separated to handle independent views across Consumers, Specialized Vendors, and system Administrators.
+Copy `.env.example` to `.env` if you want to customize the admin OTP code. The default value works out of the box for local development.
 
-## 🤝 Contributing
+## Tech Stack
 
-Contributions, issues, and feature requests are welcome!
-Feel free to check [issues page](https://github.com/Gabbu69/AgriPresyo/issues).
+| Layer        | Technology                                      |
+|------------- |------------------------------------------------ |
+| Framework    | React 19 with TypeScript                        |
+| Build Tool   | Vite 6                                          |
+| Styling      | Tailwind CSS 4 with custom vanilla CSS          |
+| Charts       | Recharts                                        |
+| Icons        | Lucide React                                    |
+| Routing      | React Router DOM 7                              |
+| State        | React hooks and Zustand                         |
+| PDF Export   | jsPDF with jspdf-autotable                      |
+| Deployment   | Vercel (configured via vercel.json)             |
+
+## Project Structure
+
+```
+AgriPresyo/
+  index.html            Entry point
+  index.tsx              Main application (all views and logic)
+  index.css              Global styles and Tailwind directives
+  constants.tsx          Commodity data, vendor mock data, price histories
+  types.ts               TypeScript interfaces and enums
+  components/
+    auth/                Login page and theme context
+    ui/                  Reusable UI components (ticker, sparklines, icons, etc.)
+    utils/               Helper functions and mock system checks
+  views/
+    MarketView.tsx       Detailed market and chart view
+    BudgetCalculatorView.tsx   Budget planning tool
+  lib/
+    formatters.ts        Number and currency formatting utilities
+  public/
+    crops/               High-quality commodity images (transparent PNGs)
+    agripresyo-logo.png  Application logo
+```
+
+## Contributing
+
+Contributions are welcome. If you have ideas for new features, find a bug, or want to improve the design, feel free to open an issue or submit a pull request.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes
+4. Push to your branch and open a pull request
+
+## License
+
+This project is open source. See the repository for license details.
 
 ---
 
 <div align="center">
-  <p>Built with ❤️ for a more transparent agricultural future.</p>
+  <p>Built for a more transparent agricultural future.</p>
 </div>
