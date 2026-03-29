@@ -316,7 +316,7 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
 };
 // Crop image mapping and gradient backgrounds
 const CROP_IMAGES: Record<string, string> = {
-  'pineapple-premium': '/crops/pineapple.png',
+  'pineapple-premium': '/crops/pineapple_premium_v2.png',
   'watermelon': '/crops/watermelon.png',
   'strawberry': '/crops/strawberry.png',
   'avocado': '/crops/avocado.png',
@@ -344,6 +344,18 @@ const CROP_IMAGES: Record<string, string> = {
   'sweet-potato': '/crops/kamote.png',
   'cassava': '/crops/cassava.png',
   'taro-gabi': '/crops/taro.png',
+  'ube': '/crops/ube.png',
+  'sayote': '/crops/sayote.png',
+  'black-pepper': '/crops/black-pepper.png',
+  'lanzones': '/crops/lanzones.png',
+  'rambutan': '/crops/rambutan.png',
+  'atsal': '/crops/bell-pepper.png',
+  'grapes': '/crops/grapes.png',
+  'fuji-apple': '/crops/apple.png',
+  'poncan': '/crops/poncan_final.png',
+  'upo': '/crops/upo.png',
+  'kalabasa': '/crops/kalabasa.png',
+  'pipino': '/crops/pickle_ultimate.png',
 };
 
 const CROP_COLORS: Record<string, [string, string]> = {
@@ -359,12 +371,12 @@ const CROP_COLORS: Record<string, [string, string]> = {
   'coconut': ['#a1887f', '#6d4c41'],
   'tomato-native': ['#ef4444', '#dc2626'],
   'cabbage-rare': ['#4ade80', '#16a34a'],
-  'okra': ['#86efac', '#22c55e'],
+  'okra': ['#8fbc8f', '#556b2f'],
   'eggplant': ['#a855f7', '#7e22ce'],
   'kangkong': ['#34d399', '#059669'],
   'ampalaya': ['#22d3ee', '#0891b2'],
   'sitaw': ['#6ee7b7', '#10b981'],
-  'pechay': ['#a3e635', '#84cc16'],
+  'pechay': ['#2dd4bf', '#0d9488'],
   'garlic-ilocos': ['#e2e8f0', '#94a3b8'],
   'onion-red': ['#c084fc', '#9333ea'],
   'ginger': ['#fbbf24', '#b45309'],
@@ -376,6 +388,17 @@ const CROP_COLORS: Record<string, [string, string]> = {
   'cassava': ['#d6d3d1', '#78716c'],
   'taro-gabi': ['#c084fc', '#7c3aed'],
   'ube': ['#a855f7', '#6d28d9'],
+  'sayote': ['#a3e635', '#65a30d'],
+  'black-pepper': ['#374151', '#111827'],
+  'lanzones': ['#fde68a', '#d97706'],
+  'rambutan': ['#fb7185', '#be123c'],
+  'atsal': ['#f87171', '#b91c1c'],
+  'grapes': ['#818cf8', '#3730a3'],
+  'fuji-apple': ['#fda4af', '#e11d48'],
+  'poncan': ['#f97316', '#c2410c'],
+  'upo': ['#86efac', '#22c55e'],
+  'kalabasa': ['#fbbf24', '#b45309'],
+  'pipino': ['#bbf7d0', '#22c55e'],
 };
 
 const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
@@ -383,10 +406,10 @@ const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg'
   const imgSrc = CROP_IMAGES[crop.id];
   const [imgError, setImgError] = useState(false);
   const sizeMap: Record<string, { box: string, img: number }> = {
-    sm: { box: 'w-10 h-10', img: 24 },
-    md: { box: 'w-14 h-14', img: 32 },
-    lg: { box: 'w-16 h-16', img: 40 },
-    xl: { box: 'w-28 h-28', img: 72 },
+    sm: { box: 'w-10 h-10', img: 28 },
+    md: { box: 'w-14 h-14', img: 40 },
+    lg: { box: 'w-16 h-16', img: 48 },
+    xl: { box: 'w-28 h-28', img: 80 },
   };
   const s = sizeMap[size];
   return (
@@ -396,7 +419,7 @@ const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg'
       title={crop.name}
     >
       {imgSrc && !imgError ? (
-        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-md" onError={() => setImgError(true)} />
+        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-md" style={crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : undefined} onError={() => setImgError(true)} />
       ) : (
         <span className="text-2xl sm:text-4xl">{crop.icon || '📦'}</span>
       )}
@@ -4505,11 +4528,21 @@ const App = () => {
       {selectedCrop && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setSelectedCrop(null)}></div>
-          <div className="bg-white dark:bg-zinc-900 w-full sm:max-w-xl rounded-t-3xl sm:rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[95vh] sm:max-h-none">
-            <button onClick={() => setSelectedCrop(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
-            <div className="p-5 sm:p-8 lg:p-12 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
-              <div className="flex items-center gap-4 sm:gap-8">
-                <CropIcon crop={selectedCrop} size="xl" />
+          
+          <div className="w-full sm:max-w-xl relative animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+            {/* The exit button is now confidently outside the bounded overflow container */}
+            <button 
+              onClick={() => setSelectedCrop(null)} 
+              className="absolute -top-16 right-4 sm:-top-5 sm:-right-5 z-50 w-12 h-12 rounded-full bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-xl hover:scale-110 active:scale-95 transition-all"
+              aria-label="Close"
+            >
+              <X size={24} strokeWidth={3} />
+            </button>
+            
+            <div className="bg-white dark:bg-zinc-900 w-full rounded-t-3xl sm:rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+              <div className="p-5 sm:p-8 lg:p-12 space-y-6 sm:space-y-10 overflow-y-auto scrollbar-hide flex-1">
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <CropIcon crop={selectedCrop} size="xl" />
                 <div>
                   <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{selectedCrop.name}</h2>
                   <p className="text-zinc-400 dark:text-zinc-500 font-mono tracking-[0.4em] uppercase text-xs mt-1">{selectedCrop.category} INDEX</p>
@@ -4648,6 +4681,7 @@ const App = () => {
               <div className="flex gap-4">
                 <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10 text-sm sm:text-base">Add to Assets</button>
                 <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-zinc-900 dark:hover:text-white transition-colors text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">Close View</button>
+              </div>
               </div>
             </div>
           </div>

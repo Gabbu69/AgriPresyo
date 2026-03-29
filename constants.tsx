@@ -276,7 +276,7 @@ export const MOCK_CROPS: Crop[] = [
   },
   {
     id: 'okra',
-    name: 'Fresh Okra',
+    name: 'Okra',
     category: 'Vegetable',
     currentPrice: 55,
     change24h: 1.1,
@@ -590,37 +590,6 @@ export const MOCK_CROPS: Crop[] = [
   
   // --- USER REQUESTED VEGETABLES ---
   {
-    id: 'talong',
-    name: 'Talong (Eggplant)',
-    category: 'Vegetable',
-    currentPrice: 80,
-    change24h: 1.2,
-    history: generateHistory(80),
-    demand: 'High',
-    icon: '🍆',
-    weightPerUnit: 0.15,
-    vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 70, stock: 200 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 85, stock: 150 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 90, stock: 300 }
-    ]
-  },
-  {
-    id: 'chayote-new',
-    name: 'Chayote',
-    category: 'Vegetable',
-    currentPrice: 11,
-    change24h: 0.5,
-    history: generateHistory(11),
-    demand: 'High',
-    icon: '🍐',
-    weightPerUnit: 0.3,
-    vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 10, stock: 500 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 12, stock: 400 }
-    ]
-  },
-  {
     id: 'upo',
     name: 'Upo (Bottle Gourd)',
     category: 'Vegetable',
@@ -636,21 +605,6 @@ export const MOCK_CROPS: Crop[] = [
     ]
   },
   {
-    id: 'palya',
-    name: 'Palya (Bitter Gourd)',
-    category: 'Vegetable',
-    currentPrice: 290,
-    change24h: 5.4,
-    history: generateHistory(290),
-    demand: 'High',
-    icon: '🫑',
-    weightPerUnit: 0.2,
-    vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 280, stock: 50, isHot: true },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 295, stock: 40 }
-    ]
-  },
-  {
     id: 'kalabasa',
     name: 'Kalabasa (Squash)',
     category: 'Vegetable',
@@ -663,158 +617,6 @@ export const MOCK_CROPS: Crop[] = [
     vendors: [
       { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 45, stock: 200 },
       { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 55, stock: 150 }
-    ]
-  },
-  {
-    id: 'batong',
-    name: 'Batong (String Beans)',
-    category: 'Vegetable',
-    currentPrice: 120,
-    change24h: -1.5,
-    history: generateHistory(120),
-    demand: 'High',
-    icon: '🫘',
-    weightPerUnit: 0.1,
-    vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 115, stock: 300 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 125, stock: 250 }
-    ]
-  },
-  {
-    id: 'okra-new',
-    name: 'Okra (New Batch)',
-    category: 'Vegetable',
-    currentPrice: 150,
-    change24h: 8.2,
-    history: generateHistory(150),
-    demand: 'Medium',
-    icon: '🫛',
-    weightPerUnit: 0.05,
-    vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 145, stock: 100 },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 155, stock: 80 }
-    ]
-  },
-  {
-    id: 'patola',
-    name: 'Patola (Sponge Gourd)',
-    category: 'Vegetable',
-    currentPrice: 80,
-    change24h: -3.0,
-    history: generateHistory(80),
-    demand: 'Medium',
-    icon: '🥒',
-    weightPerUnit: 0.3,
-    vendors: [
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 75, stock: 120 },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 85, stock: 100 }
-    ]
-  },
-  {
-    id: 'pechay-new',
-    name: 'Pechay (Native)',
-    category: 'Vegetable',
-    currentPrice: 120,
-    change24h: 4.5,
-    history: generateHistory(120),
-    demand: 'High',
-    icon: '🥬',
-    weightPerUnit: 0.2,
-    vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 110, stock: 400 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 125, stock: 350 }
-    ]
-  },
-  {
-    id: 'pechay-chinese',
-    name: 'Chinese Pechay',
-    category: 'Vegetable',
-    currentPrice: 60,
-    change24h: -1.0,
-    history: generateHistory(60),
-    demand: 'High',
-    icon: '🥗',
-    weightPerUnit: 0.2,
-    vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 55, stock: 500 },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 65, stock: 450 }
-    ]
-  },
-
-  // --- USER REQUESTED AROMATICS (SPICES) ---
-  {
-    id: 'bombay',
-    name: 'Bombay (Red Onion)',
-    category: 'Spice',
-    currentPrice: 145,
-    change24h: -5.0,
-    history: generateHistory(145),
-    demand: 'High',
-    icon: '🧅',
-    weightPerUnit: 0.1,
-    vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 140, stock: 800 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 150, stock: 600 }
-    ]
-  },
-  {
-    id: 'ahos',
-    name: 'Ahos (Garlic)',
-    category: 'Spice',
-    currentPrice: 150,
-    change24h: 2.1,
-    history: generateHistory(150),
-    demand: 'High',
-    icon: '🧄',
-    weightPerUnit: 0.05,
-    vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 145, stock: 500, isHot: true },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 155, stock: 400 }
-    ]
-  },
-  {
-    id: 'kamatis-new',
-    name: 'Kamatis (Tomato)',
-    category: 'Spice',
-    currentPrice: 65,
-    change24h: 4.2,
-    history: generateHistory(65),
-    demand: 'High',
-    icon: '🍅',
-    weightPerUnit: 0.08,
-    vendors: [
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 60, stock: 1000 },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 70, stock: 850 }
-    ]
-  },
-  {
-    id: 'luya',
-    name: 'Luy-a (Ginger)',
-    category: 'Spice',
-    currentPrice: 115,
-    change24h: -2.4,
-    history: generateHistory(115),
-    demand: 'Medium',
-    icon: '🫚',
-    weightPerUnit: 0.1,
-    vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 100, stock: 300 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 130, stock: 250 }
-    ]
-  },
-  {
-    id: 'lemonsito',
-    name: 'Lemonsito (Calamansi)',
-    category: 'Spice',
-    currentPrice: 60,
-    change24h: 1.5,
-    history: generateHistory(60),
-    demand: 'High',
-    icon: '🍋',
-    weightPerUnit: 0.02,
-    vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 55, stock: 1200 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 65, stock: 900 }
     ]
   },
   {
@@ -834,7 +636,7 @@ export const MOCK_CROPS: Crop[] = [
   },
   {
     id: 'pipino',
-    name: 'Pipino (Cucumber)',
+    name: 'Pickle',
     category: 'Vegetable',
     currentPrice: 100,
     change24h: 0.0,
@@ -847,53 +649,7 @@ export const MOCK_CROPS: Crop[] = [
       { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 105, stock: 180 }
     ]
   },
-  {
-    id: 'sibuyas-dahon',
-    name: 'Sibuyas Dahon (Spring Onion)',
-    category: 'Spice',
-    currentPrice: 120,
-    change24h: -4.0,
-    history: generateHistory(120),
-    demand: 'Medium',
-    icon: '🌿',
-    weightPerUnit: 0.05,
-    vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 110, stock: 300 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 130, stock: 250 }
-    ]
-  },
-
   // --- USER REQUESTED FRUITS ---
-  {
-    id: 'pinya',
-    name: 'Pinya (Pineapple)',
-    category: 'Fruit',
-    currentPrice: 60,
-    change24h: 2.3,
-    history: generateHistory(60),
-    demand: 'Medium',
-    icon: '🍍',
-    weightPerUnit: 1.5,
-    vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 55, stock: 200 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 65, stock: 150 }
-    ]
-  },
-  {
-    id: 'mangga-new',
-    name: 'Mangga (Mango)',
-    category: 'Fruit',
-    currentPrice: 160,
-    change24h: 8.5,
-    history: generateHistory(160),
-    demand: 'High',
-    icon: '🥭',
-    weightPerUnit: 0.3,
-    vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 155, stock: 100, isHot: true },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 165, stock: 80 }
-    ]
-  },
   {
     id: 'fuji-apple',
     name: 'Fuji Apple',
@@ -937,51 +693,6 @@ export const MOCK_CROPS: Crop[] = [
     vendors: [
       { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 22, stock: 400 },
       { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 28, stock: 350 }
-    ]
-  },
-  {
-    id: 'pomelo-new',
-    name: 'Pomelo (Suha)',
-    category: 'Fruit',
-    currentPrice: 60,
-    change24h: -5.0,
-    history: generateHistory(60),
-    demand: 'Low',
-    icon: '🍈',
-    weightPerUnit: 1.2,
-    vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 55, stock: 200 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 65, stock: 150 }
-    ]
-  },
-  {
-    id: 'watermelon-new',
-    name: 'Watermelon (Pakwan)',
-    category: 'Fruit',
-    currentPrice: 90,
-    change24h: 5.5,
-    history: generateHistory(90),
-    demand: 'High',
-    icon: '🍉',
-    weightPerUnit: 3.5,
-    vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 85, stock: 100 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 95, stock: 80 }
-    ]
-  },
-  {
-    id: 'saging-tundan',
-    name: 'Saging Tundan',
-    category: 'Fruit',
-    currentPrice: 25,
-    change24h: 0.0,
-    history: generateHistory(25),
-    demand: 'High',
-    icon: '🍌',
-    weightPerUnit: 0.1,
-    vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 22, stock: 600, isHot: true },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 28, stock: 500 }
     ]
   }
 ];

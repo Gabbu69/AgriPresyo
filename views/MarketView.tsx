@@ -207,73 +207,75 @@ export const MarketView: React.FC<MarketViewProps> = ({
               return (
                 <article
                   key={crop.id}
-                  className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all group relative overflow-hidden shadow-lg hover:shadow-green-400/5 card-tilt stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
+                  className={`bg-[#18181b] border border-white/5 rounded-[28px] p-5 hover:bg-[#1f1f22] cursor-pointer transition-colors group relative flex flex-col justify-between min-h-[160px] shadow-2xl stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
                   onClick={() => setSelectedCrop(crop)}
                 >
-                  <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
-                    <span
-                      className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${
-                        season.inSeason ? 'bg-green-400/10 text-green-600' : 'bg-red-400/10 text-red-600'
-                      }`}
-                    >
-                      {season.inSeason ? '🟢' : '🔴'} {season.label}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(crop.id);
-                      }}
-                      className={`p-1.5 rounded-lg transition-all ${
-                        isFav ? 'text-red-500 bg-red-500/10' : 'text-zinc-400 hover:text-red-500 hover:bg-red-500/10'
-                      }`}
-                      aria-label={isFav ? 'Remove from watchlist' : 'Add to watchlist'}
-                    >
-                      <Heart size={14} fill={isFav ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-start relative z-10 mt-2">
+                  <div className="flex justify-between items-start w-full relative z-10">
                     <div className="flex items-center gap-4">
-                      <div className="group-hover:scale-110 transition-transform">
+                      <div className="shrink-0 drop-shadow-2xl">
                         <CropIcon crop={crop} size="lg" />
                       </div>
-                      <div>
-                        <h3 className="font-black text-zinc-900 dark:text-white text-lg leading-tight">{crop.name}</h3>
-                        <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{crop.category}</p>
+                      <div className="flex flex-col justify-center">
+                        <h3 className="font-bold text-white text-[19px] leading-tight tracking-tight">
+                          {crop.name}
+                        </h3>
+                        <p className="text-[11px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1">
+                          {crop.category}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono text-xl font-bold text-zinc-900 dark:text-white">
-                        {formatPrice(crop.currentPrice)}
-                      </p>
-                      <div
-                        className={`flex items-center justify-end text-xs font-bold ${
-                          crop.change24h >= 0 ? 'text-green-500' : 'text-red-500'
-                        }`}
-                      >
-                        {crop.change24h >= 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        {Math.abs(crop.change24h)}%
-                      </div>
-                      {crop.lastUpdated && (
-                        <p className="text-[9px] text-zinc-400 dark:text-zinc-600 font-mono mt-1 flex items-center justify-end gap-1">
-                          <Clock size={9} aria-hidden /> {timeAgo(crop.lastUpdated)}
-                        </p>
-                      )}
+
+                    <div className="flex flex-col items-end shrink-0 gap-1 mt-0.5">
+                       <div className="flex items-center gap-3">
+                          <span className={`flex items-center gap-1.5 px-2.5 py-1 ${season.inSeason ? 'bg-[#0f2e1e]' : 'bg-red-950/50'} rounded-lg text-[10px] font-black uppercase tracking-wider`}>
+                             <div className={`w-1.5 h-1.5 rounded-full ${season.inSeason ? 'bg-[#34d399]' : 'bg-red-500'}`} style={season.inSeason ? { boxShadow: '0 0 8px rgba(52,211,153,0.6)' } : {}}/>
+                             <span className={season.inSeason ? 'text-[#34d399]' : 'text-red-400'}>
+                                {season.inSeason ? 'IN SEASON' : season.label}
+                             </span>
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(crop.id);
+                            }}
+                            className="text-zinc-500 hover:text-white transition-colors"
+                            aria-label={isFav ? 'Remove from watchlist' : 'Add to watchlist'}
+                          >
+                            <Heart size={18} fill={isFav ? 'currentColor' : 'none'} className={isFav ? "text-white" : ""} />
+                          </button>
+                       </div>
+                       
+                       <div className="flex flex-col items-end mt-2 pr-1">
+                          <div className="flex items-start">
+                             <span className="text-zinc-400 text-sm font-bold mt-1.5 mr-0.5 font-mono">₱</span>
+                             <span className="font-black text-white text-[25px] leading-none tracking-tight">
+                                {formatPrice(crop.currentPrice).replace('₱', '').trim()}
+                             </span>
+                          </div>
+                          <div className={`flex items-center gap-0.5 text-[13px] font-bold mt-1.5 ${crop.change24h >= 0 ? 'text-[#34d399]' : 'text-red-500'}`}>
+                             {crop.change24h >= 0 ? <ChevronUp size={16} strokeWidth={3} /> : <ChevronDown size={16} strokeWidth={3} />}
+                             <span>{Math.abs(crop.change24h)}%</span>
+                          </div>
+                       </div>
                     </div>
                   </div>
-                  <div className="mt-8 flex items-end justify-between relative z-10">
-                    <Sparkline
-                      data={crop.history}
-                      color={crop.change24h >= 0 ? '#4ade80' : '#ef4444'}
-                    />
+
+                  <div className="flex items-end justify-between mt-6 relative z-10 w-full pl-1">
+                    <div className="opacity-90">
+                      <Sparkline
+                        data={crop.history}
+                        color={crop.change24h >= 0 ? '#34d399' : '#ef4444'}
+                      />
+                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         addToBudget(crop.id);
                       }}
-                      className="bg-zinc-100 dark:bg-zinc-800 hover:bg-green-500 dark:hover:bg-green-500 hover:text-black p-4 rounded-2xl text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-black transition-all shadow-xl active:scale-90 border border-zinc-200 dark:border-zinc-700"
+                      className="w-12 h-12 flex items-center justify-center rounded-[18px] border border-white/5 bg-white-[0.02] hover:bg-white/10 transition-colors text-zinc-500 hover:text-zinc-300 group-hover:border-white/10 bg-[#242427]"
                       aria-label="Add to budget"
                     >
-                      <Calculator size={22} />
+                      <Calculator size={20} strokeWidth={2} />
                     </button>
                   </div>
                 </article>
