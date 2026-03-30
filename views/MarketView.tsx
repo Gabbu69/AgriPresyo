@@ -158,8 +158,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
               >
                 <div className="flex items-center gap-3 mb-2">
                   <CropIcon crop={crop} size="sm" />
-                  <div>
-                    <p className="font-bold text-zinc-900 dark:text-white text-sm">{crop.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-zinc-900 dark:text-white text-sm truncate">{crop.name}</p>
                     <p className="font-mono text-green-500 font-bold text-sm">{formatPrice(crop.currentPrice)}</p>
                   </div>
                 </div>
@@ -210,24 +210,24 @@ export const MarketView: React.FC<MarketViewProps> = ({
                   className={`bg-[#18181b] border border-white/5 rounded-[28px] p-5 hover:bg-[#1f1f22] cursor-pointer transition-colors group relative flex flex-col justify-between min-h-[160px] shadow-2xl stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
                   onClick={() => setSelectedCrop(crop)}
                 >
-                  <div className="flex justify-between items-start w-full relative z-10">
-                    <div className="flex items-center gap-4">
+                  <div className="flex justify-between items-start w-full relative z-10 gap-2">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                       <div className="shrink-0 drop-shadow-2xl">
                         <CropIcon crop={crop} size="lg" />
                       </div>
-                      <div className="flex flex-col justify-center">
-                        <h3 className="font-bold text-white text-[19px] leading-tight tracking-tight">
+                      <div className="flex flex-col justify-center flex-1 min-w-0">
+                        <h3 className="font-bold text-white text-[17px] sm:text-[19px] leading-tight tracking-tight break-words">
                           {crop.name}
                         </h3>
-                        <p className="text-[11px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1">
+                        <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1 truncate">
                           {crop.category}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end shrink-0 gap-1 mt-0.5">
-                       <div className="flex items-center gap-3">
-                          <span className={`flex items-center gap-1.5 px-2.5 py-1 ${season.inSeason ? 'bg-[#0f2e1e]' : 'bg-red-950/50'} rounded-lg text-[10px] font-black uppercase tracking-wider`}>
+                       <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 ${season.inSeason ? 'bg-[#0f2e1e]' : 'bg-red-950/50'} rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider`}>
                              <div className={`w-1.5 h-1.5 rounded-full ${season.inSeason ? 'bg-[#34d399]' : 'bg-red-500'}`} style={season.inSeason ? { boxShadow: '0 0 8px rgba(52,211,153,0.6)' } : {}}/>
                              <span className={season.inSeason ? 'text-[#34d399]' : 'text-red-400'}>
                                 {season.inSeason ? 'IN SEASON' : season.label}
@@ -247,13 +247,13 @@ export const MarketView: React.FC<MarketViewProps> = ({
                        
                        <div className="flex flex-col items-end mt-2 pr-1">
                           <div className="flex items-start">
-                             <span className="text-zinc-400 text-sm font-bold mt-1.5 mr-0.5 font-mono">₱</span>
-                             <span className="font-black text-white text-[25px] leading-none tracking-tight">
+                             <span className="text-zinc-400 text-xs sm:text-sm font-bold mt-1 sm:mt-1.5 mr-0.5 font-mono">₱</span>
+                             <span className="font-black text-white text-[20px] sm:text-[25px] leading-none tracking-tight">
                                 {formatPrice(crop.currentPrice).replace('₱', '').trim()}
                              </span>
                           </div>
-                          <div className={`flex items-center gap-0.5 text-[13px] font-bold mt-1.5 ${crop.change24h >= 0 ? 'text-[#34d399]' : 'text-red-500'}`}>
-                             {crop.change24h >= 0 ? <ChevronUp size={16} strokeWidth={3} /> : <ChevronDown size={16} strokeWidth={3} />}
+                          <div className={`flex items-center gap-0.5 text-[11px] sm:text-[13px] font-bold mt-1 sm:mt-1.5 ${crop.change24h >= 0 ? 'text-[#34d399]' : 'text-red-500'}`}>
+                             {crop.change24h >= 0 ? <ChevronUp size={14} strokeWidth={3} className="sm:w-4 sm:h-4 w-3.5 h-3.5" /> : <ChevronDown size={14} strokeWidth={3} className="sm:w-4 sm:h-4 w-3.5 h-3.5" />}
                              <span>{Math.abs(crop.change24h)}%</span>
                           </div>
                        </div>
@@ -309,11 +309,11 @@ export const MarketView: React.FC<MarketViewProps> = ({
                     className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:border-green-400/30 transition-colors cursor-pointer group"
                     onClick={() => addToBudget(crop.id)}
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="group-hover:scale-110 transition-transform">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                      <div className="group-hover:scale-110 transition-transform shrink-0">
                         <CropIcon crop={crop} size="sm" />
                       </div>
-                      <p className="font-bold text-zinc-900 dark:text-white text-sm">{crop.name}</p>
+                      <p className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm flex-1 min-w-0 truncate">{crop.name}</p>
                     </div>
                     <p className="font-mono text-green-500 font-bold text-lg">{formatPrice(crop.currentPrice)}</p>
                     <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Click to add to budget</p>
