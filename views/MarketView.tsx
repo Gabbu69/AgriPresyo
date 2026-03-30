@@ -216,7 +216,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                         <CropIcon crop={crop} size="lg" />
                       </div>
                       <div className="flex flex-col justify-center flex-1 min-w-0">
-                        <h3 className="font-bold text-white text-[17px] sm:text-[19px] leading-tight tracking-tight break-words">
+                        <h3 className="font-bold text-white text-[16px] sm:text-[18px] leading-tight tracking-tight line-clamp-2">
                           {crop.name}
                         </h3>
                         <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1 truncate">
