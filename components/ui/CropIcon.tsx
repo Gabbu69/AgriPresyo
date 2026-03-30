@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Crop } from '../../types';
 
-const CROP_IMAGES: Record<string, string> = {
+// Crop image mapping and gradient backgrounds
+export const CROP_IMAGES: Record<string, string> = {
   'pineapple-premium': '/crops/pineapple.png',
   'watermelon': '/crops/watermelon.png',
   'strawberry': '/crops/strawberry.png',
@@ -38,13 +39,13 @@ const CROP_IMAGES: Record<string, string> = {
   'atsal': '/crops/bell-pepper.png',
   'grapes': '/crops/grapes.png',
   'fuji-apple': '/crops/apple.png',
-  'poncan': '/crops/poncan.png',
+  'poncan': '/crops/poncan_final.png',
   'upo': '/crops/upo.png',
   'kalabasa': '/crops/kalabasa.png',
-  'pipino': '/crops/pickle.png',
+  'pipino': '/crops/pickle_ultimate.png',
 };
 
-const CROP_COLORS: Record<string, [string, string]> = {
+export const CROP_COLORS: Record<string, [string, string]> = {
   'pineapple-premium': ['#f59e0b', '#d97706'],
   'watermelon': ['#ef4444', '#22c55e'],
   'strawberry': ['#f43f5e', '#e11d48'],
@@ -87,33 +88,43 @@ const CROP_COLORS: Record<string, [string, string]> = {
   'pipino': ['#bbf7d0', '#22c55e'],
 };
 
-export const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
+interface CropIconProps {
+  crop: Crop;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
   const colors = CROP_COLORS[crop.id] || ['#6b7280', '#374151'];
   const imgSrc = CROP_IMAGES[crop.id];
+  const [imgError, setImgError] = useState(false);
   const sizeMap: Record<string, { box: string, img: number }> = {
-    sm: { box: 'w-10 h-10 rounded-[12px]', img: 24 },
-    md: { box: 'w-14 h-14 rounded-[16px]', img: 32 },
-    lg: { box: 'w-20 h-20 rounded-[22px]', img: 56 },
-    xl: { box: 'w-28 h-28 rounded-[28px]', img: 80 },
+    sm: { box: 'w-10 h-10', img: 28 },
+    md: { box: 'w-14 h-14', img: 40 },
+    lg: { box: 'w-16 h-16', img: 48 },
+    xl: { box: 'w-28 h-28', img: 80 },
   };
   const s = sizeMap[size];
   return (
     <div
-      className={`${s.box} flex items-center justify-center shrink-0 select-none relative overflow-hidden`}
-      style={{ 
-        background: `linear-gradient(135deg, ${colors[0]}40, ${colors[1]}20, #000000 80%)`,
-        boxShadow: `inset 0 1px 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.5)`
-      }}
+      className={`${s.box} rounded-2xl flex items-center justify-center shadow-lg shrink-0 select-none border border-white/10`}
+      style={{ background: `linear-gradient(135deg, ${colors[0]}33, ${colors[1]}33)` }}
       title={crop.name}
     >
-      {imgSrc ? (
-        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] z-10 p-1" style={crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : undefined} />
+      {imgSrc && !imgError ? (
+        <img 
+          src={imgSrc} 
+          alt={crop.name} 
+          width={s.img} 
+          height={s.img} 
+          className="object-contain drop-shadow-md" 
+          style={crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : undefined} 
+          onError={() => setImgError(true)} 
+        />
       ) : (
-        <span className="text-2xl sm:text-4xl z-10">{crop.icon || '📦'}</span>
+        <span className="text-2xl sm:text-4xl">{crop.icon || '📦'}</span>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
     </div>
   );
 };
 
-export { CROP_COLORS, CROP_IMAGES };
+export default CropIcon;

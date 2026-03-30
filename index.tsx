@@ -51,6 +51,7 @@ import {
   Megaphone,
   Flag,
   Eye,
+  EyeOff,
   AlertCircle,
   User,
   Settings,
@@ -83,6 +84,11 @@ import { Ticker } from './components/ui/Ticker';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import FuturisticVinesBackground from './components/ui/FuturisticVinesBackground';
+import { AnimatedCounter } from './components/ui/AnimatedCounter';
+import { CropIcon, CROP_IMAGES, CROP_COLORS } from './components/ui/CropIcon';
+import { AnnouncementBanner } from './components/ui/AnnouncementBanner';
+import { ThemeProvider, ThemeToggle, useTheme } from './components/ui/Theme';
+import { ToastProvider, useToasts } from './components/ui/Toast';
 const MarketView = lazy(() => import('./views/MarketView').then((m) => ({ default: m.MarketView })));
 const BudgetCalculatorView = lazy(() => import('./views/BudgetCalculatorView').then((m) => ({ default: m.BudgetCalculatorView })));
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -198,29 +204,7 @@ const formatPrice = (price: number) => {
   return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-// Animated counter component — counts up from 0 to target
-const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 1200 }: { value: number; prefix?: string; suffix?: string; duration?: number }) => {
-  const [display, setDisplay] = useState(0);
-  const ref = React.useRef<number>(0);
-  useEffect(() => {
-    const start = ref.current;
-    const diff = value - start;
-    if (diff === 0) return;
-    const startTime = performance.now();
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      const current = start + diff * eased;
-      setDisplay(current);
-      ref.current = current;
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [value, duration]);
-  const formatted = Number.isInteger(value) ? Math.round(display).toLocaleString() : display.toFixed(2);
-  return <span>{prefix}{formatted}{suffix}</span>;
-};
+
 
 const timeAgo = (isoString: string): string => {
   const now = Date.now();
@@ -237,63 +221,7 @@ const timeAgo = (isoString: string): string => {
 };
 
 
-type Theme = 'dark' | 'light';
 
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = React.createContext<ThemeContextType | undefined>(undefined);
-
-const useTheme = () => {
-  const context = React.useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
-
-const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    try {
-      const saved = localStorage.getItem('theme');
-      return (saved as Theme) || 'dark';
-    } catch {
-      return 'dark';
-    }
-  });
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
-
-const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <button
-      onClick={toggleTheme}
-      className="p-3 rounded-2xl bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:scale-110 active:scale-95 transition-all shadow-[0_10px_20px_rgba(0,0,0,0.05)] border border-zinc-200 dark:border-zinc-800"
-      aria-label="Toggle Theme"
-    >
-      {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-    </button>
-  );
-};
 
 let sparklineCounter = 0;
 const Sparkline = ({ data, color }: { data: any[], color: string }) => {
@@ -315,117 +243,7 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
   );
 };
 // Crop image mapping and gradient backgrounds
-const CROP_IMAGES: Record<string, string> = {
-  'pineapple-premium': '/crops/pineapple.png',
-  'watermelon': '/crops/watermelon.png',
-  'strawberry': '/crops/strawberry.png',
-  'avocado': '/crops/avocado.png',
-  'pomelo': '/crops/pomelo.png',
-  'mango-carabao': '/crops/mango.png',
-  'banana-lakatan': '/crops/banana.png',
-  'calamansi': '/crops/calamansi.png',
-  'papaya': '/crops/papaya.png',
-  'coconut': '/crops/coconut.png',
-  'tomato-native': '/crops/tomato.png',
-  'cabbage-rare': '/crops/cabbage.png',
-  'okra': '/crops/okra.png',
-  'eggplant': '/crops/eggplant.png',
-  'kangkong': '/crops/kangkong.png',
-  'ampalaya': '/crops/ampalaya.png',
-  'sitaw': '/crops/sitaw.png',
-  'pechay': '/crops/pechay.png',
-  'garlic-ilocos': '/crops/garlic.png',
-  'onion-red': '/crops/onion.png',
-  'ginger': '/crops/ginger.png',
-  'chili-labuyo': '/crops/chili.png',
-  'lemongrass': '/crops/lemongrass.png',
-  'potato-baguio': '/crops/potato.png',
-  'carrots-premium': '/crops/carrot.png',
-  'sweet-potato': '/crops/kamote.png',
-  'cassava': '/crops/cassava.png',
-  'taro-gabi': '/crops/taro.png',
-  'ube': '/crops/ube.png',
-  'sayote': '/crops/sayote.png',
-  'black-pepper': '/crops/black-pepper.png',
-  'lanzones': '/crops/lanzones.png',
-  'rambutan': '/crops/rambutan.png',
-  'atsal': '/crops/bell-pepper.png',
-  'grapes': '/crops/grapes.png',
-  'fuji-apple': '/crops/apple.png',
-  'poncan': '/crops/poncan_final.png',
-  'upo': '/crops/upo.png',
-  'kalabasa': '/crops/kalabasa.png',
-  'pipino': '/crops/pickle_ultimate.png',
-};
 
-const CROP_COLORS: Record<string, [string, string]> = {
-  'pineapple-premium': ['#f59e0b', '#d97706'],
-  'watermelon': ['#ef4444', '#22c55e'],
-  'strawberry': ['#f43f5e', '#e11d48'],
-  'avocado': ['#4ade80', '#166534'],
-  'pomelo': ['#fbbf24', '#f59e0b'],
-  'mango-carabao': ['#fb923c', '#f59e0b'],
-  'banana-lakatan': ['#fde047', '#eab308'],
-  'calamansi': ['#a3e635', '#65a30d'],
-  'papaya': ['#fb923c', '#ea580c'],
-  'coconut': ['#a1887f', '#6d4c41'],
-  'tomato-native': ['#ef4444', '#dc2626'],
-  'cabbage-rare': ['#4ade80', '#16a34a'],
-  'okra': ['#8fbc8f', '#556b2f'],
-  'eggplant': ['#a855f7', '#7e22ce'],
-  'kangkong': ['#34d399', '#059669'],
-  'ampalaya': ['#22d3ee', '#0891b2'],
-  'sitaw': ['#6ee7b7', '#10b981'],
-  'pechay': ['#2dd4bf', '#0d9488'],
-  'garlic-ilocos': ['#e2e8f0', '#94a3b8'],
-  'onion-red': ['#c084fc', '#9333ea'],
-  'ginger': ['#fbbf24', '#b45309'],
-  'chili-labuyo': ['#ef4444', '#b91c1c'],
-  'lemongrass': ['#bef264', '#65a30d'],
-  'potato-baguio': ['#d4a574', '#92400e'],
-  'carrots-premium': ['#fb923c', '#c2410c'],
-  'sweet-potato': ['#f97316', '#9a3412'],
-  'cassava': ['#d6d3d1', '#78716c'],
-  'taro-gabi': ['#c084fc', '#7c3aed'],
-  'ube': ['#a855f7', '#6d28d9'],
-  'sayote': ['#a3e635', '#65a30d'],
-  'black-pepper': ['#374151', '#111827'],
-  'lanzones': ['#fde68a', '#d97706'],
-  'rambutan': ['#fb7185', '#be123c'],
-  'atsal': ['#f87171', '#b91c1c'],
-  'grapes': ['#818cf8', '#3730a3'],
-  'fuji-apple': ['#fda4af', '#e11d48'],
-  'poncan': ['#f97316', '#c2410c'],
-  'upo': ['#86efac', '#22c55e'],
-  'kalabasa': ['#fbbf24', '#b45309'],
-  'pipino': ['#bbf7d0', '#22c55e'],
-};
-
-const CropIcon = ({ crop, size = 'md' }: { crop: Crop, size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
-  const colors = CROP_COLORS[crop.id] || ['#6b7280', '#374151'];
-  const imgSrc = CROP_IMAGES[crop.id];
-  const [imgError, setImgError] = useState(false);
-  const sizeMap: Record<string, { box: string, img: number }> = {
-    sm: { box: 'w-10 h-10', img: 28 },
-    md: { box: 'w-14 h-14', img: 40 },
-    lg: { box: 'w-16 h-16', img: 48 },
-    xl: { box: 'w-28 h-28', img: 80 },
-  };
-  const s = sizeMap[size];
-  return (
-    <div
-      className={`${s.box} rounded-2xl flex items-center justify-center shadow-lg shrink-0 select-none border border-white/10`}
-      style={{ background: `linear-gradient(135deg, ${colors[0]}33, ${colors[1]}33)` }}
-      title={crop.name}
-    >
-      {imgSrc && !imgError ? (
-        <img src={imgSrc} alt={crop.name} width={s.img} height={s.img} className="object-contain drop-shadow-md" style={crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : undefined} onError={() => setImgError(true)} />
-      ) : (
-        <span className="text-2xl sm:text-4xl">{crop.icon || '📦'}</span>
-      )}
-    </div>
-  );
-};
 
 
 const ROLE_LABELS: Record<UserRole, { label: string; icon: React.ReactNode; desc: string }> = {
@@ -509,13 +327,15 @@ const LoginPage = ({
   attemptLogin,
   onRegister,
   isAdminUnlocked,
-  onUnlock
+  onUnlock,
+  addToast
 }: {
   onLogin: (role: UserRole, email?: string) => void,
   attemptLogin: (email: string, password: string, role: UserRole) => Promise<string>,
   onRegister: (name: string, email: string, password: string, role: UserRole, docs?: string[]) => Promise<string>,
   isAdminUnlocked: boolean,
-  onUnlock: () => void
+  onUnlock: () => void,
+  addToast: (msg: string, type: 'success' | 'destructive') => void
 }) => {
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
   const [email, setEmail] = useState('');
@@ -530,6 +350,26 @@ const LoginPage = ({
   const [otpError, setOtpError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [regDocs, setRegDocs] = useState<string[]>([]);
+
+  // Task 1: Password Show/Hide
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+
+  // Task 2: Forgot Password
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [isForgotSubmitted, setIsForgotSubmitted] = useState(false);
+
+  // Task 3: Password Strength
+  const getPasswordStrength = (pw: string) => {
+    if (!pw) return { score: 0, label: '', color: 'bg-zinc-200' };
+    if (pw.length < 8) return { score: 33, label: 'Weak', color: 'bg-red-500' };
+    const hasSpecial = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pw);
+    if (hasSpecial) return { score: 100, label: 'Strong', color: 'bg-green-500' };
+    return { score: 66, label: 'Fair', color: 'bg-yellow-500' };
+  };
+
+  const strength = getPasswordStrength(regPassword);
 
   // Google SVG icon
   const GoogleIcon = () => (
@@ -612,6 +452,16 @@ const LoginPage = ({
     }, 1200);
   };
 
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsForgotSubmitted(true);
+      setIsLoading(false);
+      addToast('Reset link sent to your email', 'success');
+    }, 1500);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
@@ -620,6 +470,7 @@ const LoginPage = ({
     await new Promise(r => setTimeout(r, 1200));
     const result = await attemptLogin(email.trim().toLowerCase(), password, role);
     if (result === 'ok') {
+      addToast(`Welcome back, ${role.toLowerCase()}!`, 'success');
       onLogin(role, email.trim().toLowerCase());
     } else if (result === 'banned') {
       setError('🚫 Your account has been banned. Contact support for assistance.');
@@ -642,6 +493,7 @@ const LoginPage = ({
     await new Promise(r => setTimeout(r, 1200));
     const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role, role === UserRole.VENDOR ? regDocs : undefined);
     if (result === 'ok') {
+      addToast('Account created successfully!', 'success');
       onLogin(role, regEmail.trim().toLowerCase());
     } else if (result === 'exists') {
       setError('Account already exists with that email.');
@@ -712,17 +564,38 @@ const LoginPage = ({
                   />
                 </div>
                 {error && regEmail.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Email address is required.</p>}
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
+                <div className="relative w-full">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700 z-10" />
                   <input
-                    type="password"
+                    type={showRegPassword ? "text" : "password"}
                     placeholder="Password"
                     required
-                    className={`w-full bg-zinc-50 dark:bg-zinc-900 border ${error && regPassword.length === 0 ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'} rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner`}
+                    className={`w-full bg-zinc-50 dark:bg-zinc-900 border ${error && regPassword.length === 0 ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'} rounded-2xl py-4 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner relative z-0`}
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword(!showRegPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors z-20 flex items-center justify-center"
+                    aria-label={showRegPassword ? "Hide password" : "Show password"}
+                  >
+                    {showRegPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
+                {regPassword.length > 0 && (
+                  <div className="px-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Security: <span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span></span>
+                    </div>
+                    <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${strength.color} transition-all duration-500`} 
+                        style={{ width: `${strength.score}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 {error && regPassword.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Password is required.</p>}
 
                 {/* Vendor Document Upload */}
@@ -790,16 +663,24 @@ const LoginPage = ({
                     />
                   </div>
                   {error && email.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Email address is required.</p>}
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
+                  <div className="relative w-full">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700 z-10" />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Password"
                       required
-                      className={`w-full bg-zinc-50 dark:bg-zinc-900 border ${error && password.length === 0 ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'} rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner`}
+                      className={`w-full bg-zinc-50 dark:bg-zinc-900 border ${error && password.length === 0 ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'} rounded-2xl py-4 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner relative z-0`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors z-20 flex items-center justify-center"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                   {error && password.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Password is required.</p>}
                 </div>
@@ -811,6 +692,15 @@ const LoginPage = ({
                 >
                   {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Authenticating...</span></> : 'Access Terminal'}
                 </button>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-green-500 transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </form>
 
               {/* OAuth Sign-in Buttons */}
@@ -851,58 +741,122 @@ const LoginPage = ({
             </>
           )}
         </div>
+      </div>
 
-        {/* OTP Verification Modal */}
-        {showOtpModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/70 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
-              <div className="flex flex-col items-center mb-6">
-                <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
-                  <ShieldCheck className="text-green-500" size={32} />
-                </div>
-                <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Verification</h2>
-                <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/70 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <ShieldCheck className="text-green-500" size={32} />
               </div>
-              <div className="space-y-4">
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Verification</h2>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
+            </div>
+            <div className="space-y-4">
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  maxLength={6}
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
+                  value={otpInput}
+                  onChange={(e) => {
+                    setOtpInput(e.target.value.replace(/[^0-9]/g, ''));
+                    setOtpError('');
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleOtpSubmit()}
+                  autoFocus
+                />
+              </div>
+              {otpError && <p className="text-center text-sm text-red-500 font-bold">{otpError}</p>}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowOtpModal(false); setOtpInput(''); setOtpError(''); }}
+                  className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all text-sm"
+                  aria-label="Cancel OTP verification"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOtpSubmit}
+                  disabled={isLoading}
+                  className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
+                >
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-1">Verifying...</span></> : 'Verify'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Task 2: Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/70 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-stone-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <Lock className="text-blue-500" size={32} />
+              </div>
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Forgot Password?</h2>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Enter your email and we'll send you a link to reset your password.</p>
+            </div>
+            
+            {isForgotSubmitted ? (
+              <div className="text-center py-6 animate-in fade-in duration-500">
+                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="text-green-500" size={24} />
+                </div>
+                <p className="text-zinc-900 dark:text-white font-bold mb-2 uppercase tracking-widest text-xs">Link Sent!</p>
+                <p className="text-zinc-500 text-xs mb-6">Check your email for a reset link.</p>
+                <button
+                  onClick={() => { setShowForgotModal(false); setIsForgotSubmitted(false); }}
+                  className="w-full bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs hover:scale-105"
+                  aria-label="Back to login after link sent"
+                >
+                  Back to Login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
-                    type="text"
-                    placeholder="Enter OTP"
-                    maxLength={6}
-                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
-                    value={otpInput}
-                    onChange={(e) => {
-                      setOtpInput(e.target.value.replace(/[^0-9]/g, ''));
-                      setOtpError('');
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && handleOtpSubmit()}
-                    autoFocus
+                    type="email"
+                    placeholder="Email Address"
+                    required
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-blue-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
                   />
                 </div>
-                {otpError && <p className="text-center text-sm text-red-500 font-bold">{otpError}</p>}
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => { setShowOtpModal(false); setOtpInput(''); setOtpError(''); }}
-                    className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all text-sm"
+                    onClick={() => { setShowForgotModal(false); setForgotEmail(''); }}
+                    className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all text-xs"
+                    aria-label="Cancel forgot password"
                   >
                     Cancel
                   </button>
                   <button
-                    type="button"
-                    onClick={handleOtpSubmit}
+                    type="submit"
                     disabled={isLoading}
-                    className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
+                    className={`flex-1 bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
                   >
-                    {isLoading ? <><span className="btn-spinner" /> <span className="ml-1">Verifying...</span></> : 'Verify'}
+                    {isLoading ? 'Sending...' : 'Send Link'}
                   </button>
                 </div>
-              </div>
-            </div>
+              </form>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Admin Unlocked Graphic Modal */}
       {showUnlockedModal && (
@@ -952,54 +906,7 @@ const LoginPage = ({
   );
 };
 
-const BannerItem: React.FC<{ announcement: Announcement; onDismiss: (id: string) => void }> = ({ announcement, onDismiss }) => {
-  useEffect(() => {
-    if (announcement.duration && announcement.duration > 0) {
-      const timer = setTimeout(() => {
-        onDismiss(announcement.id);
-      }, announcement.duration * 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [announcement, onDismiss]);
 
-  return (
-    <div className={`p-4 rounded-2xl flex items-start justify-between gap-4 shadow-lg border relative group animate-in slide-in-from-top duration-500 ${announcement.priority === 'high' ? 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400' : announcement.priority === 'medium' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
-      <div className="flex items-center gap-4">
-        <div className={`p-2 rounded-xl shrink-0 ${announcement.priority === 'high' ? 'bg-red-500/20' : announcement.priority === 'medium' ? 'bg-orange-500/20' : 'bg-blue-500/20'}`}>
-          <Megaphone size={20} />
-        </div>
-        <div>
-          <p className="font-black text-sm uppercase tracking-wider mb-0.5">{announcement.title}</p>
-          <p className="text-xs font-medium opacity-90">{announcement.message}</p>
-          {announcement.duration && announcement.duration > 0 && (
-            <div className="w-full h-1 bg-black/5 dark:bg-white/10 mt-2 rounded-full overflow-hidden">
-              <div className="h-full bg-current opacity-30 origin-left animate-duration-progress" style={{ animationDuration: `${announcement.duration}s` }} />
-            </div>
-          )}
-        </div>
-      </div>
-      <button
-        onClick={() => onDismiss(announcement.id)}
-        className="text-current opacity-50 hover:opacity-100 transition-opacity p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
-      >
-        <X size={16} />
-      </button>
-    </div>
-  );
-};
-
-const AnnouncementBanner = ({ announcements, dismissedIds, onDismiss }: { announcements: Announcement[], dismissedIds: string[], onDismiss: (id: string) => void }) => {
-  const active = announcements.filter(a => a.active && !dismissedIds.includes(a.id));
-  if (active.length === 0) return null;
-
-  return (
-    <div className="space-y-3 mb-8">
-      {active.map(a => (
-        <BannerItem key={a.id} announcement={a} onDismiss={onDismiss} />
-      ))}
-    </div>
-  );
-};
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('AP_isAuthenticated') === 'true');
@@ -1357,6 +1264,7 @@ const App = () => {
   const [activeGraphicAlert, setActiveGraphicAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string } | null>(null);
   const [activeConfirmAlert, setActiveConfirmAlert] = useState<{ type: 'BAN' | 'WARN' | 'UNBAN' | 'VERIFY' | 'REJECT', title: string, subtitle: string, onConfirm: (reason?: string) => void } | null>(null);
   const [actionReason, setActionReason] = useState('');
+  const { addToast } = useToasts();
 
   const ActionConfirmModal = ({ alert, onCancel }: { alert: { type: string, title: string, subtitle: string, onConfirm: (reason?: string) => void } | null, onCancel: () => void }) => {
     if (!alert) return null;
@@ -1446,7 +1354,16 @@ const App = () => {
             </button>
             <button
               disabled={showReasonField && !actionReason.trim()}
-              onClick={() => { alert.onConfirm(actionReason.trim()); onCancel(); setActionReason(''); }}
+              onClick={() => { 
+                alert.onConfirm(actionReason.trim()); 
+                onCancel(); 
+                setActionReason('');
+                if (alert.type === 'BAN' || alert.type === 'REJECT') {
+                  addToast(alert.title, 'destructive');
+                } else {
+                  addToast(alert.title, 'success');
+                }
+              }}
               className={`flex-1 ${btnClass} py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed`}
             >
               Confirm
@@ -1522,7 +1439,13 @@ const App = () => {
             <p className="text-sm font-bold text-white truncate">{alert.title}</p>
             <p className={`text-xs ${colorClass} truncate`}>{alert.subtitle}</p>
           </div>
-          <X size={16} className="text-zinc-500 hover:text-white transition-colors shrink-0" />
+          <button 
+            onClick={handleDismiss}
+            className="text-zinc-500 hover:text-white transition-colors shrink-0 p-1"
+            aria-label="Dismiss alert"
+          >
+            <X size={16} />
+          </button>
         </div>
       </div>
     );
@@ -3733,7 +3656,16 @@ const App = () => {
     }, 500);
   };
 
-  if (!isAuthenticated) return <LoginPage onLogin={handleLogin} attemptLogin={attemptLogin} onRegister={registerUser} isAdminUnlocked={isAdminUnlocked} onUnlock={() => setIsAdminUnlocked(true)} />;
+  if (!isAuthenticated) return (
+    <LoginPage 
+      onLogin={handleLogin} 
+      attemptLogin={attemptLogin} 
+      onRegister={registerUser} 
+      isAdminUnlocked={isAdminUnlocked} 
+      onUnlock={() => setIsAdminUnlocked(true)} 
+      addToast={addToast}
+    />
+  );
 
   return (
     <div className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
@@ -4085,6 +4017,7 @@ const App = () => {
                     setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
                   }}
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
+                  aria-label="Toggle announcements"
                 >
                   <Bell size={22} />
                   {announcements.filter(a => a.active && !seenAnnouncementIds.includes(a.id)).length > 0 && (
@@ -4273,7 +4206,7 @@ const App = () => {
       </footer>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
-        <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
+        <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} aria-label="Market" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <MarketsIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Mkts</span>
         </button>
@@ -4283,18 +4216,18 @@ const App = () => {
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shops</span>
           </button>
         )}
-        <button onClick={() => navigate('/budget')} aria-current={location.pathname === '/budget' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/budget' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
+        <button onClick={() => navigate('/budget')} aria-current={location.pathname === '/budget' ? 'page' : undefined} aria-label="Analytics" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/budget' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <BudgetIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats</span>
         </button>
         {role === UserRole.VENDOR && (
-          <button onClick={() => navigate('/')} aria-current={location.pathname === '/' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
+          <button onClick={() => navigate('/')} aria-current={location.pathname === '/' ? 'page' : undefined} aria-label="Dashboard" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <VendorIcon size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dash</span>
           </button>
         )}
         {role === UserRole.ADMIN && isAdminUnlocked && (
-          <button onClick={() => navigate('/admin')} aria-current={location.pathname === '/admin' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/admin' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
+          <button onClick={() => navigate('/admin')} aria-current={location.pathname === '/admin' ? 'page' : undefined} aria-label="Admin" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/admin' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <AdminIcon size={26} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Admin</span>
           </button>
@@ -4973,8 +4906,10 @@ const App = () => {
 const root = createRoot(document.getElementById('root')!);
 root.render(
   <BrowserRouter>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ToastProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </ToastProvider>
   </BrowserRouter>
 );

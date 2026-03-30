@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-export const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 1200 }: { value: number; prefix?: string; suffix?: string; duration?: number }) => {
+interface AnimatedCounterProps {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}
+
+// Animated counter component — counts up from 0 to target
+export const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 1200 }: AnimatedCounterProps) => {
   const [display, setDisplay] = useState(0);
-  const ref = React.useRef<number>(0);
+  const ref = useRef<number>(0);
+
   useEffect(() => {
     const start = ref.current;
     const diff = value - start;
@@ -19,6 +28,9 @@ export const AnimatedCounter = ({ value, prefix = '', suffix = '', duration = 12
     };
     requestAnimationFrame(step);
   }, [value, duration]);
+
   const formatted = Number.isInteger(value) ? Math.round(display).toLocaleString() : display.toFixed(2);
   return <span>{prefix}{formatted}{suffix}</span>;
 };
+
+export default AnimatedCounter;
