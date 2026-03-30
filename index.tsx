@@ -4441,9 +4441,17 @@ const App = () => {
       {selectedVendor && (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setSelectedVendor(null)}></div>
-          <div className="bg-white dark:bg-zinc-900 w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 max-h-[95vh] sm:max-h-none">
-            <button onClick={() => setSelectedVendor(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
-            <div className="p-5 sm:p-10 lg:p-14 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
+          <div className="w-full sm:max-w-2xl relative animate-in slide-in-from-bottom sm:zoom-in-95 duration-300">
+            {/* The exit button is now confidently outside the bounded overflow container */}
+            <button 
+              onClick={() => setSelectedVendor(null)} 
+              className="absolute -top-16 right-4 sm:-top-5 sm:-right-5 z-50 w-12 h-12 rounded-full bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-xl hover:scale-110 active:scale-95 transition-all"
+              aria-label="Close"
+            >
+              <X size={24} strokeWidth={3} />
+            </button>
+            <div className="bg-white dark:bg-zinc-900 w-full rounded-t-3xl sm:rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl max-h-[95vh] sm:max-h-none flex flex-col">
+              <div className="p-5 sm:p-10 lg:p-14 space-y-6 sm:space-y-10 max-h-[90vh] overflow-y-auto scrollbar-hide flex-1">
               <div className="flex flex-col md:flex-row justify-between items-start gap-8">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-2xl sm:rounded-[36px] bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center font-black text-3xl sm:text-5xl text-zinc-300 dark:text-zinc-700 border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0">
@@ -4522,7 +4530,8 @@ const App = () => {
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* Crop Info Modal */}
       {selectedCrop && (
