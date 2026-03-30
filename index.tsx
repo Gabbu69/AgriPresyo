@@ -316,7 +316,7 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
 };
 // Crop image mapping and gradient backgrounds
 const CROP_IMAGES: Record<string, string> = {
-  'pineapple-premium': '/crops/pineapple_premium_v2.png',
+  'pineapple-premium': '/crops/pineapple.png',
   'watermelon': '/crops/watermelon.png',
   'strawberry': '/crops/strawberry.png',
   'avocado': '/crops/avocado.png',
