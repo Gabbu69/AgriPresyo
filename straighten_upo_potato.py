@@ -67,4 +67,3 @@ def straighten_item(filename, target_size=510):
 
 if __name__ == "__main__":
     straighten_item("upo.png")
-    straighten_item("potato.png")

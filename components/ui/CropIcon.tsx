@@ -117,7 +117,11 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
           width={s.img} 
           height={s.img} 
           className="object-contain drop-shadow-md" 
-          style={crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : undefined} 
+          style={
+            crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : 
+            crop.id === 'upo' ? { transform: 'scale(1.15)' } : 
+            undefined
+          }
           onError={() => setImgError(true)} 
         />
       ) : (
