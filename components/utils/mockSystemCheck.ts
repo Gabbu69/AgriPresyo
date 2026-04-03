@@ -12,7 +12,7 @@ export const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null 
       id,
       type: 'OPPORTUNITY',
       message: `User '${randomUser?.name || 'Juan Dela Cruz'}' has reached 50 verified transactions with a 4.9-star rating.`,
-      suggestion: "Grant 'Trusted Seller' Badge to boost buyer confidence?",
+      suggestion: "Grant 'Trusted Seller' Badge to boost customer confidence?",
       timestamp,
       actionLabel: "Grant Badge"
     };

@@ -56,10 +56,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍍',
     weightPerUnit: 1.8,
     vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 110, stock: 150, isHot: true },
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 125, stock: 80 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 118, stock: 95 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 130, stock: 60 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 110, stock: 150, isHot: true, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 125, stock: 80, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 118, stock: 95, openTime: '06:00', closeTime: '16:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 130, stock: 60, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -73,9 +73,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍉',
     weightPerUnit: 5.0,
     vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 42, stock: 200 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 48, stock: 300 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 44, stock: 250 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 42, stock: 200, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 48, stock: 300, openTime: '06:00', closeTime: '18:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 44, stock: 250, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -89,9 +89,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍓',
     weightPerUnit: 0.25,
     vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 460, stock: 40, isHot: true },
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 500, stock: 20 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 475, stock: 35 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 460, stock: 40, isHot: true, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 500, stock: 20, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 475, stock: 35, openTime: '06:00', closeTime: '16:00' }
     ]
   },
   {
@@ -105,10 +105,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥑',
     weightPerUnit: 0.3,
     vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 215, stock: 40, isHot: true },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 230, stock: 60 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 222, stock: 50 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 235, stock: 30 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 215, stock: 40, isHot: true, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 230, stock: 60, openTime: '06:00', closeTime: '18:00' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 222, stock: 50, openTime: '06:00', closeTime: '16:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 235, stock: 30, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -122,9 +122,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍊',
     weightPerUnit: 1.2,
     vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 125, stock: 100 },
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 135, stock: 150 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 128, stock: 80 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 125, stock: 100, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 135, stock: 150, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 128, stock: 80, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -138,10 +138,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥭',
     weightPerUnit: 0.25,
     vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 145, stock: 100, isHot: true },
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 155, stock: 200 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 148, stock: 120 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 158, stock: 90 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 145, stock: 100, isHot: true, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 155, stock: 200, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 148, stock: 120, openTime: '06:00', closeTime: '16:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 158, stock: 90, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -155,9 +155,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍌',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 75, stock: 500 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 85, stock: 400 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 78, stock: 350 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 75, stock: 500, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 85, stock: 400, openTime: '06:00', closeTime: '18:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 78, stock: 350, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -171,9 +171,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🟢',
     weightPerUnit: 0.03,
     vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 95, stock: 600 },
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 108, stock: 350 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 100, stock: 400 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 95, stock: 600, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 108, stock: 350, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 100, stock: 400, openTime: '06:00', closeTime: '16:00' }
     ]
   },
   {
@@ -187,10 +187,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🟠',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 55, stock: 250 },
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 65, stock: 180 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 58, stock: 200 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 62, stock: 150 }
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 55, stock: 250, openTime: '06:00', closeTime: '18:00' },
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 65, stock: 180, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 58, stock: 200, openTime: '06:00', closeTime: '16:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 62, stock: 150, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -204,9 +204,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥥',
     weightPerUnit: 1.5,
     vendors: [
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 30, stock: 400, isHot: true },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 38, stock: 300 },
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 34, stock: 220 }
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 30, stock: 400, isHot: true, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 38, stock: 300, openTime: '06:00', closeTime: '18:00' },
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 34, stock: 220, openTime: '04:30', closeTime: '14:00' }
     ]
   },
   {
@@ -220,8 +220,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🔴',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 75, stock: 100 },
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 85, stock: 150 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 75, stock: 100, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 85, stock: 150, openTime: '05:00', closeTime: '17:00' }
     ]
   },
   {
@@ -235,8 +235,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🟡',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 95, stock: 80 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 105, stock: 120 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 95, stock: 80, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 105, stock: 120, openTime: '06:00', closeTime: '18:00' }
     ]
   },
 
@@ -252,10 +252,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍅',
     weightPerUnit: 0.08,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 60, stock: 500 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 400 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 63, stock: 350 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 68, stock: 280 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 60, stock: 500, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 400, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 63, stock: 350, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 68, stock: 280, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -269,9 +269,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥬',
     weightPerUnit: 1.5,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 600, isHot: true },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 90, stock: 450 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 84, stock: 380 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 600, isHot: true, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 90, stock: 450, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 84, stock: 380, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -285,10 +285,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫛',
     weightPerUnit: 0.02,
     vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 50, stock: 800 },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 58, stock: 1200 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 53, stock: 650 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 56, stock: 700 }
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 50, stock: 800, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 58, stock: 1200, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 53, stock: 650, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 56, stock: 700, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -302,9 +302,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍆',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 85, stock: 1200 },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 95, stock: 1000 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 88, stock: 900 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 85, stock: 1200, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 95, stock: 1000, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 88, stock: 900, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -318,10 +318,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🌱',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 25, stock: 1500 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 35, stock: 1200 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 28, stock: 1100 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 32, stock: 900 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 25, stock: 1500, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 35, stock: 1200, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 28, stock: 1100, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 32, stock: 900, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -335,9 +335,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫑',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 115, stock: 400 },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 125, stock: 350 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 118, stock: 300 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 115, stock: 400, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 125, stock: 350, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 118, stock: 300, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -351,9 +351,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫘',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 900 },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 80, stock: 700 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 73, stock: 600 }
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 70, stock: 900, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 80, stock: 700, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 73, stock: 600, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -367,10 +367,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥗',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 40, stock: 1000 },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 50, stock: 800 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 43, stock: 750 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 48, stock: 600 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 40, stock: 1000, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 50, stock: 800, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 43, stock: 750, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 48, stock: 600, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -384,8 +384,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍐',
     weightPerUnit: 0.3,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 20, stock: 500 },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 30, stock: 400 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 20, stock: 500, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 30, stock: 400, openTime: '04:00', closeTime: '16:00' }
     ]
   },
 
@@ -401,9 +401,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🧄',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 175, stock: 500, isHot: true },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 190, stock: 300 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 182, stock: 400 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 175, stock: 500, isHot: true, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 190, stock: 300, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 182, stock: 400, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -417,10 +417,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🧅',
     weightPerUnit: 0.1,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 150, stock: 2000 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 170, stock: 1500 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 158, stock: 1200 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 165, stock: 900 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 150, stock: 2000, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 170, stock: 1500, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 158, stock: 1200, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 165, stock: 900, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -434,9 +434,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫚',
     weightPerUnit: 0.1,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 105, stock: 800 },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 120, stock: 400 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 550 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 105, stock: 800, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 120, stock: 400, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 550, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -450,10 +450,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🌶️',
     weightPerUnit: 0.005,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 340, stock: 50, isHot: true },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 370, stock: 30 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 345, stock: 40 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 360, stock: 25 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 340, stock: 50, isHot: true, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 370, stock: 30, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 345, stock: 40, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 360, stock: 25, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -467,9 +467,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🌿',
     weightPerUnit: 0.05,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 22, stock: 2000 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 28, stock: 1500 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 24, stock: 1800 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 22, stock: 2000, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 28, stock: 1500, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 24, stock: 1800, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -483,8 +483,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '⚫',
     weightPerUnit: 0.01,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 390, stock: 50 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 410, stock: 40 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 390, stock: 50, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 410, stock: 40, openTime: '04:30', closeTime: '13:00' }
     ]
   },
 
@@ -500,9 +500,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥔',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 90, stock: 2000, isHot: true },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 100, stock: 1500 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 93, stock: 1200 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 90, stock: 2000, isHot: true, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 100, stock: 1500, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 93, stock: 1200, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -516,10 +516,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥕',
     weightPerUnit: 0.12,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 105, stock: 1200 },
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 115, stock: 800 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 700 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 112, stock: 600 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 105, stock: 1200, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 115, stock: 800, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 108, stock: 700, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 112, stock: 600, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -533,9 +533,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍠',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 50, stock: 3000 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 60, stock: 1000 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 53, stock: 2000 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 50, stock: 3000, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 60, stock: 1000, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 53, stock: 2000, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -549,9 +549,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🪵',
     weightPerUnit: 0.8,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 38, stock: 5000 },
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 42, stock: 2000 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 39, stock: 3000 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 38, stock: 5000, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 42, stock: 2000, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 39, stock: 3000, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   {
@@ -565,9 +565,9 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🟤',
     weightPerUnit: 0.4,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 70, stock: 1500 },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 800 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 73, stock: 600 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 70, stock: 1500, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 80, stock: 800, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 73, stock: 600, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -581,10 +581,10 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍠',
     weightPerUnit: 0.5,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 135, stock: 600, isHot: true },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 145, stock: 450 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 138, stock: 350 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 148, stock: 280 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 135, stock: 600, isHot: true, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 145, stock: 450, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 138, stock: 350, openTime: '06:00', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 148, stock: 280, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   
@@ -600,8 +600,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥒',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 50, stock: 120 },
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 60, stock: 80 }
+      { id: 'v_veg_2', name: 'Mang Erning\'s Palengke', rating: 4.4, reviewCount: 92, specialty: 'Sariwang Gulay', price: 50, stock: 120, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 60, stock: 80, openTime: '03:30', closeTime: '15:00' }
     ]
   },
   {
@@ -615,8 +615,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🎃',
     weightPerUnit: 1.5,
     vendors: [
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 45, stock: 200 },
-      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 55, stock: 150 }
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 45, stock: 200, openTime: '05:30', closeTime: '16:30' },
+      { id: 'v_veg_5', name: 'Ate Bing\'s Garden', rating: 4.6, reviewCount: 78, specialty: 'Organikong Gulay', price: 55, stock: 150, openTime: '06:00', closeTime: '15:00' }
     ]
   },
   {
@@ -630,8 +630,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🫑',
     weightPerUnit: 0.1,
     vendors: [
-      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 270, stock: 150, isHot: true },
-      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 290, stock: 100 }
+      { id: 'v_veg_1', name: 'Aling Rosa\'s Gulay', rating: 4.7, reviewCount: 156, specialty: 'Gulay ng Bundok', price: 270, stock: 150, isHot: true, openTime: '04:00', closeTime: '16:00' },
+      { id: 'v_veg_4', name: 'Kuya Ben\'s Highland', rating: 4.8, reviewCount: 110, specialty: 'Sariwa mula Bundok', price: 290, stock: 100, openTime: '05:30', closeTime: '16:30' }
     ]
   },
   {
@@ -645,8 +645,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🥒',
     weightPerUnit: 0.25,
     vendors: [
-      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 95, stock: 200 },
-      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 105, stock: 180 }
+      { id: 'v_veg_3', name: 'Nanay Linda\'s Ugat', rating: 4.6, reviewCount: 310, specialty: 'Halamang-Ugat', price: 95, stock: 200, openTime: '03:30', closeTime: '15:00' },
+      { id: 'v_veg_6', name: 'Tatay Romy\'s Farm Fresh', rating: 4.3, reviewCount: 55, specialty: 'Direkta sa Bukid', price: 105, stock: 180, openTime: '04:30', closeTime: '13:00' }
     ]
   },
   // --- USER REQUESTED FRUITS ---
@@ -661,8 +661,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍎',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 9, stock: 500 },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 11, stock: 450 }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 9, stock: 500, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 11, stock: 450, openTime: '06:00', closeTime: '16:00' }
     ]
   },
   {
@@ -676,8 +676,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍇',
     weightPerUnit: 1.0,
     vendors: [
-      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 240, stock: 150 },
-      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 260, stock: 120 }
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 240, stock: 150, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 260, stock: 120, openTime: '06:00', closeTime: '18:00' }
     ]
   },
   {
@@ -691,8 +691,8 @@ export const MOCK_CROPS: Crop[] = [
     icon: '🍊',
     weightPerUnit: 0.15,
     vendors: [
-      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 22, stock: 400 },
-      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 28, stock: 350 }
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 22, stock: 400, openTime: '04:30', closeTime: '14:00' },
+      { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 28, stock: 350, openTime: '05:00', closeTime: '17:00' }
     ]
   }
 ];

@@ -77,7 +77,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-4 sm:pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-900 dark:text-white transition-all text-sm sm:text-lg shadow-xl"
-              aria-label="Search commodities"
+              aria-label="Search crops"
             />
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3 pb-2">
@@ -180,7 +180,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
       <section aria-label="Commodity listings">
         <h2 className="text-xl font-black flex items-center gap-2 uppercase tracking-tighter text-zinc-900 dark:text-white">
           <BarChart3 className="text-green-400" size={20} aria-hidden />
-          Terminal Intelligence
+          Price Insights
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isInitialLoading ? (
@@ -190,7 +190,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               <EmptyState
                 icon={Search}
                 title="No Markets Found"
-                subtitle="We couldn't find any commodities matching your current filters."
+                subtitle="We couldn't find any crops matching your search."
                 action={{
                   label: 'Clear Filters',
                   onClick: () => {

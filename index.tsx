@@ -107,10 +107,10 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
     return {
       id,
       type: 'OPPORTUNITY',
-      message: `User '${randomUser?.name || 'Juan Dela Cruz'}' has reached 50 verified transactions with a 4.9-star rating.`,
-      suggestion: "Grant 'Trusted Seller' Badge to boost buyer confidence?",
+      message: `Seller '${randomUser?.name || 'Juan Dela Cruz'}' has finished 50 sales with good ratings.`,
+      suggestion: "Give them a 'Trusted Seller' badge to show they are excellent?",
       timestamp,
-      actionLabel: "Grant Badge"
+      actionLabel: "Give Badge"
     };
   }
 
@@ -119,10 +119,10 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
     return {
       id,
       type: 'PERFORMANCE',
-      message: `The main price table contains ${5000 + Math.floor(Math.random() * 500)} records from the previous harvest season (Year: 2025).`,
-      suggestion: "Archive these records to 'historical_prices.csv' to reduce query time by approx 150ms?",
+      message: `We have old records from last season that makes the app slower.`,
+      suggestion: "Clean up old records to make the app faster?",
       timestamp,
-      actionLabel: "Archive Data"
+      actionLabel: "Clean Up"
     };
   }
 
@@ -131,10 +131,10 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
     return {
       id,
       type: 'SECURITY',
-      message: `User 'CropKing${Math.floor(Math.random() * 100)}' is attempting to register using a phone number (+639xxxxxx) associated with a previously banned account (Reason: Spamming).`,
-      suggestion: "Auto-block this registration and add IP to watchlist?",
+      message: `Someone named 'CropKing${Math.floor(Math.random() * 100)}' is trying to sign up using a blocked number.`,
+      suggestion: "Block this person from signing up?",
       timestamp,
-      actionLabel: "Block User"
+      actionLabel: "Block"
     };
   }
 
@@ -143,10 +143,10 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
     return {
       id,
       type: 'HEALTH',
-      message: `Average server response time has spiked to ${(3 + Math.random()).toFixed(1)} seconds in the last hour. Detected 200MB of unused product images in the temporary cache.`,
-      suggestion: "Run the 'Garbage Collection' script and clear the image cache to restore speed?",
+      message: `The app is a bit slow because of old pictures.`,
+      suggestion: "Delete old pictures to make the app faster?",
       timestamp,
-      actionLabel: "Optimize"
+      actionLabel: "Make Faster"
     };
   }
 
@@ -154,10 +154,10 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
   return {
     id,
     type: 'COMMUNITY',
-    message: `Vendor 'Mario' maintains a 4.2-star rating, but 3 recent comments mention "rude behavior" and "refused to meet."`,
-    suggestion: "Issue a Warning Notification to this vendor regarding Code of Conduct?",
+    message: `Seller 'Mario' has a 4.2-star rating, but 3 recent reviews say they were "rude" and "refused to meet customers."`,
+    suggestion: "Send Mario a warning?",
     timestamp,
-    actionLabel: "Issue Warning"
+    actionLabel: "Send Warning"
   };
 };
 
@@ -247,9 +247,9 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
 
 
 const ROLE_LABELS: Record<UserRole, { label: string; icon: React.ReactNode; desc: string }> = {
-  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: <ConsumerRoleIcon size={24} />, desc: 'Browse prices & build budgets' },
-  [UserRole.VENDOR]: { label: 'VENDOR', icon: <VendorRoleIcon size={24} />, desc: 'Manage your shop & inventory' },
-  [UserRole.ADMIN]: { label: 'ADMIN', icon: <AdminRoleIcon size={24} />, desc: 'System administration & analytics' },
+  [UserRole.CONSUMER]: { label: 'CUSTOMER', icon: <ConsumerRoleIcon size={24} />, desc: 'See prices and plan what to buy' },
+  [UserRole.VENDOR]: { label: 'SELLER', icon: <VendorRoleIcon size={24} />, desc: 'Sell crops and manage your store' },
+  [UserRole.ADMIN]: { label: 'ADMIN', icon: <AdminRoleIcon size={24} />, desc: 'Manage the website' },
 };
 
 const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setRole: (r: UserRole) => void; isAdminUnlocked: boolean }) => {
@@ -399,7 +399,7 @@ const LoginPage = ({
     if (result === 'ok') {
       onLogin(role, fakeEmail);
     } else {
-      setError('OAuth sign-in failed. Please try again.');
+      setError('We couldn\'t log you in. Please check your email and password.');
     }
     setIsLoading(false);
   };
@@ -446,7 +446,7 @@ const LoginPage = ({
         setShowUnlockedModal(true);
         setTimeout(() => setShowUnlockedModal(false), 3500);
       } else {
-        setOtpError('Invalid OTP. Please try again.');
+        setOtpError('Wrong secret code. Please try again.');
         setIsLoading(false);
       }
     }, 1200);
@@ -458,7 +458,7 @@ const LoginPage = ({
     setTimeout(() => {
       setIsForgotSubmitted(true);
       setIsLoading(false);
-      addToast('Reset link sent to your email', 'success');
+      addToast('We sent a link to your email so you can change your password', 'success');
     }, 1500);
   };
 
@@ -470,12 +470,12 @@ const LoginPage = ({
     await new Promise(r => setTimeout(r, 1200));
     const result = await attemptLogin(email.trim().toLowerCase(), password, role);
     if (result === 'ok') {
-      addToast(`Welcome back, ${role.toLowerCase()}!`, 'success');
+      addToast(`Welcome back!`, 'success');
       onLogin(role, email.trim().toLowerCase());
     } else if (result === 'banned') {
-      setError('🚫 Your account has been banned. Contact support for assistance.');
+      setError('🚫 Your account is locked. Please send a message to our team.');
     } else {
-      setError('Invalid credentials. Please create an account or try again.');
+      setError('Wrong email or password. Please try again, or sign up if you are new.');
     }
     setIsLoading(false);
   };
@@ -485,7 +485,7 @@ const LoginPage = ({
     if (isLoading) return;
     setError('');
     if (regPassword.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      setError('Your password is too short. Please make it 8 characters or more.');
       return;
     }
     // Documents are optional at registration for vendors
@@ -493,10 +493,10 @@ const LoginPage = ({
     await new Promise(r => setTimeout(r, 1200));
     const result = await onRegister(regName.trim(), regEmail.trim().toLowerCase(), regPassword, role, role === UserRole.VENDOR ? regDocs : undefined);
     if (result === 'ok') {
-      addToast('Account created successfully!', 'success');
+      addToast('Your account is ready! Welcome to AgriPresyo!', 'success');
       onLogin(role, regEmail.trim().toLowerCase());
     } else if (result === 'exists') {
-      setError('Account already exists with that email.');
+      setError('You already have an account with this email. Please log in.');
     }
     setIsLoading(false);
   };
@@ -531,7 +531,7 @@ const LoginPage = ({
             <span className="text-green-500">Agri</span>
             <span className="text-zinc-700 dark:text-white/80">Presyo</span>
           </h1>
-          <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">A Website for Real-Time Market Prices.</p>
+          <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">Fresh Prices from the Market, Updated Daily.</p>
         </div>
 
         <div className="bg-stone-50/80 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
@@ -544,14 +544,14 @@ const LoginPage = ({
                   <Logo size={20} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 grayscale dark:brightness-200" />
                   <input
                     type="text"
-                    placeholder="Full Name"
+                    placeholder="Your Full Name"
                     required
                     className={`w-full bg-zinc-50 dark:bg-zinc-900 border ${error && regName.length === 0 ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'} rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-inner`}
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                   />
                 </div>
-                {error && regName.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Full name is required.</p>}
+                {error && regName.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Please enter your name.</p>}
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
@@ -563,7 +563,7 @@ const LoginPage = ({
                     onChange={(e) => setRegEmail(e.target.value)}
                   />
                 </div>
-                {error && regEmail.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Email address is required.</p>}
+                {error && regEmail.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Please enter your email.</p>}
                 <div className="relative w-full">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700 z-10" />
                   <input
@@ -586,7 +586,7 @@ const LoginPage = ({
                 {regPassword.length > 0 && (
                   <div className="px-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Security: <span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span></span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Password Strength: <span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span></span>
                     </div>
                     <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <div 
@@ -596,12 +596,12 @@ const LoginPage = ({
                     </div>
                   </div>
                 )}
-                {error && regPassword.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Password is required.</p>}
+                {error && regPassword.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Please enter a password.</p>}
 
                 {/* Vendor Document Upload */}
                 {role === UserRole.VENDOR && (
                   <div className="space-y-3">
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload Documents (JPEG, PNG, PDF) — Optional, submit now or later from dashboard</p>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload your ID or documents (JPEG, PNG, PDF) — You can do this now or later</p>
                     <label className="flex items-center justify-center gap-3 w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
                       <Upload className="w-5 h-5 text-zinc-600 group-hover:text-green-400 transition-colors" />
                       <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files</span>
@@ -642,8 +642,8 @@ const LoginPage = ({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button type="button" onClick={() => setShowRegister(false)} className="flex-1 bg-zinc-100 dark:bg-black hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 transition-all">Back to Login</button>
-                <button type="submit" disabled={isLoading} className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm hover:scale-105 transition-all ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : ''}`}>{isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Creating...</span></> : 'Create Account'}</button>
+                <button type="button" onClick={() => setShowRegister(false)} className="flex-1 bg-zinc-100 dark:bg-black hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 transition-all">Back to Log In</button>
+                <button type="submit" disabled={isLoading} className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm hover:scale-105 transition-all ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : ''}`}>{isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Setting up...</span></> : 'Sign Up'}</button>
               </div>
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
             </form>
@@ -662,7 +662,7 @@ const LoginPage = ({
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
-                  {error && email.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Email address is required.</p>}
+                  {error && email.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Please enter your email.</p>}
                   <div className="relative w-full">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700 z-10" />
                     <input
@@ -682,7 +682,7 @@ const LoginPage = ({
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  {error && password.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Password is required.</p>}
+                  {error && password.length === 0 && <p className="text-red-500 text-xs mt-1 ml-4">Please enter your password.</p>}
                 </div>
 
                 <button
@@ -690,7 +690,7 @@ const LoginPage = ({
                   disabled={isLoading}
                   className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-stone-50 dark:bg-black text-green-600 dark:text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
-                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Authenticating...</span></> : 'Access Terminal'}
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Logging in...</span></> : 'Log In'}
                 </button>
                 <div className="flex justify-center">
                   <button
@@ -734,7 +734,7 @@ const LoginPage = ({
 
               {role !== UserRole.ADMIN && (
                 <div className="text-center mt-4">
-                  <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">Don't have an account? <span className="text-green-500 font-bold">Create Account</span></button>
+                  <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">New here? <span className="text-green-500 font-bold">Sign Up Free</span></button>
                 </div>
               )}
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
@@ -751,15 +751,15 @@ const LoginPage = ({
               <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
                 <ShieldCheck className="text-green-500" size={32} />
               </div>
-              <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Verification</h2>
-              <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Login</h2>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Enter your 6-digit code to continue</p>
             </div>
             <div className="space-y-4">
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                 <input
                   type="text"
-                  placeholder="Enter OTP"
+                  placeholder="Enter Secret Code"
                   maxLength={6}
                   className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
                   value={otpInput}
@@ -777,7 +777,7 @@ const LoginPage = ({
                   type="button"
                   onClick={() => { setShowOtpModal(false); setOtpInput(''); setOtpError(''); }}
                   className="flex-1 bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest border border-zinc-800 transition-all text-sm"
-                  aria-label="Cancel OTP verification"
+                  aria-label="Cancel secret code check"
                 >
                   Cancel
                 </button>
@@ -787,7 +787,7 @@ const LoginPage = ({
                   disabled={isLoading}
                   className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-sm ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
                 >
-                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-1">Verifying...</span></> : 'Verify'}
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-1">Checking...</span></> : 'Continue'}
                 </button>
               </div>
             </div>
@@ -804,7 +804,7 @@ const LoginPage = ({
                 <Lock className="text-blue-500" size={32} />
               </div>
               <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Forgot Password?</h2>
-              <p className="text-zinc-500 text-xs mt-1 text-center">Enter your email and we'll send you a link to reset your password.</p>
+              <p className="text-zinc-500 text-xs mt-1 text-center">Type your email below. We'll send you a link to create a new password.</p>
             </div>
             
             {isForgotSubmitted ? (
@@ -812,14 +812,14 @@ const LoginPage = ({
                 <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="text-green-500" size={24} />
                 </div>
-                <p className="text-zinc-900 dark:text-white font-bold mb-2 uppercase tracking-widest text-xs">Link Sent!</p>
-                <p className="text-zinc-500 text-xs mb-6">Check your email for a reset link.</p>
+                <p className="text-zinc-900 dark:text-white font-bold mb-2 uppercase tracking-widest text-xs">Email Sent!</p>
+                <p className="text-zinc-500 text-xs mb-6">Check your email inbox for the password reset link.</p>
                 <button
                   onClick={() => { setShowForgotModal(false); setIsForgotSubmitted(false); }}
                   className="w-full bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs hover:scale-105"
                   aria-label="Back to login after link sent"
                 >
-                  Back to Login
+                  Back to Log In
                 </button>
               </div>
             ) : (
@@ -849,7 +849,7 @@ const LoginPage = ({
                     disabled={isLoading}
                     className={`flex-1 bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : 'hover:scale-105'}`}
                   >
-                    {isLoading ? 'Sending...' : 'Send Link'}
+                    {isLoading ? 'Sending...' : 'Send Reset Link'}
                   </button>
                 </div>
               </form>
@@ -891,14 +891,14 @@ const LoginPage = ({
             <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white mb-2" style={{ textShadow: '0 0 30px rgba(34,197,94,0.5)' }}>
               ACCESS <span className="text-green-400">GRANTED</span>
             </h2>
-            <p className="text-green-400/80 font-bold uppercase tracking-[0.3em] text-xs mb-4">Admin Privileges Unlocked</p>
+            <p className="text-green-400/80 font-bold uppercase tracking-[0.3em] text-xs mb-4">Admin Mode Unlocked</p>
             <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-5 py-2">
               <div className="w-2 h-2 bg-green-400 rounded-full" style={{ animation: 'adminUnlockDotPulse 1s ease-in-out infinite' }} />
-              <span className="text-green-400 text-xs font-black uppercase tracking-widest">Terminal Ready</span>
+              <span className="text-green-400 text-xs font-black uppercase tracking-widest">Ready</span>
             </div>
 
             {/* Tap to dismiss */}
-            <p className="text-zinc-600 text-[10px] mt-6 uppercase tracking-widest" style={{ animation: 'adminUnlockFadeIn 1s ease-out 1s both' }}>Tap anywhere to continue</p>
+            <p className="text-zinc-600 text-[10px] mt-6 uppercase tracking-widest" style={{ animation: 'adminUnlockFadeIn 1s ease-out 1s both' }}>Tap anywhere to start</p>
           </div>
         </div>
       )}
@@ -1851,6 +1851,8 @@ const App = () => {
           stock,
           isHot: true,
           listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
+          openTime: currentUser?.openTime,
+          closeTime: currentUser?.closeTime,
         };
         const newHistory = [...c.history, { date: now.slice(0, 10), price }];
         return { ...c, vendors: [...c.vendors, newEntry], lastUpdated: now, history: newHistory };
@@ -1974,6 +1976,10 @@ const App = () => {
                 </div>
                 <span className="text-sm font-black text-zinc-900 dark:text-white">{vendor.rating}</span>
                 <span className="text-[9px] text-zinc-400 font-bold bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700">{vendor.reviewCount} reviews</span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isVendorOpen(vendor.openTime, vendor.closeTime) ? 'bg-green-500/15 text-green-500 border border-green-500/20' : 'bg-red-500/15 text-red-500 border border-red-500/20'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isVendorOpen(vendor.openTime, vendor.closeTime) ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                  {isVendorOpen(vendor.openTime, vendor.closeTime) ? 'Open' : 'Closed'}
+                </span>
               </div>
             </div>
           </div>
@@ -1995,7 +2001,7 @@ const App = () => {
       <div className="mt-4 sm:mt-8 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-4 sm:pt-6">
         <Icon size={24} className="text-zinc-300 group-hover:text-green-500/50 transition-colors" />
         <button className="flex items-center gap-2 text-green-600 font-black text-xs uppercase tracking-[0.2em] group-hover:gap-4 transition-all">
-          Connect Terminal <ArrowRight size={14} />
+          View Shop <ArrowRight size={14} />
         </button>
       </div>
     </div>
@@ -2005,8 +2011,8 @@ const App = () => {
     <div className="space-y-16 pb-32 lg:pb-12 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white">Market Nodes</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-lg mt-2 font-medium">Connect to specialized produce terminals</p>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white">Shops</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 text-lg mt-2 font-medium">Browse shops and find the best prices</p>
         </div>
         <div className="flex gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-1 sm:p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
           {['All', 'Fruit', 'Vegetable'].map(f => (
@@ -2028,8 +2034,8 @@ const App = () => {
               <ShoppingBag size={32} className="text-orange-400" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Fruit Nodes</h3>
-              <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">Strict Fruit Specialization</p>
+              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Fruit Shops</h3>
+              <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">Shops that sell fruits</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
@@ -2037,7 +2043,7 @@ const App = () => {
               [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
             ) : fruitVendors.length === 0 ? (
               <div className="col-span-full">
-                <EmptyState icon={ShoppingBag} title="No Fruit Nodes" subtitle="There are currently no active fruit vendors." />
+                <EmptyState icon={ShoppingBag} title="No Fruit Shops" subtitle="No fruit shops are open right now. Check back soon!" />
               </div>
             ) : (
               fruitVendors.map(v => <ShopCard key={v.id} vendor={v} icon={ShoppingBag} />)
@@ -2053,8 +2059,8 @@ const App = () => {
               <Leaf size={32} className="text-green-500" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Vegetable & Spice Nodes</h3>
-              <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">High-Intensity Greens & Aromatics</p>
+              <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Vegetable & Spice Shops</h3>
+              <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">Shops that sell vegetables & spices</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
@@ -2062,7 +2068,7 @@ const App = () => {
               [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
             ) : vegetableVendors.length === 0 ? (
               <div className="col-span-full">
-                <EmptyState icon={Leaf} title="No Vegetable Nodes" subtitle="There are currently no active vegetable vendors." />
+                <EmptyState icon={Leaf} title="No Vegetable Shops" subtitle="No vegetable shops are open right now. Check back soon!" />
               </div>
             ) : (
               vegetableVendors.map(v => <ShopCard key={v.id} vendor={v} icon={Store} />)
@@ -2073,7 +2079,7 @@ const App = () => {
 
       {/* Show global empty state if both fruit and vegetable vendors are empty when 'All' is selected, or if the filtered list is empty */}
       {shopFilter === 'All' && fruitVendors.length === 0 && vegetableVendors.length === 0 && !isInitialLoading && (
-        <EmptyState icon={Store} title="No Terminals Available" subtitle="There are currently no active terminal vendors on the network." />
+        <EmptyState icon={Store} title="No Shops Yet" subtitle="There are no shops registered right now. Check back later!" />
       )}
     </div>
   );
@@ -2124,35 +2130,35 @@ const App = () => {
   const renderAnalyticsDashboard = () => (
     <div className="space-y-16 animate-in fade-in duration-700 pb-20">
       <div>
-        <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Market Leaderboards</h2>
-        <p className="text-zinc-500 text-lg mt-2 font-medium">Real-time asset rankings segmented by category</p>
+        <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Price Rankings</h2>
+        <p className="text-zinc-500 text-lg mt-2 font-medium">See which products are most and least expensive right now</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <RankingCard
           title="Premium Fruits"
-          subtitle="Highest Ask Index"
+          subtitle="Most Expensive"
           items={analyticsData.expFruits}
           color="yellow"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Value Fruits"
-          subtitle="Lowest Ask Index"
+          subtitle="Most Affordable"
           items={analyticsData.cheapFruits}
           color="green"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Premium Veggies"
-          subtitle="Highest Ask Index"
+          subtitle="Most Expensive"
           items={analyticsData.expVeggies}
           color="yellow"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
           title="Value Veggies"
-          subtitle="Lowest Ask Index"
+          subtitle="Most Affordable"
           items={analyticsData.cheapVeggies}
           color="green"
           onCropClick={(crop) => setSelectedCrop(crop)}
@@ -2163,7 +2169,7 @@ const App = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
             <BarChart3 className="text-green-500" size={24} />
-            <h3 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">Aggregate Market Volatility</h3>
+            <h3 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">Price Changes Over Time</h3>
           </div>
           <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-inner">
             {(['3m', '6m', '1y', 'all'] as const).map(range => (
@@ -2236,14 +2242,14 @@ const App = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-between">
           <div>
-            <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Node Specialization</p>
+            <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">What I Sell</p>
             <div className="flex items-center gap-4">
               <div className={`p-4 rounded-3xl ${vendorShopType === 'Fruit' ? 'bg-orange-400/10' : 'bg-green-400/10'}`}>
                 {vendorShopType === 'Fruit' ? <ShoppingBag className="text-orange-400" size={32} /> : <Leaf className="text-green-500" size={32} />}
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">{vendorShopType} Merchant</h3>
-                <p className="text-zinc-600 dark:text-zinc-500 text-xs font-bold">Trading {vendorShopType}s strictly</p>
+                <p className="text-zinc-600 dark:text-zinc-500 text-xs font-bold">Selling {vendorShopType}s</p>
               </div>
             </div>
           </div>
@@ -2282,7 +2288,7 @@ const App = () => {
 
         <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-center">
           <Package className="text-blue-400 absolute top-8 right-8 group-hover:scale-150 transition-transform duration-500 opacity-20" size={64} />
-          <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Node Aggregate</p>
+          <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Total Stock</p>
           <div className="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">
             {vendorInventory.reduce((acc, c) => acc + (c.vendors.find(v => v.id === currentVendorId)?.stock || 0), 0).toLocaleString()}
             <span className="text-lg text-zinc-600 dark:text-zinc-500 font-mono uppercase ml-3 tracking-normal">kg</span>
@@ -4468,7 +4474,14 @@ const App = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-zinc-400 dark:text-zinc-500 text-xs font-black uppercase tracking-[0.3em] mb-4">{selectedVendor.specialty}</p>
+                    <div className="flex items-center gap-3 mb-4 flex-wrap">
+                      <p className="text-zinc-400 dark:text-zinc-500 text-xs font-black uppercase tracking-[0.3em]">{selectedVendor.specialty}</p>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isVendorOpen(selectedVendor.openTime, selectedVendor.closeTime) ? 'bg-green-500/15 text-green-500 border border-green-500/20' : 'bg-red-500/15 text-red-500 border border-red-500/20'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isVendorOpen(selectedVendor.openTime, selectedVendor.closeTime) ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                        {isVendorOpen(selectedVendor.openTime, selectedVendor.closeTime) ? 'Open Now' : 'Closed'}
+                        <span className="text-zinc-500 font-bold normal-case">({selectedVendor.openTime || '06:00'} – {selectedVendor.closeTime || '18:00'})</span>
+                      </span>
+                    </div>
                     <div className="flex flex-col gap-3">
                       <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Rate Terminal (Toggle Stars)</p>
                       <div className="flex items-center gap-1 text-yellow-500 bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 w-fit shadow-inner" onMouseLeave={() => setHoverRating(0)}>

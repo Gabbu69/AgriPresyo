@@ -69,7 +69,7 @@ export const LoginPage = ({
     if (result === 'ok') {
       onLogin(role, fakeEmail);
     } else {
-      setError('OAuth sign-in failed. Please try again.');
+      setError("We couldn't log you in. Please try again.");
     }
     setIsLoading(false);
   };
@@ -116,7 +116,7 @@ export const LoginPage = ({
         setShowUnlockedModal(true);
         setTimeout(() => setShowUnlockedModal(false), 3500);
       } else {
-        setOtpError('Invalid OTP. Please try again.');
+        setOtpError('Wrong secret code. Please try again.');
         setIsLoading(false);
       }
     }, 1200);
@@ -132,9 +132,9 @@ export const LoginPage = ({
     if (result === 'ok') {
       onLogin(role, email.trim().toLowerCase());
     } else if (result === 'banned') {
-      setError('🚫 Your account has been banned. Contact support for assistance.');
+      setError('🚫 Your account is locked. Please send a message to our team.');
     } else {
-      setError('Invalid credentials. Please create an account or try again.');
+      setError('Wrong email or password. Please try again, or sign up if you are new.');
     }
     setIsLoading(false);
   };
@@ -144,7 +144,7 @@ export const LoginPage = ({
     if (isLoading) return;
     setError('');
     if (regPassword.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      setError('Your password is too short. Please make it 8 characters or more.');
       return;
     }
     setIsLoading(true);
@@ -153,7 +153,7 @@ export const LoginPage = ({
     if (result === 'ok') {
       onLogin(role, regEmail.trim().toLowerCase());
     } else if (result === 'exists') {
-      setError('Account already exists with that email.');
+      setError('You already have an account with this email. Please log in.');
     }
     setIsLoading(false);
   };
@@ -321,7 +321,7 @@ export const LoginPage = ({
                   disabled={isLoading}
                   className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-stone-50 dark:bg-black text-green-600 dark:text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
-                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Authenticating...</span></> : 'Access Terminal'}
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Logging in...</span></> : 'Access Terminal'}
                 </button>
               </form>
 
@@ -373,14 +373,14 @@ export const LoginPage = ({
                   <ShieldCheck className="text-green-500" size={32} />
                 </div>
                 <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Admin Verification</h2>
-                <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit OTP to unlock admin access</p>
+                <p className="text-zinc-500 text-xs mt-1 text-center">Enter the 6-digit secret code to unlock admin access</p>
               </div>
               <div className="space-y-4">
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-700" />
                   <input
                     type="text"
-                    placeholder="Enter OTP"
+                    placeholder="Enter Secret Code"
                     maxLength={6}
                     className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-12 pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/30 text-zinc-900 dark:text-white text-center text-2xl tracking-[0.5em] font-mono transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 placeholder:text-base placeholder:tracking-normal shadow-inner"
                     value={otpInput}
