@@ -1016,7 +1016,7 @@ const App = () => {
 
   // Shop profile editing state
   const [editingShopProfile, setEditingShopProfile] = useState(false);
-  const [shopProfileDraft, setShopProfileDraft] = useState({ shopName: '', specialty: '', shopDescription: '', shopLocation: '' });
+  const [shopProfileDraft, setShopProfileDraft] = useState({ shopName: '', specialty: '', shopDescription: '', shopLocation: '', openTime: '', closeTime: '' });
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
   const [volatilityRange, setVolatilityRange] = useState<'3m' | '6m' | '1y' | 'all'>('all');
@@ -1100,6 +1100,8 @@ const App = () => {
         specialty: shopProfileDraft.specialty.trim() || undefined,
         shopDescription: shopProfileDraft.shopDescription.trim() || undefined,
         shopLocation: shopProfileDraft.shopLocation.trim() || undefined,
+        openTime: shopProfileDraft.openTime.trim() || undefined,
+        closeTime: shopProfileDraft.closeTime.trim() || undefined,
       } : u);
       localStorage.setItem('AP_users', JSON.stringify(next));
       return next;
@@ -1485,6 +1487,23 @@ const App = () => {
     // Replaced fake order notifications with Admin Announcements (via Bell icon)
   }, []);
 
+  // Helper: determine if a vendor is currently open based on their schedule
+  const isVendorOpen = (openTime?: string, closeTime?: string): boolean => {
+    const open = openTime || '06:00';
+    const close = closeTime || '18:00';
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const [oh, om] = open.split(':').map(Number);
+    const [ch, cm] = close.split(':').map(Number);
+    const openMinutes = oh * 60 + om;
+    const closeMinutes = ch * 60 + cm;
+    // Support overnight ranges (e.g. 22:00 - 06:00)
+    if (closeMinutes <= openMinutes) {
+      return nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+    }
+    return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+  };
+
   const allVendors = useMemo(() => {
     const vendorMap = new Map();
 
@@ -1498,6 +1517,8 @@ const App = () => {
         specialty: u.specialty || 'New Market Partner',
         price: 0,
         stock: 0,
+        openTime: u.openTime,
+        closeTime: u.closeTime,
         cropsSold: []
       });
     });
@@ -2289,6 +2310,8 @@ const App = () => {
                   specialty: currentUser?.specialty || '',
                   shopDescription: currentUser?.shopDescription || '',
                   shopLocation: currentUser?.shopLocation || '',
+                  openTime: currentUser?.openTime || '',
+                  closeTime: currentUser?.closeTime || '',
                 });
                 setEditingShopProfile(true);
               }}
@@ -2356,6 +2379,26 @@ const App = () => {
                 className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Opening Time</label>
+              <input
+                type="time"
+                value={shopProfileDraft.openTime}
+                onChange={e => setShopProfileDraft(p => ({ ...p, openTime: e.target.value }))}
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-green-400/50 focus:ring-2 focus:ring-green-400/20 transition-all"
+              />
+              <p className="text-[9px] text-zinc-400 ml-1">Default: 06:00 AM if not set</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Closing Time</label>
+              <input
+                type="time"
+                value={shopProfileDraft.closeTime}
+                onChange={e => setShopProfileDraft(p => ({ ...p, closeTime: e.target.value }))}
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white outline-none focus:border-green-400/50 focus:ring-2 focus:ring-green-400/20 transition-all"
+              />
+              <p className="text-[9px] text-zinc-400 ml-1">Default: 06:00 PM if not set</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2393,6 +2436,31 @@ const App = () => {
               <div className="min-w-0">
                 <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Description</p>
                 <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{currentUser?.shopDescription || 'Not set'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50 md:col-span-2">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isVendorOpen(currentUser?.openTime, currentUser?.closeTime) ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                <Clock size={16} className={isVendorOpen(currentUser?.openTime, currentUser?.closeTime) ? 'text-green-400' : 'text-red-400'} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Market Hours</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-zinc-900 dark:text-white">
+                    {(() => {
+                      const ot = currentUser?.openTime || '06:00';
+                      const ct = currentUser?.closeTime || '18:00';
+                      const fmt = (t: string) => { const [h, m] = t.split(':').map(Number); const ampm = h >= 12 ? 'PM' : 'AM'; return `${((h % 12) || 12)}:${String(m).padStart(2, '0')} ${ampm}`; };
+                      return `${fmt(ot)} — ${fmt(ct)}`;
+                    })()}
+                  </p>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isVendorOpen(currentUser?.openTime, currentUser?.closeTime) ? 'bg-green-500/15 text-green-500 border border-green-500/20' : 'bg-red-500/15 text-red-500 border border-red-500/20'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isVendorOpen(currentUser?.openTime, currentUser?.closeTime) ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                    {isVendorOpen(currentUser?.openTime, currentUser?.closeTime) ? 'Open Now' : 'Closed'}
+                  </span>
+                </div>
+                {!currentUser?.openTime && !currentUser?.closeTime && (
+                  <p className="text-[9px] text-zinc-400 mt-0.5">Default hours • Edit to customize</p>
+                )}
               </div>
             </div>
           </div>
@@ -4608,10 +4676,14 @@ const App = () => {
                       <div className="w-10 h-10 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center font-black text-zinc-300 dark:text-zinc-700 group-hover:text-green-600">{v.name[0]}</div>
                       <div>
                         <p className="font-black text-zinc-900 dark:text-white text-md leading-none mb-1">{v.listingName || selectedCrop.name}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-tight">
+                        <div className="flex items-center gap-2 text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-tight flex-wrap">
                           <span>{v.name}</span>
                           <span className="flex items-center gap-1 text-yellow-500">
                             <Star size={10} fill="currentColor" /> {v.rating} <span className="text-zinc-300 dark:text-zinc-600">({v.reviewCount})</span>
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${isVendorOpen(v.openTime, v.closeTime) ? 'bg-green-500/15 text-green-500 border border-green-500/20' : 'bg-red-500/15 text-red-500 border border-red-500/20'}`}>
+                            <span className={`w-1 h-1 rounded-full ${isVendorOpen(v.openTime, v.closeTime) ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                            {isVendorOpen(v.openTime, v.closeTime) ? 'Open' : 'Closed'}
                           </span>
                         </div>
                       </div>

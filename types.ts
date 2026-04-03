@@ -22,6 +22,8 @@ export interface Vendor {
   stock: number; // in kg
   isHot?: boolean;
   listingName?: string; // optional vendor-specific display name for a crop listing
+  openTime?: string;
+  closeTime?: string;
 }
 
 export interface Crop {
@@ -69,6 +71,8 @@ export interface UserRecord {
   specialty?: string;        // e.g. "Organic Fruits", "Farm-fresh Vegetables"
   shopDescription?: string;  // Short bio / tagline
   shopLocation?: string;     // Market stall or address
+  openTime?: string;
+  closeTime?: string;
 }
 
 export interface AuditLogEntry {
