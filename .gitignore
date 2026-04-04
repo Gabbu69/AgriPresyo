@@ -18,12 +18,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Python (virtual environment)
+# Python
 venv/
 __pycache__/
-
-# Test and debug images (included in push as requested)
-# (Patterns removed to allow push)
 
 # Backup files
 *.bak
@@ -42,6 +39,7 @@ __pycache__/
 *.sln
 *.sw?
 
-# Antigravity / tooling metadata
+# Tooling metadata
 metadata.json
 tracked_files.txt
+ts_errors.txt
