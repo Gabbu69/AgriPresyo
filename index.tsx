@@ -1,5 +1,7 @@
 
 import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import './i18n';
+import { useTranslation } from 'react-i18next';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import {
@@ -87,6 +89,7 @@ import FuturisticVinesBackground from './components/ui/FuturisticVinesBackground
 import { AnimatedCounter } from './components/ui/AnimatedCounter';
 import { CropIcon, CROP_IMAGES, CROP_COLORS } from './components/ui/CropIcon';
 import { AnnouncementBanner } from './components/ui/AnnouncementBanner';
+import { LanguageToggle } from './components/ui/LanguageToggle';
 import { ThemeProvider, ThemeToggle, useTheme } from './components/ui/Theme';
 import { ToastProvider, useToasts } from './components/ui/Toast';
 const MarketView = lazy(() => import('./views/MarketView').then((m) => ({ default: m.MarketView })));
@@ -246,15 +249,19 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
 
 
 
-const ROLE_LABELS: Record<UserRole, { label: string; icon: React.ReactNode; desc: string }> = {
-  [UserRole.CONSUMER]: { label: 'CUSTOMER', icon: <ConsumerRoleIcon size={24} />, desc: 'See prices and plan what to buy' },
-  [UserRole.VENDOR]: { label: 'SELLER', icon: <VendorRoleIcon size={24} />, desc: 'Sell crops and manage your store' },
-  [UserRole.ADMIN]: { label: 'ADMIN', icon: <AdminRoleIcon size={24} />, desc: 'Manage the website' },
+const useRoleLabels = () => {
+  const { t } = useTranslation();
+  return {
+    [UserRole.CONSUMER]: { label: t('roles.customer'), icon: <ConsumerRoleIcon size={24} />, desc: t('roles.customerDesc') },
+    [UserRole.VENDOR]: { label: t('roles.seller'), icon: <VendorRoleIcon size={24} />, desc: t('roles.sellerDesc') },
+    [UserRole.ADMIN]: { label: t('roles.admin'), icon: <AdminRoleIcon size={24} />, desc: t('roles.adminDesc') },
+  };
 };
 
 const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setRole: (r: UserRole) => void; isAdminUnlocked: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const ROLE_LABELS = useRoleLabels();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -337,6 +344,7 @@ const LoginPage = ({
   onUnlock: () => void,
   addToast: (msg: string, type: 'success' | 'destructive') => void
 }) => {
+  const { t } = useTranslation();
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -504,6 +512,7 @@ const LoginPage = ({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
       <FuturisticVinesBackground interactive={true} />
+      <div className="absolute top-4 right-4 z-50"><LanguageToggle /></div>
       <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
 
@@ -531,7 +540,7 @@ const LoginPage = ({
             <span className="text-green-500">Agri</span>
             <span className="text-zinc-700 dark:text-white/80">Presyo</span>
           </h1>
-          <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">Fresh Prices from the Market, Updated Daily.</p>
+          <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">{t('login.tagline')}</p>
         </div>
 
         <div className="bg-stone-50/80 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
@@ -642,8 +651,8 @@ const LoginPage = ({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button type="button" onClick={() => setShowRegister(false)} className="flex-1 bg-zinc-100 dark:bg-black hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 transition-all">Back to Log In</button>
-                <button type="submit" disabled={isLoading} className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm hover:scale-105 transition-all ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : ''}`}>{isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Setting up...</span></> : 'Sign Up'}</button>
+                <button type="button" onClick={() => setShowRegister(false)} className="flex-1 bg-zinc-100 dark:bg-black hover:bg-zinc-200 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 transition-all">{t('actions.backToLogin')}</button>
+                <button type="submit" disabled={isLoading} className={`flex-1 bg-green-500 text-black py-3 rounded-2xl font-black uppercase tracking-widest text-xs sm:text-sm hover:scale-105 transition-all ${isLoading ? 'btn-loading btn-loading-glow opacity-80' : ''}`}>{isLoading ? <><span className="btn-spinner" /> <span className="ml-2">{t('login.settingUp')}</span></> : t('actions.signup')}</button>
               </div>
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
             </form>
@@ -690,7 +699,7 @@ const LoginPage = ({
                   disabled={isLoading}
                   className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-stone-50 dark:bg-black text-green-600 dark:text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
-                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">Logging in...</span></> : 'Log In'}
+                  {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">{t('login.loggingIn')}</span></> : t('actions.login')}
                 </button>
                 <div className="flex justify-center">
                   <button
@@ -698,7 +707,7 @@ const LoginPage = ({
                     onClick={() => setShowForgotModal(true)}
                     className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-green-500 transition-colors"
                   >
-                    Forgot Password?
+                    {t('actions.forgotPassword')}
                   </button>
                 </div>
               </form>
@@ -707,7 +716,7 @@ const LoginPage = ({
               {role !== UserRole.ADMIN && (
                 <>
                   <div className="oauth-divider">
-                    <span>or continue with</span>
+                    <span>{t('login.orContinueWith')}</span>
                   </div>
                   <div className="flex flex-col gap-3">
                     <button
@@ -717,7 +726,7 @@ const LoginPage = ({
                       className="btn-oauth btn-oauth-google"
                     >
                       <GoogleIcon />
-                      Sign in with Google
+                      {t('actions.signInGoogle')}
                     </button>
                     <button
                       type="button"
@@ -726,7 +735,7 @@ const LoginPage = ({
                       className="btn-oauth btn-oauth-facebook"
                     >
                       <FacebookIcon />
-                      Sign in with Facebook
+                      {t('actions.signInFacebook')}
                     </button>
                   </div>
                 </>
@@ -734,7 +743,7 @@ const LoginPage = ({
 
               {role !== UserRole.ADMIN && (
                 <div className="text-center mt-4">
-                  <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">New here? <span className="text-green-500 font-bold">Sign Up Free</span></button>
+                  <button onClick={() => setShowRegister(true)} className="text-sm text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">{t('login.newHere')} <span className="text-green-500 font-bold">{t('actions.signUpFree')}</span></button>
                 </div>
               )}
               {error && <p className="text-center text-sm text-red-500 mt-2">{error}</p>}
@@ -909,6 +918,7 @@ const LoginPage = ({
 
 
 const App = () => {
+  const { t } = useTranslation();
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('AP_isAuthenticated') === 'true');
   const [role, setRole] = useState<UserRole>(() => (localStorage.getItem('AP_role') as UserRole) || UserRole.CONSUMER);
   const [currentUserEmail, setCurrentUserEmail] = useState(() => localStorage.getItem('AP_currentUserEmail') || '');
@@ -3871,16 +3881,17 @@ const App = () => {
               </h1>
             </div>
             <nav className="hidden lg:flex items-center gap-4" aria-label="Main navigation">
-              <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/market' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>MARKET</button>
+              <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/market' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>{t('navFull.market').toUpperCase()}</button>
               {role !== UserRole.VENDOR && (
-                <button onClick={() => navigate('/vendors')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/vendors' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>SHOPS</button>
+                <button onClick={() => navigate('/vendors')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/vendors' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>{t('navFull.shops').toUpperCase()}</button>
               )}
-              <button onClick={() => navigate('/budget')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/budget' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>ANALYTICS</button>
-              {role === UserRole.VENDOR && <button onClick={() => navigate('/')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>DASHBOARD</button>}
-              {role === UserRole.ADMIN && isAdminUnlocked && <button onClick={() => navigate('/admin')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/admin' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>ADMIN CONSOLE</button>}
+              <button onClick={() => navigate('/budget')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/budget' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>{t('navFull.analytics').toUpperCase()}</button>
+              {role === UserRole.VENDOR && <button onClick={() => navigate('/')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>{t('navFull.dashboard').toUpperCase()}</button>}
+              {role === UserRole.ADMIN && isAdminUnlocked && <button onClick={() => navigate('/admin')} className={`px-6 py-3 rounded-2xl text-xs font-black transition-all tracking-[0.1em] ${location.pathname === '/admin' ? 'bg-zinc-100 dark:bg-zinc-800 text-green-600 shadow-inner' : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}>{t('navFull.admin').toUpperCase()}</button>}
             </nav>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+            <LanguageToggle />
             <ThemeToggle aria-label="Toggle dark mode" />
 
             {/* Profile Settings Button */}
@@ -4084,7 +4095,7 @@ const App = () => {
                         className="btn-signout w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest transition-all"
                       >
                         <LogOut size={16} />
-                        Sign Out
+                        {t('actions.signout')}
                       </button>
                     </div>
                   </div>
@@ -4248,7 +4259,7 @@ const App = () => {
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Navigation</h4>
+              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">{t('sections.navigation')}</h4>
               <ul className="space-y-3">
                 {['Market', 'Analytics', role === UserRole.VENDOR ? 'Dashboard' : role === UserRole.ADMIN ? 'Admin' : 'Shops'].map(item => (
                   <li key={item}>
@@ -4267,26 +4278,26 @@ const App = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Market Stats</h4>
+              <h4 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">{t('sections.marketStats')}</h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">Total Crops</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">{t('sections.totalCrops')}</span>
                   <span className="text-zinc-900 dark:text-white font-mono font-bold text-sm">{crops.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">Active Vendors</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">{t('sections.activeVendors')}</span>
                   <span className="text-zinc-900 dark:text-white font-mono font-bold text-sm">{allVendors.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">Avg Price</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 text-sm">{t('sections.avgPrice')}</span>
                   <span className="text-green-500 font-mono font-bold text-sm">{formatPrice(crops.reduce((s, c) => s + c.currentPrice, 0) / crops.length)}</span>
                 </div>
               </div>
             </div>
           </div>
           <div className="border-t border-zinc-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Built for the Philippine Agricultural Community</p>
-            <p className="text-zinc-500 text-[10px] font-mono">Real-time data • Transparent pricing • Sustainable farming</p>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{t('footer.builtFor')}</p>
+            <p className="text-zinc-500 text-[10px] font-mono">{t('footer.tagline')}</p>
           </div>
         </div>
       </footer>
@@ -4294,28 +4305,28 @@ const App = () => {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
         <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} aria-label="Market" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <MarketsIcon size={26} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Mkts</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.markets')}</span>
         </button>
         {role !== UserRole.VENDOR && role !== UserRole.ADMIN && (
           <button onClick={() => navigate('/vendors')} aria-current={location.pathname === '/vendors' ? 'page' : undefined} className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/vendors' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <ShopsIcon size={26} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shops</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.shops')}</span>
           </button>
         )}
         <button onClick={() => navigate('/budget')} aria-current={location.pathname === '/budget' ? 'page' : undefined} aria-label="Analytics" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/budget' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <BudgetIcon size={26} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Stats</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.stats')}</span>
         </button>
         {role === UserRole.VENDOR && (
           <button onClick={() => navigate('/')} aria-current={location.pathname === '/' ? 'page' : undefined} aria-label="Dashboard" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <VendorIcon size={26} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dash</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.dashboard')}</span>
           </button>
         )}
         {role === UserRole.ADMIN && isAdminUnlocked && (
           <button onClick={() => navigate('/admin')} aria-current={location.pathname === '/admin' ? 'page' : undefined} aria-label="Admin" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/admin' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
             <AdminIcon size={26} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Admin</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.admin')}</span>
           </button>
         )}
       </nav>
@@ -4578,8 +4589,8 @@ const App = () => {
                 <div className="flex items-center gap-4 sm:gap-8">
                   <CropIcon crop={selectedCrop} size="xl" />
                 <div>
-                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{selectedCrop.name}</h2>
-                  <p className="text-zinc-400 dark:text-zinc-500 font-mono tracking-[0.4em] uppercase text-xs mt-1">{selectedCrop.category} INDEX</p>
+                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{t(`crops.${selectedCrop.id}`, selectedCrop.name)}</h2>
+                  <p className="text-zinc-400 dark:text-zinc-500 font-mono tracking-[0.4em] uppercase text-xs mt-1">{t(`categories.${selectedCrop.category.toLowerCase()}`)} INDEX</p>
                 </div>
               </div>
               <div className="bg-zinc-50 dark:bg-zinc-950 p-4 sm:p-8 rounded-2xl sm:rounded-[36px] border border-zinc-200 dark:border-zinc-800 shadow-inner">
@@ -4699,7 +4710,7 @@ const App = () => {
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center font-black text-zinc-300 dark:text-zinc-700 group-hover:text-green-600">{v.name[0]}</div>
                       <div>
-                        <p className="font-black text-zinc-900 dark:text-white text-md leading-none mb-1">{v.listingName || selectedCrop.name}</p>
+                        <p className="font-black text-zinc-900 dark:text-white text-md leading-none mb-1">{v.listingName || t(`crops.${selectedCrop.id}`, selectedCrop.name)}</p>
                         <div className="flex items-center gap-2 text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-tight flex-wrap">
                           <span>{v.name}</span>
                           <span className="flex items-center gap-1 text-yellow-500">
@@ -4717,8 +4728,8 @@ const App = () => {
                 ))}
               </div>
               <div className="flex gap-4">
-                <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10 text-sm sm:text-base">Add to Assets</button>
-                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-zinc-900 dark:hover:text-white transition-colors text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">Close View</button>
+                <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10 text-sm sm:text-base">{t('actions.addToAssets')}</button>
+                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-zinc-900 dark:hover:text-white transition-colors text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">{t('actions.closeView')}</button>
               </div>
               </div>
             </div>

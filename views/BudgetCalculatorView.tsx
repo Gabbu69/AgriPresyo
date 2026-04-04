@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calculator, Package, Plus, Minus, Trash2 } from 'lucide-react';
 import type { Crop } from '../types';
 import type { BudgetListItem } from '../types';
@@ -25,7 +26,10 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
   updateBudgetQty,
   removeFromBudget,
   budgetStats,
-}) => (
+}) => {
+  const { t } = useTranslation();
+  const tc = (crop: { id: string; name: string }) => t(`crops.${crop.id}`, crop.name);
+  return (
   <section
     className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-4 sm:p-6 lg:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12 mb-16 sm:mb-20"
     aria-label="Budget calculator"
@@ -37,12 +41,12 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
           <div className="bg-green-400 p-2 rounded-xl">
             <Calculator className="text-black" size={28} aria-hidden />
           </div>
-          <h2 className="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">Smart Asset Projection</h2>
+          <h2 className="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">{t('sections.smartAssetProjection')}</h2>
         </div>
-        <p className="text-zinc-500 font-medium">Auto-calculating unit weight vs market index values</p>
+        <p className="text-zinc-500 font-medium">{t('sections.autoCalculating')}</p>
       </div>
       <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">Liquidity:</span>
+        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('sections.liquidity')}</span>
         <input
           type="number"
           className="bg-transparent w-32 text-right font-mono text-2xl font-bold focus:outline-none text-green-600"
@@ -59,10 +63,10 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
       <div className="text-center py-12 sm:py-20 border-2 border-dashed border-zinc-800 dark:border-zinc-700 rounded-2xl sm:rounded-[32px] bg-zinc-900/10 dark:bg-zinc-100/5">
         <Package className="mx-auto text-zinc-800 dark:text-zinc-600 mb-6" size={64} aria-hidden />
         <p className="text-zinc-400 dark:text-zinc-500 text-xl font-black uppercase tracking-tighter">
-          No Active Trades
+          {t('sections.noActiveTrades')}
         </p>
         <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-2">
-          Select produce from market to begin calculating
+          {t('sections.selectProduce')}
         </p>
       </div>
     ) : (
@@ -86,7 +90,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                   </div>
                   <div>
                     <h4 className="font-black text-base sm:text-xl text-zinc-900 dark:text-white">
-                      {crop.name}
+                      {tc(crop)}
                     </h4>
                     <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
                       <span>{displayQty}</span>
@@ -160,7 +164,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10">
             <div className="text-center md:text-left flex-1">
               <p className="text-xs text-zinc-400 uppercase font-black tracking-widest mb-2">
-                Total Projected Commitment
+                {t('sections.totalProjected')}
               </p>
               <div className="flex items-baseline gap-4">
                 <span className="text-lg sm:text-2xl font-black text-zinc-400 font-mono">
@@ -173,7 +177,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
             </div>
             <div className="w-full max-w-lg bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
               <div className="flex justify-between text-xs font-black uppercase mb-3">
-                <span className="text-zinc-400">Inventory Liquidity Used</span>
+                <span className="text-zinc-400">{t('sections.liquidityUsed')}</span>
                 <span
                   className={
                     budgetStats.totalCost > budgetLimit ? 'text-red-500' : 'text-green-600'
@@ -196,7 +200,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
               </div>
               {budgetStats.totalCost > budgetLimit && (
                 <p className="text-[10px] text-red-500 font-black uppercase mt-3 animate-pulse text-center">
-                  Warning: Projected cost exceeds available liquidity
+                  {t('sections.overBudgetWarning')}
                 </p>
               )}
             </div>
@@ -205,4 +209,5 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
       </div>
     )}
   </section>
-);
+  );
+};
