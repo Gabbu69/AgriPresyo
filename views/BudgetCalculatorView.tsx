@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calculator, Package, Plus, Minus, Trash2 } from 'lucide-react';
+import { Calculator, Package, Plus, Minus, Trash2, Download } from 'lucide-react';
 import type { Crop } from '../types';
 import type { BudgetListItem } from '../types';
 import { formatPrice } from '../lib/formatters';
@@ -29,13 +29,43 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
 }) => {
   const { t } = useTranslation();
   const tc = (crop: { id: string; name: string }) => t(`crops.${crop.id}`, crop.name);
+
+  const handleDownloadCSV = () => {
+    if (budgetItems.length === 0) return;
+
+    const headers = ['Crop,Category,Quantity,Unit,Weight (kg),Unit Price (php),Total Price (php)'];
+    const rows = budgetItems.map((item) => {
+      const crop = crops.find(c => c.id === item.cropId);
+      if (!crop) return '';
+      const weight = item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
+      const totalPrice = weight * crop.currentPrice;
+      const cropName = t(`crops.${crop.id}`, crop.name).replace(/,/g, '');
+      const category = t(`categories.${crop.category.toLowerCase()}`).replace(/,/g, '');
+
+      return `${cropName},${category},${item.quantity},${item.unit},${weight.toFixed(2)},${crop.currentPrice},${totalPrice.toFixed(2)}`;
+    });
+
+    const csvContent = headers.concat(rows.filter(Boolean)).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `market-list-${new Date().toISOString().split('T')[0]}.csv`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
   <section
     className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-4 sm:p-6 lg:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12 mb-16 sm:mb-20"
     aria-label="Budget calculator"
   >
     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400/50 to-transparent" />
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-8 mb-6 sm:mb-10">
+    <div className="flex flex-col md:flex-row md:items-start lg:items-center justify-between gap-4 sm:gap-8 mb-6 sm:mb-10">
       <div>
         <div className="flex items-center gap-4 mb-2">
           <div className="bg-green-400 p-2 rounded-xl">
@@ -45,17 +75,28 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
         </div>
         <p className="text-zinc-500 font-medium">{t('sections.autoCalculating')}</p>
       </div>
-      <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('sections.liquidity')}</span>
-        <input
-          type="number"
-          className="bg-transparent w-32 text-right font-mono text-2xl font-bold focus:outline-none text-green-600"
-          value={budgetLimit}
-          onChange={(e) => setBudgetLimit(Number(e.target.value))}
-          aria-label="Budget limit in pesos"
-          min={0}
-        />
-        <span className="text-sm font-black text-zinc-400 font-mono">₱</span>
+      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto flex-wrap justify-end">
+        {budgetItems.length > 0 && (
+          <button
+            onClick={handleDownloadCSV}
+            className="flex items-center gap-2 px-4 py-3 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl sm:rounded-3xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-colors shadow-lg shadow-emerald-500/20"
+          >
+            <Download size={16} />
+            Download CSV
+          </button>
+        )}
+        <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 shadow-inner w-full sm:w-auto">
+          <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('sections.liquidity')}</span>
+          <input
+            type="number"
+            className="bg-transparent w-32 text-right font-mono text-2xl font-bold focus:outline-none text-green-600"
+            value={budgetLimit}
+            onChange={(e) => setBudgetLimit(Number(e.target.value))}
+            aria-label="Budget limit in pesos"
+            min={0}
+          />
+          <span className="text-sm font-black text-zinc-400 font-mono">₱</span>
+        </div>
       </div>
     </div>
 
@@ -124,9 +165,29 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                     >
                       <Minus size={16} />
                     </button>
-                    <span className="w-12 sm:w-16 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white">
-                      {item.unit === 'kg' ? item.quantity.toFixed(1) : item.quantity}
-                    </span>
+                    <input
+                      type="number"
+                      step={item.unit === 'kg' ? '0.1' : '1'}
+                      min="0"
+                      className="w-16 sm:w-20 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white bg-transparent outline-none focus:bg-zinc-100 dark:focus:bg-zinc-800 p-1 focus:ring-2 focus:ring-green-400/50 rounded-lg transition-all appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      style={{ MozAppearance: 'textfield' }}
+                      value={item.quantity || ''}
+                      onChange={(e) => {
+                        if (e.target.value === '') {
+                          updateBudgetQty(item.cropId, 0);
+                        } else {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val >= 0) {
+                            updateBudgetQty(item.cropId, item.unit === 'kg' ? Number(val.toFixed(2)) : Math.floor(val));
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                         if (!item.quantity || item.quantity <= 0) {
+                             updateBudgetQty(item.cropId, item.unit === 'kg' ? 0.1 : 1);
+                         }
+                      }}
+                    />
                     <button
                       onClick={() =>
                         updateBudgetQty(
