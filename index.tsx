@@ -1252,11 +1252,23 @@ const App = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Simulated initial loading state for skeleton effect
+  // Live SOCCSARGEN API Fetch
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   useEffect(() => {
-    const timer = setTimeout(() => setIsInitialLoading(false), 800);
-    return () => clearTimeout(timer);
+    const fetchLivePrices = async () => {
+      try {
+        const response = await fetch('/api/prices');
+        const json = await response.json();
+        if (json.success && json.data) {
+          setCrops(json.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch live prices from API', err);
+      } finally {
+        setTimeout(() => setIsInitialLoading(false), 300); // small delay for smoothness setup
+      }
+    };
+    fetchLivePrices();
   }, []);
 
   // Document lightbox state for admin review
