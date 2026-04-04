@@ -4565,16 +4565,15 @@ const App = () => {
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setSelectedCrop(null)}></div>
           
           <div className="w-full sm:max-w-xl relative animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
-            {/* The exit button is now confidently outside the bounded overflow container */}
-            <button 
-              onClick={() => setSelectedCrop(null)} 
-              className="absolute -top-16 right-4 sm:-top-5 sm:-right-5 z-50 w-12 h-12 rounded-full bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-xl hover:scale-110 active:scale-95 transition-all"
-              aria-label="Close"
-            >
-              <X size={24} strokeWidth={3} />
-            </button>
-            
             <div className="bg-white dark:bg-zinc-900 w-full rounded-t-3xl sm:rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+              {/* Clean inside exit button */}
+              <button 
+                onClick={() => setSelectedCrop(null)} 
+                className="absolute top-5 right-5 sm:top-8 sm:right-8 z-50 w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 border-none flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:scale-110 active:scale-95 transition-all"
+                aria-label="Close"
+              >
+                <X size={20} strokeWidth={3} />
+              </button>
               <div className="p-5 sm:p-8 lg:p-12 space-y-6 sm:space-y-10 overflow-y-auto scrollbar-hide flex-1">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <CropIcon crop={selectedCrop} size="xl" />
