@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import {
   LayoutGrid,
   BarChart3,
@@ -94,6 +94,8 @@ import { ThemeProvider, ThemeToggle, useTheme } from './components/ui/Theme';
 import { ToastProvider, useToasts } from './components/ui/Toast';
 const MarketView = lazy(() => import('./views/MarketView').then((m) => ({ default: m.MarketView })));
 const BudgetCalculatorView = lazy(() => import('./views/BudgetCalculatorView').then((m) => ({ default: m.BudgetCalculatorView })));
+import { LandingPage } from './views/LandingPage';
+import { AboutPage } from './views/AboutPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { EmptyState } from './components/ui/EmptyState';
 import { SkeletonCard } from './components/ui/SkeletonCard';
@@ -3753,14 +3755,21 @@ const App = () => {
   };
 
   if (!isAuthenticated) return (
-    <LoginPage 
-      onLogin={handleLogin} 
-      attemptLogin={attemptLogin} 
-      onRegister={registerUser} 
-      isAdminUnlocked={isAdminUnlocked} 
-      onUnlock={() => setIsAdminUnlocked(true)} 
-      addToast={addToast}
-    />
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/login" element={
+        <LoginPage 
+          onLogin={handleLogin} 
+          attemptLogin={attemptLogin} 
+          onRegister={registerUser} 
+          isAdminUnlocked={isAdminUnlocked} 
+          onUnlock={() => setIsAdminUnlocked(true)} 
+          addToast={addToast}
+        />
+      } />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 
   return (
@@ -4225,6 +4234,9 @@ const App = () => {
               }
             />
 
+            {/* About Page for authenticated users */}
+            <Route path="/about" element={<AboutPage />} />
+
             {/* Default redirect */}
             <Route path="*" element={<Navigate to="/market" replace />} />
           </Routes>
@@ -4297,7 +4309,7 @@ const App = () => {
           </div>
           <div className="border-t border-zinc-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{t('footer.builtFor')}</p>
-            <p className="text-zinc-500 text-[10px] font-mono">{t('footer.tagline')}</p>
+            <Link to="/about" className="text-green-500 hover:text-green-600 transition-colors pointer text-[10px] font-mono hover:underline underline-offset-4">{t('footer.tagline')}</Link>
           </div>
         </div>
       </footer>

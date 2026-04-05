@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo" width="160" />
 
-  # 🌾 AgriPresyo
+  # AgriPresyo
 
   **Agricultural commodity intelligence for the Philippine market**
 
@@ -13,71 +13,60 @@
 
   <br />
 
-  [About](#-about) · [Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack) · [Project Structure](#-project-structure) · [Contributing](#-contributing) · [License](#-license)
+  [About](#about) | [Features](#features) | [Getting Started](#getting-started) | [Tech Stack](#tech-stack) | [Project Structure](#project-structure) | [Contributing](#contributing) | [License](#license)
 
 </div>
 
 ---
 
-## 📖 About
+## About
 
-**AgriPresyo** (from *Agriculture* + *Presyo*, the Filipino word for "price") is a market intelligence platform built for the Philippine agricultural supply chain. It gives **farmers**, **vendors**, and **consumers** a shared window into commodity pricing — so everyone involved in getting food from the farm to the table can make better-informed decisions.
+**AgriPresyo** (from Agriculture + Presyo, the Filipino word for "price") is a market intelligence platform built for the Philippine agricultural supply chain. It gives farmers, vendors, and consumers a shared window into commodity pricing, so everyone involved in getting food from the farm to the table can make better-informed decisions.
 
-The platform simulates a real-time trading terminal with live price tickers, vendor discovery, budget planning tools, and role-based dashboards. It's designed as a fully client-side demonstration, but the architecture supports a real backend when the time comes.
+The platform simulates a real-time trading terminal with live price tickers, vendor discovery, budget planning tools, and role-based dashboards. 
 
-> 🇵🇭 **Bilingual** — Full Filipino / English language toggle powered by i18next.
+Bilingual support is included, offering a full Filipino and English language toggle powered by i18next.
 
 ---
 
-## ✨ Features
+## Features
 
-<table>
-<tr>
-<td width="50%">
-
-### 📊 Market Intelligence
+### Market Intelligence
 - Live commodity ticker with 24-hour price changes
 - Interactive price history charts spanning multiple years
 - Market leaderboards for most traded commodities
-- Category filtering (Fruits, Vegetables, Spices, Root Crops)
+- Category filtering for Fruits, Vegetables, Spices, and Root Crops
 
-### 🛒 Vendor Network
+### Vendor Network
 - Searchable vendor directory by specialty
-- Vendor profiles with ratings, stock levels & pricing
+- Vendor profiles with ratings, stock levels, and pricing
 - Cross-vendor price comparison
 
-</td>
-<td width="50%">
-
-### 💰 Budget Planning
+### Budget Planning
 - Built-in budget calculator for market purchases
 - Kilogram and unit-based quantity selection
 - Real-time cost estimation against market prices
-- CSV & PDF export of budget reports
+- CSV and PDF export capabilities for budget reports
 
-### 🔐 User Roles & Admin
-- Consumer, Vendor, and Admin dashboards
+### User Roles and Admin
+- Dedicated Consumer, Vendor, and Admin dashboards
 - Vendor verification workflow
-- Admin panel with user management & audit logging
+- Admin panel with user management and audit logging
 
-</td>
-</tr>
-</table>
-
-### 🎨 Design & Experience
-- 🌓 Dark / Light mode with system preference detection
-- 💎 Glassmorphism UI with smooth micro-animations
-- 🌿 Animated generative vine background patterns
-- 📱 Fully responsive — mobile to desktop
-- 🌐 Filipino / English language toggle
+### Design and Experience
+- Dark and Light mode with system preference detection
+- Glassmorphism user interface with smooth micro-animations
+- Animated generative background patterns
+- Fully responsive design covering mobile to desktop
+- Complete Filipino and English language translation toggle
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) **18+**
+- [Node.js](https://nodejs.org/) version 18 or higher
 - npm (comes with Node.js)
 
 ### Installation
@@ -94,7 +83,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at **`http://localhost:3000`**.
+The application will be available locally at **`http://localhost:3000`**.
 
 ### Production Build
 
@@ -102,15 +91,15 @@ The app will be available at **`http://localhost:3000`**.
 npm run build
 ```
 
-Output goes to the `dist/` directory, ready for static hosting on [Vercel](https://vercel.com/), Netlify, or similar platforms.
+Output is generated in the `dist/` directory, ready for static hosting on Vercel, Netlify, or similar platforms.
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` to customize the admin OTP code. The default works out of the box for local development.
+Copy `.env.example` to `.env` to customize the admin OTP code if necessary. The default configuration works immediately for local development.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |:------|:-----------|
@@ -127,55 +116,57 @@ Copy `.env.example` to `.env` to customize the admin OTP code. The default works
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 AgriPresyo/
 ├── public/
-│   ├── crops/               # High-quality commodity images (WebP & PNG)
+│   ├── crops/               # High-quality commodity images (WebP and PNG)
 │   └── AgriPresyo_logoFinal.png
 ├── components/
-│   ├── auth/                # Login page & theme context
-│   ├── ui/                  # Reusable UI (ticker, sparklines, crop icons)
-│   └── utils/               # Helper functions & mock system checks
+│   ├── auth/                # Login logic and theme context
+│   ├── ui/                  # Reusable UI elements (ticker, sparklines, icons)
+│   └── utils/               # Helper functions and system checks
 ├── views/
-│   ├── MarketView.tsx       # Detailed market & chart view
+│   ├── MarketView.tsx       # Detailed market and chart view
+│   ├── LandingPage.tsx      # Entry unauthenticated public page
+│   ├── AboutPage.tsx        # Transparency and pricing source documentation 
 │   └── BudgetCalculatorView.tsx
 ├── lib/
-│   └── formatters.ts        # Number & currency formatting
-├── locales/                 # i18n translation files (en / fil)
-├── api/                     # Vercel serverless API routes
-├── index.html               # Entry point
-├── index.tsx                # Main application
-├── index.css                # Global styles & Tailwind directives
-├── constants.tsx            # Commodity data & price histories
-├── types.ts                 # TypeScript interfaces & enums
-├── vite.config.ts           # Vite configuration
-└── vercel.json              # Vercel deployment config
+│   └── formatters.ts        # Number and currency formatting tools
+├── locales/                 # Translation source files
+├── api/                     # Serverless API routes
+├── index.html               # Main entry point
+├── index.tsx                # Main application component and routing
+├── index.css                # Global styling and Tailwind configuration
+├── constants.tsx            # Commodity records and mock price histories
+├── types.ts                 # TypeScript type definitions
+├── vite.config.ts           # Build process configuration
+└── vercel.json              # Platform deployment configuration
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Whether it's a bug fix, new feature, or design improvement — feel free to open an issue or submit a pull request.
+Contributions are welcome. Whether it's a bug fix, new feature, or design improvement, feel free to open an issue or submit a pull request.
 
-1. **Fork** the repository
-2. **Create** a feature branch — `git checkout -b feature/your-feature`
-3. **Commit** your changes
-4. **Push** to your branch and open a **Pull Request**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes
+4. Push to your branch and open a Pull Request
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the LICENSE file for more information.
 
 ---
 
 <div align="center">
   <br />
-  <strong>🌱 Built for a more transparent agricultural future.</strong>
+  <strong>Built for a more transparent agricultural future.</strong>
   <br /><br />
-  <sub>Made with ❤️ for Filipino farmers, vendors, and consumers</sub>
+  <sub>Developed for Filipino farmers, vendors, and consumers.</sub>
 </div>
