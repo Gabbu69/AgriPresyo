@@ -212,7 +212,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               return (
                 <article
                   key={crop.id}
-                  className={`bg-[#18181b] border border-white/5 rounded-[28px] p-5 hover:bg-[#1f1f22] cursor-pointer transition-colors group relative flex flex-col justify-between min-h-[160px] shadow-2xl stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
+                  className={`bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-white/5 rounded-[28px] p-5 hover:bg-zinc-50 dark:hover:bg-[#1f1f22] cursor-pointer transition-colors group relative flex flex-col justify-between min-h-[160px] shadow-lg dark:shadow-2xl stagger-item stagger-${Math.min((filteredCrops.indexOf(crop) % 6) + 1, 6)}`}
                   onClick={() => setSelectedCrop(crop)}
                 >
                   <div className="flex justify-between items-start w-full relative z-10 gap-2">
@@ -221,7 +221,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                         <CropIcon crop={crop} size="lg" />
                       </div>
                       <div className="flex flex-col justify-center flex-1 min-w-0">
-                        <h3 className="font-bold text-white text-[16px] sm:text-[18px] leading-tight tracking-tight line-clamp-2">
+                        <h3 className="font-bold text-zinc-900 dark:text-white text-[16px] sm:text-[18px] leading-tight tracking-tight line-clamp-2">
                           {tc(crop)}
                         </h3>
                         <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono font-bold uppercase tracking-widest mt-1 truncate">
@@ -232,9 +232,9 @@ export const MarketView: React.FC<MarketViewProps> = ({
 
                     <div className="flex flex-col items-end shrink-0 gap-1 mt-0.5">
                        <div className="flex items-center gap-2 sm:gap-3">
-                          <span className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 ${season.inSeason ? 'bg-[#0f2e1e]' : 'bg-red-950/50'} rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider`}>
-                             <div className={`w-1.5 h-1.5 rounded-full ${season.inSeason ? 'bg-[#34d399]' : 'bg-red-500'}`} style={season.inSeason ? { boxShadow: '0 0 8px rgba(52,211,153,0.6)' } : {}}/>
-                             <span className={season.inSeason ? 'text-[#34d399]' : 'text-red-400'}>
+                          <span className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 ${season.inSeason ? 'bg-green-100 dark:bg-[#0f2e1e]' : 'bg-red-100 dark:bg-red-950/50'} rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider`}>
+                             <div className={`w-1.5 h-1.5 rounded-full ${season.inSeason ? 'bg-green-500 dark:bg-[#34d399]' : 'bg-red-500'}`} style={season.inSeason ? { boxShadow: '0 0 8px rgba(52,211,153,0.6)' } : {}}/>
+                             <span className={season.inSeason ? 'text-green-700 dark:text-[#34d399]' : 'text-red-600 dark:text-red-400'}>
                                 {season.inSeason ? t('sections.inSeason') : t('sections.offSeason')}
                              </span>
                           </span>
@@ -243,21 +243,21 @@ export const MarketView: React.FC<MarketViewProps> = ({
                               e.stopPropagation();
                               toggleFavorite(crop.id);
                             }}
-                            className="text-zinc-500 hover:text-white transition-colors"
+                            className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
                             aria-label={isFav ? 'Remove from watchlist' : 'Add to watchlist'}
                           >
-                            <Heart size={18} fill={isFav ? 'currentColor' : 'none'} className={isFav ? "text-white" : ""} />
+                            <Heart size={18} fill={isFav ? 'currentColor' : 'none'} className={isFav ? "text-red-500 dark:text-white" : ""} />
                           </button>
                        </div>
                        
                        <div className="flex flex-col items-end mt-2 pr-1">
                           <div className="flex items-start">
-                             <span className="text-zinc-400 text-xs sm:text-sm font-bold mt-1 sm:mt-1.5 mr-0.5 font-mono">₱</span>
-                             <span className="font-black text-white text-[20px] sm:text-[25px] leading-none tracking-tight">
+                             <span className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm font-bold mt-1 sm:mt-1.5 mr-0.5 font-mono">₱</span>
+                             <span className="font-black text-zinc-900 dark:text-white text-[20px] sm:text-[25px] leading-none tracking-tight">
                                 {formatPrice(crop.currentPrice).replace('₱', '').trim()}
                              </span>
                           </div>
-                          <div className={`flex items-center gap-0.5 text-[11px] sm:text-[13px] font-bold mt-1 sm:mt-1.5 ${crop.change24h >= 0 ? 'text-[#34d399]' : 'text-red-500'}`}>
+                          <div className={`flex items-center gap-0.5 text-[11px] sm:text-[13px] font-bold mt-1 sm:mt-1.5 ${crop.change24h >= 0 ? 'text-green-600 dark:text-[#34d399]' : 'text-red-600 dark:text-red-500'}`}>
                              {crop.change24h >= 0 ? <ChevronUp size={14} strokeWidth={3} className="sm:w-4 sm:h-4 w-3.5 h-3.5" /> : <ChevronDown size={14} strokeWidth={3} className="sm:w-4 sm:h-4 w-3.5 h-3.5" />}
                              <span>{Math.abs(crop.change24h)}%</span>
                           </div>
@@ -277,7 +277,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                         e.stopPropagation();
                         addToBudget(crop.id);
                       }}
-                      className="w-12 h-12 flex items-center justify-center rounded-[18px] border border-white/5 bg-white-[0.02] hover:bg-white/10 transition-colors text-zinc-500 hover:text-zinc-300 group-hover:border-white/10 bg-[#242427]"
+                      className="w-12 h-12 flex items-center justify-center rounded-[18px] border border-zinc-200 dark:border-white/5 bg-zinc-100 dark:bg-[#242427] hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 group-hover:border-zinc-300 dark:group-hover:border-white/10"
                       aria-label="Add to budget"
                     >
                       <Calculator size={20} strokeWidth={2} />
@@ -298,8 +298,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <Calculator className="text-green-500" size={24} aria-hidden />
               </div>
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900">{t('sections.suggestedBasket')}</h3>
-                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+                <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">{t('sections.suggestedBasket')}</h3>
+                <p className="text-zinc-500 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
                   {t('sections.bestValuePicks')} ₱{budgetLimit}
                 </p>
               </div>
