@@ -1,144 +1,181 @@
 <div align="center">
-  <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo" width="140" />
-  <h1>AgriPresyo</h1>
-  <p><em>Agricultural commodity intelligence for the Philippine market</em></p>
+  <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo" width="160" />
 
-  <p>
-    <a href="#about">About</a> &middot;
-    <a href="#features">Features</a> &middot;
-    <a href="#getting-started">Getting Started</a> &middot;
-    <a href="#tech-stack">Tech Stack</a> &middot;
-    <a href="#project-structure">Project Structure</a> &middot;
-    <a href="#contributing">Contributing</a>
-  </p>
+  # 🌾 AgriPresyo
+
+  **Agricultural commodity intelligence for the Philippine market**
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg?style=for-the-badge)](LICENSE)
+  [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+  [![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+  <br />
+
+  [About](#-about) · [Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack) · [Project Structure](#-project-structure) · [Contributing](#-contributing) · [License](#-license)
+
 </div>
 
 ---
 
-## About
+## 📖 About
 
-AgriPresyo is a market intelligence platform built for the Philippine agricultural supply chain. It gives farmers, vendors, and everyday consumers a shared window into commodity pricing, so that everyone involved in getting food from the farm to the table can make better-informed decisions.
+**AgriPresyo** (from *Agriculture* + *Presyo*, the Filipino word for "price") is a market intelligence platform built for the Philippine agricultural supply chain. It gives **farmers**, **vendors**, and **consumers** a shared window into commodity pricing — so everyone involved in getting food from the farm to the table can make better-informed decisions.
 
-The name comes from combining "Agriculture" with "Presyo," the Filipino word for price. That is the core idea behind the project: making agricultural pricing more visible and more fair.
+The platform simulates a real-time trading terminal with live price tickers, vendor discovery, budget planning tools, and role-based dashboards. It's designed as a fully client-side demonstration, but the architecture supports a real backend when the time comes.
 
-The platform simulates a real-time trading terminal, complete with live price tickers, vendor discovery, budget planning tools, and role-based dashboards for consumers, vendors, and administrators. It is designed as a fully client-side demonstration, but the architecture is built to support a real backend when the time comes.
+> 🇵🇭 **Bilingual** — Full Filipino / English language toggle powered by i18next.
 
-## Features
+---
 
-**Market Intelligence**
-- Live commodity ticker with 24-hour price changes across dozens of Philippine crops
-- Interactive price history charts with weekly data points spanning multiple years
-- Market leaderboards highlighting the most traded and highest-demand commodities
-- Category filtering across Fruits, Vegetables, Spices, and Root Crops
+## ✨ Features
 
-**Vendor Network**
-- Searchable vendor directory organized by specialty (organic, highland, tropical, and more)
-- Vendor profiles with ratings, review counts, stock levels, and competitive pricing
-- Direct comparison of prices across multiple vendors for any given commodity
+<table>
+<tr>
+<td width="50%">
 
-**Budget Planning**
-- Built-in budget calculator for planning market purchases
-- Unit and kilogram-based quantity selection
-- Real-time cost estimation against current market prices
+### 📊 Market Intelligence
+- Live commodity ticker with 24-hour price changes
+- Interactive price history charts spanning multiple years
+- Market leaderboards for most traded commodities
+- Category filtering (Fruits, Vegetables, Spices, Root Crops)
 
-**User Roles and Administration**
-- Consumer, Vendor, and Admin role separation with distinct dashboards
-- Vendor verification workflow with document submission and admin review
-- Admin panel with user management, announcement broadcasting, and complaint handling
-- Full audit logging for administrative actions
+### 🛒 Vendor Network
+- Searchable vendor directory by specialty
+- Vendor profiles with ratings, stock levels & pricing
+- Cross-vendor price comparison
 
-**Design and Experience**
-- Dark and light mode with system preference detection
-- Glassmorphism UI with smooth micro-animations throughout
-- Animated background with generative vine patterns
-- Fully responsive layout from mobile to desktop
-- Custom scrollbar styling and marquee ticker with hover-to-pause
+</td>
+<td width="50%">
 
-## Getting Started
+### 💰 Budget Planning
+- Built-in budget calculator for market purchases
+- Kilogram and unit-based quantity selection
+- Real-time cost estimation against market prices
+- CSV & PDF export of budget reports
 
-**Prerequisites:** Node.js 18 or later and npm.
+### 🔐 User Roles & Admin
+- Consumer, Vendor, and Admin dashboards
+- Vendor verification workflow
+- Admin panel with user management & audit logging
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/Gabbu69/AgriPresyo.git
-   cd AgriPresyo
-   ```
+</td>
+</tr>
+</table>
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+### 🎨 Design & Experience
+- 🌓 Dark / Light mode with system preference detection
+- 💎 Glassmorphism UI with smooth micro-animations
+- 🌿 Animated generative vine background patterns
+- 📱 Fully responsive — mobile to desktop
+- 🌐 Filipino / English language toggle
 
-3. Start the development server:
-   ```
-   npm run dev
-   ```
+---
 
-4. Open your browser to the address shown in the terminal (usually `http://localhost:3000`).
+## 🚀 Getting Started
 
-To create a production build:
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) **18+**
+- npm (comes with Node.js)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Gabbu69/AgriPresyo.git
+cd AgriPresyo
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
 ```
+
+The app will be available at **`http://localhost:3000`**.
+
+### Production Build
+
+```bash
 npm run build
 ```
 
-The output will be in the `dist` directory, ready for static hosting or deployment to platforms like Vercel.
+Output goes to the `dist/` directory, ready for static hosting on [Vercel](https://vercel.com/), Netlify, or similar platforms.
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` if you want to customize the admin OTP code. The default value works out of the box for local development.
+Copy `.env.example` to `.env` to customize the admin OTP code. The default works out of the box for local development.
 
-## Tech Stack
+---
 
-| Layer        | Technology                                      |
-|------------- |------------------------------------------------ |
-| Framework    | React 19 with TypeScript                        |
-| Build Tool   | Vite 6                                          |
-| Styling      | Tailwind CSS 4 with custom vanilla CSS          |
-| Charts       | Recharts                                        |
-| Icons        | Lucide React                                    |
-| Routing      | React Router DOM 7                              |
-| State        | React hooks and Zustand                         |
-| PDF Export   | jsPDF with jspdf-autotable                      |
-| Deployment   | Vercel (configured via vercel.json)             |
+## 🛠 Tech Stack
 
-## Project Structure
+| Layer | Technology |
+|:------|:-----------|
+| **Framework** | React 19 + TypeScript |
+| **Build Tool** | Vite 6 |
+| **Styling** | Tailwind CSS 4 + Custom CSS |
+| **Charts** | Recharts |
+| **Icons** | Lucide React |
+| **Routing** | React Router DOM 7 |
+| **State** | Zustand + React Hooks |
+| **i18n** | i18next + react-i18next |
+| **PDF Export** | jsPDF + jspdf-autotable |
+| **Deployment** | Vercel |
+
+---
+
+## 📁 Project Structure
 
 ```
 AgriPresyo/
-  index.html            Entry point
-  index.tsx              Main application (all views and logic)
-  index.css              Global styles and Tailwind directives
-  constants.tsx          Commodity data, vendor mock data, price histories
-  types.ts               TypeScript interfaces and enums
-  components/
-    auth/                Login page and theme context
-    ui/                  Reusable UI components (ticker, sparklines, icons, etc.)
-    utils/               Helper functions and mock system checks
-  views/
-    MarketView.tsx       Detailed market and chart view
-    BudgetCalculatorView.tsx   Budget planning tool
-  lib/
-    formatters.ts        Number and currency formatting utilities
-  public/
-    crops/               High-quality commodity images (transparent PNGs)
-    agripresyo-logo.png  Application logo
+├── public/
+│   ├── crops/               # High-quality commodity images (WebP & PNG)
+│   └── AgriPresyo_logoFinal.png
+├── components/
+│   ├── auth/                # Login page & theme context
+│   ├── ui/                  # Reusable UI (ticker, sparklines, crop icons)
+│   └── utils/               # Helper functions & mock system checks
+├── views/
+│   ├── MarketView.tsx       # Detailed market & chart view
+│   └── BudgetCalculatorView.tsx
+├── lib/
+│   └── formatters.ts        # Number & currency formatting
+├── locales/                 # i18n translation files (en / fil)
+├── api/                     # Vercel serverless API routes
+├── index.html               # Entry point
+├── index.tsx                # Main application
+├── index.css                # Global styles & Tailwind directives
+├── constants.tsx            # Commodity data & price histories
+├── types.ts                 # TypeScript interfaces & enums
+├── vite.config.ts           # Vite configuration
+└── vercel.json              # Vercel deployment config
 ```
 
-## Contributing
+---
 
-Contributions are welcome. If you have ideas for new features, find a bug, or want to improve the design, feel free to open an issue or submit a pull request.
+## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes
-4. Push to your branch and open a pull request
+Contributions are welcome! Whether it's a bug fix, new feature, or design improvement — feel free to open an issue or submit a pull request.
 
-## License
+1. **Fork** the repository
+2. **Create** a feature branch — `git checkout -b feature/your-feature`
+3. **Commit** your changes
+4. **Push** to your branch and open a **Pull Request**
 
-This project is open source. See the repository for license details.
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <p>Built for a more transparent agricultural future.</p>
+  <br />
+  <strong>🌱 Built for a more transparent agricultural future.</strong>
+  <br /><br />
+  <sub>Made with ❤️ for Filipino farmers, vendors, and consumers</sub>
 </div>
