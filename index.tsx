@@ -3880,8 +3880,8 @@ const App = () => {
 
       <header className={`sticky top-10 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`}>
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4 sm:gap-12">
-            <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/market')}>
+          <div className="flex items-center gap-2 sm:gap-12">
+            <div className="flex items-center gap-2 sm:gap-4 group cursor-pointer shrink-0" onClick={() => navigate('/market')}>
               <Logo size={40} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
               <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block" />
               <h1 className="text-xl sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">

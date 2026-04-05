@@ -4,8 +4,8 @@
 @source "./**/*.{ts,tsx,html}";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'Roboto Mono', monospace;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
 }
 
 @variant dark (&:where(.dark, .dark *));
