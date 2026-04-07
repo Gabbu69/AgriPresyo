@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 
@@ -6,9 +6,30 @@ export const LanguageToggle = () => {
   const { i18n } = useTranslation();
   const isFil = i18n.language === 'fil';
 
-  const toggle = () => {
-    i18n.changeLanguage(isFil ? 'en' : 'fil');
-  };
+  const toggle = useCallback(() => {
+    const root = document.getElementById('root');
+    if (!root) {
+      i18n.changeLanguage(isFil ? 'en' : 'fil');
+      return;
+    }
+
+    // Phase 1: Fade out
+    root.classList.remove('lang-switched');
+    root.classList.add('lang-switching');
+
+    // Phase 2: After fade-out completes, switch language and fade in
+    setTimeout(() => {
+      i18n.changeLanguage(isFil ? 'en' : 'fil');
+
+      root.classList.remove('lang-switching');
+      root.classList.add('lang-switched');
+
+      // Clean up class after animation
+      setTimeout(() => {
+        root.classList.remove('lang-switched');
+      }, 300);
+    }, 180);
+  }, [i18n, isFil]);
 
   return (
     <button

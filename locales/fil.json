@@ -117,7 +117,7 @@
     "autoCalculating": "Awtomatikong kinakalkula ang timbang at presyo",
     "noActiveTrades": "Walang Aktibong Listahan",
     "selectProduce": "Pumili ng produkto mula sa palengke para magsimula",
-    "totalProjected": "Kabuuang Tinatayang Gastos",
+    "totalProjected": "Kabuuang Tantiya",
     "liquidityUsed": "Ginamit na Badyet",
     "overBudgetWarning": "Babala: Ang tinatayang gastos ay higit sa badyet",
     "liquidity": "Badyet:",
@@ -181,6 +181,38 @@
   "footer": {
     "builtFor": "Ginawa para sa Komunidad ng Agrikultura ng Pilipinas",
     "tagline": "Real-time na datos • Transparent na presyo • Sustainable na pagsasaka"
+  },
+  "landing": {
+    "heroTitle1": "Alamin ang Presyo",
+    "heroTitle2": "Bago Ka Bumili.",
+    "heroSubtitle": "Real-time na pagsubaybay ng presyo ng mga produktong agrikultura para sa mga magsasaka, nagtitinda, at mamimili sa Pilipinas. Gumawa ng mas matalinong desisyon sa palengke gamit ang transparent na presyo.",
+    "getStarted": "Magsimula",
+    "learnMore": "Alamin Pa",
+    "logIn": "Mag-log In",
+    "featureRealTimeTitle": "Real-Time na Datos",
+    "featureRealTimeDesc": "Subaybayan ang pagbabago ng presyo mula sa mga aktwal na nagtitinda at datos ng palengke.",
+    "featureTransparentTitle": "Transparent na Presyo",
+    "featureTransparentDesc": "Huwag nang hulaan pa. Tingnan ang pang-araw-araw na average at ikumpara ang mga tindahan bago pumunta.",
+    "featureSustainableTitle": "Sustainable na Pagsasaka",
+    "featureSustainableDesc": "Bigyang-lakas ang mga lokal na magsasaka sa pamamagitan ng predictive trend analysis at direktang akses sa mga mamimili."
+  },
+  "about": {
+    "backToHome": "Bumalik sa Home",
+    "heroTitle1": "Ang Tiwala ay Nagsisimula",
+    "heroTitle2": "Sa Transparency.",
+    "heroSubtitle": "Naniniwala kami na ang patas na palengke ay nangangailangan ng tapat at accessible na datos. Ito ang eksaktong pinagkukunan ng impormasyon ng presyo ng AgriPresyo para masigurado na palagi kang may tamang numero.",
+    "source1Title": "1. HDX Humanitarian API",
+    "source1Desc": "Ang aming pundasyon ay gumagamit ng real-time na indeks mula sa Humanitarian Data Exchange (HDX). Kami ay nag-query ng verified na datos ng presyo ng pagkain para sa SOCCSARGEN (Region 12) upang masigurado na ang baseline figures ay tumpak na sumasalamin sa macro-economic movements.",
+    "source1Badge": "Verified na Global Source",
+    "source2Title": "2. Live Vercel Architecture",
+    "source2Desc": "Para sa bilis at reliability, ang datos ay pinoproseso sa pamamagitan ng custom Vercel Serverless APIs. Ang mga presyo ay hindi manu-manong naka-hardcode; sila ay dina-download, nililinis, at ina-update nang dynamic tuwing maglo-load ka ng dashboard.",
+    "source2Badge": "Real-Time Up-Time",
+    "source3Title": "3. Verified na Lokal na Nagtitinda",
+    "source3Desc": "Ang pinakamahalagang datos ay galing sa lupa. Ang mga lokal na magsasaka at rehistradong nagtitinda ay direktang nag-iinput ng kanilang pang-araw-araw na imbentaryo at presyo. Ang community-driven na approach na ito ay nagsisiguro na makikita mo ang tumpak na micro-market variations.",
+    "source3Badge": "Galing sa Komunidad",
+    "promiseTitle": "Ang Aming Pangako",
+    "promiseDesc": "Ang AgriPresyo ay ginawa para lamang sa sektor ng agrikultura ng Pilipinas. Ang iyong datos ay naka-encrypt, ang mga pagkakakilanlan ng nagtitinda ay nabe-verify sa pamamagitan ng mahigpit na administrative review, at ang presyo ng mga pananim ay nananatiling transparent at desentralisado.",
+    "joinNetwork": "Sumali sa Network"
   },
   "common": {
     "loading": "Naglo-load...",

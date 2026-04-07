@@ -117,7 +117,7 @@
     "autoCalculating": "Auto-calculating unit weight vs market index values",
     "noActiveTrades": "No Active Trades",
     "selectProduce": "Select produce from market to begin calculating",
-    "totalProjected": "Total Projected Commitment",
+    "totalProjected": "Estimated Total",
     "liquidityUsed": "Inventory Liquidity Used",
     "overBudgetWarning": "Warning: Projected cost exceeds available liquidity",
     "liquidity": "Liquidity:",
@@ -181,6 +181,38 @@
   "footer": {
     "builtFor": "Built for the Philippine Agricultural Community",
     "tagline": "Real-time data • Transparent pricing • Sustainable farming"
+  },
+  "landing": {
+    "heroTitle1": "Know the Price",
+    "heroTitle2": "Before You Buy.",
+    "heroSubtitle": "Real-time agricultural commodity tracking for Philippine farmers, vendors, and consumers. Make smarter market decisions with transparent pricing.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "logIn": "Log In",
+    "featureRealTimeTitle": "Real-Time Data",
+    "featureRealTimeDesc": "Track dynamic price changes powered by actual vendor submissions and market data.",
+    "featureTransparentTitle": "Transparent Pricing",
+    "featureTransparentDesc": "No more guessing. See daily averages and compare shop-specific deals before heading out.",
+    "featureSustainableTitle": "Sustainable Farming",
+    "featureSustainableDesc": "Empower local farmers with predictive trend analysis and direct consumer access."
+  },
+  "about": {
+    "backToHome": "Back to Home",
+    "heroTitle1": "Trust Starts",
+    "heroTitle2": "With Transparency.",
+    "heroSubtitle": "We believe that a fair market requires honest, accessible data. Here's exactly where AgriPresyo gets its pricing information to ensure you always have the real numbers.",
+    "source1Title": "1. HDX Humanitarian API",
+    "source1Desc": "Our foundation utilizes real-time indices pulled straight from the Humanitarian Data Exchange (HDX). Specifically, we query vetted food price data for the SOCCSARGEN (Region 12) area to ensure baseline figures accurately reflect macro-economic movements.",
+    "source1Badge": "Verified Global Source",
+    "source2Title": "2. Live Vercel Architecture",
+    "source2Desc": "To guarantee speed and reliability, data is processed through custom Vercel Serverless APIs. Prices aren't hardcoded manually; they are fetched, sanitized, and updated dynamically every time you load the dashboard.",
+    "source2Badge": "Real-Time Up-Time",
+    "source3Title": "3. Verified Local Vendors",
+    "source3Desc": "The most important data comes from the ground. Local farmers and registered vendors directly input their daily inventory and prices. Our community-driven approach ensures you see accurate micro-market variations that regional averages might miss.",
+    "source3Badge": "Community Sourced",
+    "promiseTitle": "Our Promise",
+    "promiseDesc": "AgriPresyo is built strictly for the Philippine agricultural sector. Your data is encrypted, vendor identities are verified through strict administrative review, and crop pricing remains a transparent, decentralized effort.",
+    "joinNetwork": "Join the Network"
   },
   "common": {
     "loading": "Loading...",

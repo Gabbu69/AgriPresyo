@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import FuturisticVinesBackground from '../components/ui/FuturisticVinesBackground';
 import { Logo } from '../components/ui/Logo';
 import { ArrowLeft, Database, Users, Globe, Lock, Code, BarChart, Server } from 'lucide-react';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 
 export const AboutPage = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-stone-50 dark:bg-black text-zinc-900 dark:text-white">
       <FuturisticVinesBackground interactive={true} />
@@ -25,7 +28,7 @@ export const AboutPage = () => {
             to="/login"
             className="hidden sm:flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-6 py-2.5 rounded-full font-black uppercase tracking-widest text-xs hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
           >
-            Log In
+            {t('landing.logIn')}
           </Link>
         </div>
       </nav>
@@ -41,16 +44,16 @@ export const AboutPage = () => {
           className="inline-flex items-center gap-2 text-zinc-500 hover:text-green-500 transition-all font-black uppercase tracking-widest text-xs mb-12 group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Home
+          {t('about.backToHome')}
         </Link>
 
         <h2 className="text-4xl sm:text-6xl font-black tracking-tighter leading-[1.1] mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          Trust Starts <br className="hidden sm:block"/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">With Transparency.</span>
+          {t('about.heroTitle1')} <br className="hidden sm:block"/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">{t('about.heroTitle2')}</span>
         </h2>
 
         <p className="text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mb-16 font-medium animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
-          We believe that a fair market requires honest, accessible data. Here's exactly where AgriPresyo gets its pricing information to ensure you always have the real numbers.
+          {t('about.heroSubtitle')}
         </p>
 
         {/* Core Value Proposition & Data Sources */}
@@ -61,13 +64,12 @@ export const AboutPage = () => {
               <Globe className="text-blue-500" size={32} />
             </div>
             <div>
-              <h3 className="text-2xl font-black mb-3">1. HDX Humanitarian API</h3>
+              <h3 className="text-2xl font-black mb-3">{t('about.source1Title')}</h3>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-                Our foundation utilizes real-time indices pulled straight from the Humanitarian Data Exchange (HDX). 
-                Specifically, we query vetted food price data for the SOCCSARGEN (Region 12) area to ensure baseline figures accurately reflect macro-economic movements.
+                {t('about.source1Desc')}
               </p>
               <div className="inline-block bg-blue-500/10 border border-blue-500/20 text-blue-500 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full">
-                Verified Global Source
+                {t('about.source1Badge')}
               </div>
             </div>
           </section>
@@ -77,13 +79,12 @@ export const AboutPage = () => {
               <Server className="text-green-500" size={32} />
             </div>
             <div>
-              <h3 className="text-2xl font-black mb-3">2. Live Vercel Architecture</h3>
+              <h3 className="text-2xl font-black mb-3">{t('about.source2Title')}</h3>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-                To guarantee speed and reliability, data is processed through custom Vercel Serverless APIs. 
-                Prices aren't hardcoded manually; they are fetched, sanitized, and updated dynamically every time you load the dashboard.
+                {t('about.source2Desc')}
               </p>
               <div className="inline-block bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full">
-                Real-Time Up-Time
+                {t('about.source2Badge')}
               </div>
             </div>
           </section>
@@ -93,13 +94,12 @@ export const AboutPage = () => {
               <Users className="text-amber-500" size={32} />
             </div>
             <div>
-              <h3 className="text-2xl font-black mb-3">3. Verified Local Vendors</h3>
+              <h3 className="text-2xl font-black mb-3">{t('about.source3Title')}</h3>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-                The most important data comes from the ground. Local farmers and registered vendors directly input their daily inventory and prices. 
-                Our community-driven approach ensures you see accurate micro-market variations that regional averages might miss.
+                {t('about.source3Desc')}
               </p>
               <div className="inline-block bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full">
-                Community Sourced
+                {t('about.source3Badge')}
               </div>
             </div>
           </section>
@@ -110,23 +110,23 @@ export const AboutPage = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 blur-[80px] rounded-full pointer-events-none"></div>
           
           <Lock className="w-12 h-12 text-green-400 mx-auto mb-6" />
-          <h3 className="text-3xl font-black mb-4">Our Promise</h3>
+          <h3 className="text-3xl font-black mb-4">{t('about.promiseTitle')}</h3>
           <p className="text-zinc-400 max-w-xl mx-auto mb-8 font-medium">
-            AgriPresyo is built strictly for the Philippine agricultural sector. Your data is encrypted, vendor identities are verified through strict administrative review, and crop pricing remains a transparent, decentralized effort.
+            {t('about.promiseDesc')}
           </p>
           
           <Link 
             to="/login"
             className="inline-flex items-center justify-center gap-2 bg-green-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all"
           >
-            Join the Network
+            {t('about.joinNetwork')}
           </Link>
         </div>
 
       </main>
 
       <footer className="relative z-20 border-t border-zinc-200 dark:border-zinc-900 bg-stone-50/50 dark:bg-black/50 backdrop-blur-md p-6 text-center">
-        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Real-Time Data • Transparent Pricing • Sustainable Farming</p>
+        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">{t('footer.tagline')}</p>
       </footer>
     </div>
   );
