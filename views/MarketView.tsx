@@ -83,13 +83,13 @@ export const MarketView: React.FC<MarketViewProps> = ({
               aria-label="Search crops"
             />
           </div>
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pb-2 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide w-full lg:flex-1 min-w-0 pb-1">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pb-2 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide lg:flex-1 min-w-0 pb-1 scroll-smooth">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`whitespace-nowrap px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border text-xs sm:text-sm font-bold transition-all ${
+                  className={`shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-bold transition-all active:scale-95 ${
                     activeCategory === cat
                       ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20'
                       : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'
