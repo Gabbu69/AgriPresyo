@@ -27,7 +27,7 @@ export const LandingPage = () => {
       <nav className="relative z-20 flex items-center justify-between p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
         <div className="flex items-center gap-3">
           <Logo size={40} className="text-green-500" />
-          <h1 className="text-2xl font-black tracking-tighter">
+          <h1 className="text-2xl font-black tracking-tighter hidden sm:block">
             <span className="text-green-500">Agri</span>
             <span className="text-zinc-700 dark:text-white/80">Presyo</span>
           </h1>

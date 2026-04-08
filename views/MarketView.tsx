@@ -83,8 +83,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
               aria-label="Search crops"
             />
           </div>
-          <div className="flex items-center justify-between gap-3 pb-2 overflow-x-auto scrollbar-hide w-full">
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pb-2 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide w-full lg:w-auto shrink-0 pb-1">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
@@ -99,7 +99,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0 ml-auto">
+            <div className="flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0 w-full lg:w-auto overflow-x-auto scrollbar-hide lg:ml-auto">
               {[
                 { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
                 { key: 'price-asc' as const, label: '₱↑', icon: <ChevronUp size={12} /> },
