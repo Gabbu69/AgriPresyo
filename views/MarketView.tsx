@@ -84,7 +84,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
             />
           </div>
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pb-2 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide w-full lg:w-auto shrink-0 pb-1">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide w-full lg:flex-1 min-w-0 pb-1">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
