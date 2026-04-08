@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import FuturisticVinesBackground from '../components/ui/FuturisticVinesBackground';
 import { Logo } from '../components/ui/Logo';
@@ -8,6 +8,16 @@ import { LanguageToggle } from '../components/ui/LanguageToggle';
 
 export const LandingPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleGetStartedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate('/login');
+    }, 600);
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-stone-50 dark:bg-black text-zinc-900 dark:text-white">
@@ -26,7 +36,7 @@ export const LandingPage = () => {
           <LanguageToggle />
           <Link
             to="/login"
-            className="hidden sm:flex items-center gap-2 bg-green-500 text-black px-6 py-2.5 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
+            className="hidden sm:flex items-center justify-center gap-2 bg-green-500 text-black w-[140px] py-2.5 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
           >
             {t('landing.logIn')}
           </Link>
@@ -49,16 +59,33 @@ export const LandingPage = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
-          <Link
-            to="/login"
-            className="flex items-center justify-center gap-2 bg-green-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all group"
+          <button
+            onClick={handleGetStartedClick}
+            disabled={isNavigating}
+            className={`relative overflow-hidden flex items-center justify-center text-black font-black uppercase tracking-widest transition-all duration-300 group
+              w-full sm:w-[240px] h-[56px] rounded-2xl bg-green-500
+              ${!isNavigating ? 'hover:scale-105 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] active:scale-95' : 'opacity-90 scale-95 shadow-inner'}
+            `}
           >
-            {t('landing.getStarted')}
-            <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-          </Link>
+            {/* Text & Icon Container */}
+            <span className={`absolute flex items-center gap-2 whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isNavigating ? '-translate-y-10 opacity-0' : 'translate-y-0 opacity-100'
+            }`}>
+              {t('landing.getStarted')}
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+            </span>
+            
+            {/* Theme-aligned Logo Animation */}
+            <div className={`absolute flex items-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isNavigating ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}>
+              <Logo size={24} className="animate-pulse drop-shadow-md" />
+              <span>{t('common.loading')}</span>
+            </div>
+          </button>
           <Link
             to="/about"
-            className="flex items-center justify-center gap-2 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-white dark:hover:bg-zinc-800 transition-all"
+            className="flex items-center justify-center gap-2 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 w-full sm:w-[240px] py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-white dark:hover:bg-zinc-800 transition-all"
           >
             {t('landing.learnMore')}
           </Link>
