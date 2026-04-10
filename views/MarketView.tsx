@@ -83,23 +83,26 @@ export const MarketView: React.FC<MarketViewProps> = ({
               aria-label="Search crops"
             />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-2 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 scroll-smooth shrink-0 max-w-full">
+          <div className="flex flex-col gap-3 pb-2 w-full">
+            {/* Category Row */}
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 scroll-smooth w-full">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-bold transition-all active:scale-95 ${
+                  className={`shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-[14px] border text-xs sm:text-sm font-bold transition-all active:scale-95 ${
                     activeCategory === cat
-                      ? 'bg-green-400 border-green-400 text-black shadow-lg shadow-green-400/20'
-                      : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white'
+                      ? 'bg-green-400 border-green-400 text-black shadow-[0_0_20px_rgba(74,222,128,0.2)]'
+                      : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-white'
                   }`}
                 >
                   {cat === 'All' ? t('categories.all') : t(`categories.${cat.toLowerCase()}`)}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0 max-w-full overflow-x-auto scrollbar-hide">
+            
+            {/* Sort Bar (Full Width Segmented Control) */}
+            <div className="flex items-center gap-1 w-full bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner overflow-x-auto scrollbar-hide">
               {[
                 { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
                 { key: 'price-asc' as const, label: '₱↑', icon: <ChevronUp size={12} /> },
@@ -110,10 +113,10 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <button
                   key={s.key}
                   onClick={() => setSortBy(s.key)}
-                  className={`flex items-center justify-center shrink-0 gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center flex-1 shrink-0 gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                     sortBy === s.key
-                      ? 'bg-green-400 text-black shadow-md'
-                      : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60'
+                      ? 'bg-white dark:bg-zinc-700 text-green-500 dark:text-green-400 shadow-sm border border-zinc-200/50 dark:border-zinc-600'
+                      : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-zinc-700/50'
                   }`}
                 >
                   {s.icon}
