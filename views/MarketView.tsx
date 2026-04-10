@@ -72,19 +72,29 @@ export const MarketView: React.FC<MarketViewProps> = ({
     <div className="space-y-6 sm:space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" aria-hidden />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="w-5 h-5 text-zinc-400 group-focus-within:text-green-500 transition-colors" />
+            </div>
             <input
               type="search"
               placeholder={t('actions.search')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-4 sm:pr-6 focus:outline-none focus:ring-2 focus:ring-green-400/50 text-zinc-900 dark:text-white transition-all text-sm sm:text-lg shadow-xl"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500/50 text-zinc-900 dark:text-white transition-all text-sm sm:text-lg shadow-xl hover:border-zinc-300 dark:hover:border-zinc-800"
               aria-label="Search crops"
             />
+            {search && (
+              <button 
+                onClick={() => setSearch('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            )}
           </div>
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pb-2 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide lg:flex-1 min-w-0 pb-1 scroll-smooth">
+          <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 pb-2 w-full">
+            <div className="flex items-center flex-wrap gap-2 sm:gap-3 xl:flex-1 min-w-0 pb-1">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
@@ -99,7 +109,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0 w-full lg:w-auto overflow-x-auto scrollbar-hide lg:ml-auto">
+            <div className="flex items-center flex-wrap gap-1 bg-zinc-100/80 dark:bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner shrink-0 w-full md:w-auto xl:ml-auto">
               {[
                 { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
                 { key: 'price-asc' as const, label: '₱↑', icon: <ChevronUp size={12} /> },

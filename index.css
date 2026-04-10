@@ -1030,7 +1030,7 @@ select:focus-visible {
 }
 
 .animate-marquee {
-    animation: smoothMarquee 150s linear infinite;
+    animation: smoothMarquee var(--ticker-duration, 50s) linear infinite;
     will-change: transform;
     /* Smooth hardware acceleration */
     backface-visibility: hidden;

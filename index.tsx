@@ -8,24 +8,9 @@ import {
   LayoutGrid,
   BarChart3,
   Store,
-  TrendingUp,
-  Search,
-  Calculator,
-  Star,
-  ChevronUp,
-  ChevronDown,
-  Plus,
-  Minus,
-  Trash2,
-  Package,
-  Edit2,
-  ArrowRight,
-  Zap,
-  Lock,
-  Mail,
-  ShieldCheck,
   LogOut,
   X,
+  XCircle,
   ShoppingBag,
   Leaf,
   Trophy,
@@ -1018,6 +1003,7 @@ const App = () => {
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
   const [shopFilter, setShopFilter] = useState<'All' | 'Fruit' | 'Vegetable'>('All');
+  const [shopSearch, setShopSearch] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
   const [overrideVendorKey, setOverrideVendorKey] = useState<string | null>(null);
   const [overridePrice, setOverridePrice] = useState<string>('');
@@ -1588,12 +1574,13 @@ const App = () => {
   const filteredVendors = useMemo(() => {
     return allVendors.filter(v => {
       if (v.id === currentVendorId && role === UserRole.VENDOR) return false;
+      if (shopSearch.trim() && !v.name.toLowerCase().includes(shopSearch.toLowerCase())) return false;
       if (shopFilter === 'All') return true;
       if (shopFilter === 'Fruit') return v.cropsSold.every((c: any) => c.category === 'Fruit');
       if (shopFilter === 'Vegetable') return v.cropsSold.every((c: any) => c.category !== 'Fruit');
       return true;
     });
-  }, [allVendors, shopFilter, role, currentVendorId]);
+  }, [allVendors, shopFilter, shopSearch, role, currentVendorId]);
 
   const fruitVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.every((c: any) => c.category === 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
   const vegetableVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.some((c: any) => c.category !== 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
@@ -2038,7 +2025,28 @@ const App = () => {
           <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white">Shops</h2>
           <p className="text-zinc-500 dark:text-zinc-400 text-lg mt-2 font-medium">Browse shops and find the best prices</p>
         </div>
-        <div className="flex gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-1 sm:p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+          <div className="relative flex-1 sm:max-w-xs group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="w-5 h-5 text-zinc-400 group-focus-within:text-green-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by shop name..."
+              value={shopSearch}
+              onChange={(e) => setShopSearch(e.target.value)}
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500/50 rounded-2xl py-3 sm:py-3.5 pl-12 pr-10 text-sm font-medium text-zinc-900 dark:text-white shadow-xl hover:border-zinc-300 dark:hover:border-zinc-700 outline-none transition-all placeholder:text-zinc-500"
+            />
+            {shopSearch && (
+              <button 
+                onClick={() => setShopSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-800/50 p-1 sm:p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
           {['All', 'Fruit', 'Vegetable'].map(f => (
             <button
               key={f}
@@ -2048,6 +2056,7 @@ const App = () => {
               {f === 'All' ? 'All' : `${f}s`}
             </button>
           ))}
+        </div>
         </div>
       </div>
 

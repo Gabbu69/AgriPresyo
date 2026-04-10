@@ -127,6 +127,9 @@ export const AboutPage = () => {
 
       <footer className="relative z-20 border-t border-zinc-200 dark:border-zinc-900 bg-stone-50/50 dark:bg-black/50 backdrop-blur-md p-6 text-center">
         <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">{t('footer.tagline')}</p>
+        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-2">
+          Contact us: <a href="mailto:agripresyo@gmail.com" className="hover:text-green-500 transition-colors lowercase">agripresyo@gmail.com</a>
+        </p>
       </footer>
     </div>
   );
