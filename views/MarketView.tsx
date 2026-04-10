@@ -95,9 +95,9 @@ export const MarketView: React.FC<MarketViewProps> = ({
             )}
           </div>
           
-          <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 pb-2 w-full">
+          <div className="flex flex-col gap-3 pb-2 w-full mt-2">
             {/* Category Row */}
-            <div className="flex items-center flex-wrap gap-2 sm:gap-3 xl:flex-1 min-w-0 pb-1 scroll-smooth w-full">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 scroll-smooth w-full">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
@@ -114,7 +114,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
             </div>
             
             {/* Sort Bar (Full Width Segmented Control) */}
-            <div className="flex items-center flex-wrap gap-1 w-full xl:w-auto bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner xl:ml-auto">
+            <div className="flex items-center gap-1 w-full bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner overflow-x-auto scrollbar-hide">
               {[
                 { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
                 { key: 'price-asc' as const, label: '₱↑', icon: <ChevronUp size={12} /> },
@@ -125,7 +125,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <button
                   key={s.key}
                   onClick={() => setSortBy(s.key)}
-                  className={`flex items-center justify-center flex-1 sm:flex-none shrink-0 gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center flex-1 shrink-0 gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                     sortBy === s.key
                       ? 'bg-white dark:bg-zinc-700 text-green-500 dark:text-green-400 shadow-sm border border-zinc-200/50 dark:border-zinc-600'
                       : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-zinc-700/50'
