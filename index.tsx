@@ -48,9 +48,22 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
-  XCircle,
   MapPin,
-  Facebook
+  Facebook,
+  Trash2,
+  ShieldCheck,
+  ChevronDown,
+  Edit2,
+  Mail,
+  Lock,
+  TrendingUp,
+  ChevronUp,
+  Star,
+  ArrowRight,
+  Search,
+  Zap,
+  Package,
+  Plus
 } from 'lucide-react';
 import {
   ResponsiveContainer,
