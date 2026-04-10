@@ -1575,16 +1575,16 @@ const App = () => {
   const filteredVendors = useMemo(() => {
     return allVendors.filter(v => {
       if (v.id === currentVendorId && role === UserRole.VENDOR) return false;
-      if (shopSearch.trim() && !v.name.toLowerCase().includes(shopSearch.toLowerCase())) return false;
+      if (shopSearch.trim() && !(v.name || '').toLowerCase().includes(shopSearch.toLowerCase())) return false;
       if (shopFilter === 'All') return true;
-      if (shopFilter === 'Fruit') return v.cropsSold.every((c: any) => c.category === 'Fruit');
-      if (shopFilter === 'Vegetable') return v.cropsSold.every((c: any) => c.category !== 'Fruit');
+      if (shopFilter === 'Fruit') return (v.cropsSold || []).every((c: any) => c.category === 'Fruit');
+      if (shopFilter === 'Vegetable') return (v.cropsSold || []).every((c: any) => c.category !== 'Fruit');
       return true;
     });
   }, [allVendors, shopFilter, shopSearch, role, currentVendorId]);
 
-  const fruitVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.every((c: any) => c.category === 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
-  const vegetableVendors = useMemo(() => filteredVendors.filter(v => v.cropsSold.some((c: any) => c.category !== 'Fruit')).sort((a, b) => b.rating - a.rating), [filteredVendors]);
+  const fruitVendors = useMemo(() => filteredVendors.filter(v => (v.cropsSold || []).every((c: any) => c.category === 'Fruit')).sort((a, b) => (b.rating || 0) - (a.rating || 0)), [filteredVendors]);
+  const vegetableVendors = useMemo(() => filteredVendors.filter(v => (v.cropsSold || []).some((c: any) => c.category !== 'Fruit')).sort((a, b) => (b.rating || 0) - (a.rating || 0)), [filteredVendors]);
 
   useEffect(() => {
     if (selectedVendor) {
