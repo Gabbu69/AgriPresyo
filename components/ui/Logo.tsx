@@ -19,10 +19,11 @@ export const Logo = ({ size = 100, className = "", onUnlock }: { size?: number, 
 
   return (
     <img
-      src="/AgriPresyo_logoFinal.png"
+      src="/AgriPresyo_logoFinal.webp"
       alt="AgriPresyo"
       style={{ width: size, height: size }}
       className={`object-contain rounded-2xl ${className} cursor-pointer active:scale-95 transition-transform`}
+      decoding="async"
       onClick={handleClick}
     />
   );

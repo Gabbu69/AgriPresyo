@@ -1,48 +1,48 @@
 import React, { useState } from 'react';
 import { Crop } from '../../types';
 
-// Crop image mapping and gradient backgrounds
+// Crop image mapping — all optimized WebP format
 export const CROP_IMAGES: Record<string, string> = {
-  'pineapple-premium': '/crops/pineapple.png',
+  'pineapple-premium': '/crops/pineapple.webp',
   'watermelon': '/crops/watermelon.webp',
   'strawberry': '/crops/strawberry.webp',
   'avocado': '/crops/avocado.webp',
-  'pomelo': '/crops/pomelo.png',
-  'mango-carabao': '/crops/mango.png',
+  'pomelo': '/crops/pomelo.webp',
+  'mango-carabao': '/crops/mango.webp',
   'banana-lakatan': '/crops/banana.webp',
   'calamansi': '/crops/calamansi.webp',
-  'papaya': '/crops/papaya.png',
-  'coconut': '/crops/coconut.png',
+  'papaya': '/crops/papaya.webp',
+  'coconut': '/crops/coconut.webp',
   'tomato-native': '/crops/tomato.webp',
   'cabbage-rare': '/crops/cabbage.webp',
-  'okra': '/crops/okra.png',
-  'eggplant': '/crops/eggplant.png',
-  'kangkong': '/crops/kangkong.png',
+  'okra': '/crops/okra.webp',
+  'eggplant': '/crops/eggplant.webp',
+  'kangkong': '/crops/kangkong.webp',
   'ampalaya': '/crops/ampalaya.webp',
   'sitaw': '/crops/sitaw.webp',
-  'pechay': '/crops/pechay.png',
-  'garlic-ilocos': '/crops/garlic.png',
-  'onion-red': '/crops/onion.png',
-  'ginger': '/crops/ginger.png',
+  'pechay': '/crops/pechay.webp',
+  'garlic-ilocos': '/crops/garlic.webp',
+  'onion-red': '/crops/onion.webp',
+  'ginger': '/crops/ginger.webp',
   'chili-labuyo': '/crops/chili.webp',
-  'lemongrass': '/crops/lemongrass.png',
-  'potato-baguio': '/crops/potato.png',
-  'carrots-premium': '/crops/carrot.png',
-  'sweet-potato': '/crops/kamote.png',
-  'cassava': '/crops/cassava.png',
+  'lemongrass': '/crops/lemongrass.webp',
+  'potato-baguio': '/crops/potato.webp',
+  'carrots-premium': '/crops/carrot.webp',
+  'sweet-potato': '/crops/kamote.webp',
+  'cassava': '/crops/cassava.webp',
   'taro-gabi': '/crops/taro.webp',
   'ube': '/crops/ube.webp',
   'sayote': '/crops/sayote.webp',
   'black-pepper': '/crops/black-pepper.webp',
-  'lanzones': '/crops/lanzones.png',
+  'lanzones': '/crops/lanzones.webp',
   'rambutan': '/crops/rambutan.webp',
   'atsal': '/crops/bell-pepper.webp',
-  'grapes': '/crops/grapes.png',
+  'grapes': '/crops/grapes.webp',
   'fuji-apple': '/crops/apple.webp',
-  'poncan': '/crops/poncan_final.png',
+  'poncan': '/crops/poncan_final.webp',
   'upo': '/crops/upo.webp',
-  'kalabasa': '/crops/kalabasa.png',
-  'pipino': '/crops/pickle_ultimate.png',
+  'kalabasa': '/crops/kalabasa.webp',
+  'pipino': '/crops/pickle_ultimate.webp',
 };
 
 export const CROP_COLORS: Record<string, [string, string]> = {
@@ -116,6 +116,8 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
           alt={crop.name} 
           width={s.img} 
           height={s.img} 
+          loading="lazy"
+          decoding="async"
           className="object-contain drop-shadow-md" 
           style={
             crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : 
