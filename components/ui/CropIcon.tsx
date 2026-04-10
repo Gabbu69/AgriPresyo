@@ -116,7 +116,7 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
           alt={crop.name} 
           width={s.img} 
           height={s.img} 
-          loading="lazy"
+          loading="eager"
           decoding="async"
           className="object-contain drop-shadow-md" 
           style={

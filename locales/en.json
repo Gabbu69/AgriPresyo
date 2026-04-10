@@ -127,7 +127,9 @@
     "activeVendors": "Active Vendors",
     "avgPrice": "Avg Price",
     "inSeason": "IN SEASON",
-    "offSeason": "OFF SEASON"
+    "offSeason": "OFF SEASON",
+    "todaysHighlight": "Today's Highlight",
+    "last7Days": "Last 7 Days"
   },
   "login": {
     "tagline": "Know the Price Before You Buy.",

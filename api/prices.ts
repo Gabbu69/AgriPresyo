@@ -93,14 +93,14 @@ export default function handler(req, res) {
       const yesterdaysFluctuation = getRnd(cropSeed - 1, -0.08, 0.08);
       const prevPrice = basePrice + (basePrice * yesterdaysFluctuation);
       
-      const change24h = ((currentPrice - prevPrice) / prevPrice) * 100;
+      const change7d = ((currentPrice - prevPrice) / prevPrice) * 100;
 
       return {
           id,
           name,
           category,
           currentPrice,
-          change24h: Number(change24h.toFixed(1)),
+          change7d: Number(change7d.toFixed(1)),
           history: generateHistory(basePrice, cropSeed),
           demand,
           icon,

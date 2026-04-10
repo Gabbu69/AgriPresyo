@@ -31,7 +31,7 @@ export interface Crop {
   name: string;
   category: 'Vegetable' | 'Fruit' | 'Spice' | 'Root';
   currentPrice: number;
-  change24h: number;
+  change7d: number;
   history: PricePoint[];
   vendors: Vendor[];
   demand: 'High' | 'Medium' | 'Low';

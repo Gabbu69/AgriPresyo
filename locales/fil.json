@@ -127,7 +127,9 @@
     "activeVendors": "Mga Aktibong Nagtitinda",
     "avgPrice": "Avg na Presyo",
     "inSeason": "TAMANG PANAHON",
-    "offSeason": "HINDI PANAHON"
+    "offSeason": "HINDI PANAHON",
+    "todaysHighlight": "Tampok Ngayon",
+    "last7Days": "Nakaraang 7 Araw"
   },
   "login": {
     "tagline": "Alamin ang Presyo Bago Ka Bumili.",

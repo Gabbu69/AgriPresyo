@@ -80,7 +80,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               <Search className="w-5 h-5 text-zinc-400 group-focus-within:text-green-500 transition-colors" />
             </div>
             <input
-              type="search"
+              type="text"
               placeholder={t('actions.search')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -90,9 +90,10 @@ export const MarketView: React.FC<MarketViewProps> = ({
             {search && (
               <button 
                 onClick={() => setSearch('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:bg-green-500/15 hover:text-green-500 hover:border-green-500/30 active:scale-90 transition-all"
+                aria-label="Clear search"
               >
-                <X size={20} />
+                <X size={15} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -148,12 +149,12 @@ export const MarketView: React.FC<MarketViewProps> = ({
             <Zap size={120} className="text-green-500" />
           </div>
           <div className="flex items-center gap-3 mb-6">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${analyticsData.topGainer?.change24h && analyticsData.topGainer.change24h < 0 ? 'bg-red-400/10 border-red-400/20' : analyticsData.topGainer?.change24h === 0 ? 'bg-zinc-400/10 border-zinc-400/20' : 'bg-green-400/10 border-green-400/20'}`}>
-              {analyticsData.topGainer?.change24h && analyticsData.topGainer.change24h < 0 ? <TrendingDown className="text-red-500" size={20} /> : analyticsData.topGainer?.change24h === 0 ? <Minus className="text-zinc-500" size={20} /> : <TrendingUp className="text-green-500" size={20} />}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${analyticsData.topGainer?.change7d && analyticsData.topGainer.change7d < 0 ? 'bg-red-400/10 border-red-400/20' : analyticsData.topGainer?.change7d === 0 ? 'bg-zinc-400/10 border-zinc-400/20' : 'bg-green-400/10 border-green-400/20'}`}>
+              {analyticsData.topGainer?.change7d && analyticsData.topGainer.change7d < 0 ? <TrendingDown className="text-red-500" size={20} /> : analyticsData.topGainer?.change7d === 0 ? <Minus className="text-zinc-500" size={20} /> : <TrendingUp className="text-green-500" size={20} />}
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('market.topGainer')}</p>
-              <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mt-0.5">Today's Highlight</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('sections.topGainer')}</p>
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mt-0.5">{t('sections.todaysHighlight')}</h3>
             </div>
           </div>
           {analyticsData.topGainer ? (
@@ -163,10 +164,10 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <div>
                   <h4 className="font-black text-zinc-900 dark:text-white text-lg">{tc(analyticsData.topGainer)}</h4>
                   <div className="flex items-center gap-2">
-                    <span className={`font-black text-sm ${analyticsData.topGainer.change24h > 0 ? 'text-green-500' : analyticsData.topGainer.change24h < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
-                      {analyticsData.topGainer.change24h > 0 ? '+' : ''}{analyticsData.topGainer.change24h}%
+                    <span className={`font-black text-sm ${analyticsData.topGainer.change7d > 0 ? 'text-green-500' : analyticsData.topGainer.change7d < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                      {analyticsData.topGainer.change7d > 0 ? '+' : ''}{analyticsData.topGainer.change7d}%
                     </span>
-                    <span className="text-zinc-500 dark:text-zinc-600 font-mono text-xs">24H</span>
+                    <span className="text-zinc-500 dark:text-zinc-600 font-mono text-xs">7D</span>
                   </div>
                 </div>
               </div>
@@ -174,9 +175,9 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <p className="text-2xl font-black text-zinc-900 dark:text-white font-mono tracking-tighter">
                   {formatPrice(analyticsData.topGainer.currentPrice)}
                 </p>
-                <div className={`flex items-center gap-1 justify-end ${analyticsData.topGainer.change24h > 0 ? 'text-green-500' : analyticsData.topGainer.change24h < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
-                  {analyticsData.topGainer.change24h > 0 ? <ChevronUp size={14} strokeWidth={3} /> : analyticsData.topGainer.change24h < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
-                  <span className="text-[10px] font-black">{formatPrice(Math.abs(analyticsData.topGainer.currentPrice * (analyticsData.topGainer.change24h / 100)))}</span>
+                <div className={`flex items-center gap-1 justify-end ${analyticsData.topGainer.change7d > 0 ? 'text-green-500' : analyticsData.topGainer.change7d < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                  {analyticsData.topGainer.change7d > 0 ? <ChevronUp size={14} strokeWidth={3} /> : analyticsData.topGainer.change7d < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+                  <span className="text-[10px] font-black">{formatPrice(Math.abs(analyticsData.topGainer.currentPrice * (analyticsData.topGainer.change7d / 100)))}</span>
                 </div>
               </div>
             </div>
@@ -195,8 +196,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
           <div className="col-span-full">
             <EmptyState
               icon={Search}
-              title={t('market.noResults')}
-              subtitle={t('market.noResultsSubtitle')}
+              title={t('common.noResults')}
+              subtitle={t('common.noResultsSubtitle')}
             />
           </div>
         ) : (
@@ -253,18 +254,18 @@ export const MarketView: React.FC<MarketViewProps> = ({
 
                 <div className="flex items-center gap-2 mb-8">
                   <div className={`flex items-center gap-1 font-mono font-black text-xs px-2 py-0.5 rounded-full ${
-                    crop.change24h > 0 ? 'bg-green-500/10 text-green-500' : crop.change24h < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-500/10 text-zinc-500'
+                    crop.change7d > 0 ? 'bg-green-500/10 text-green-500' : crop.change7d < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-500/10 text-zinc-500'
                   }`}>
-                    {crop.change24h > 0 ? <ChevronUp size={14} strokeWidth={3} /> : crop.change24h < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
-                    <span>{Math.abs(crop.change24h)}%</span>
+                    {crop.change7d > 0 ? <ChevronUp size={14} strokeWidth={3} /> : crop.change7d < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+                    <span>{Math.abs(crop.change7d)}%</span>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] uppercase tracking-widest">{t('market.last24h')}</span>
+                  <span className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] uppercase tracking-widest">{t('sections.last7Days')}</span>
                 </div>
 
                 <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
-                      <Sparkline data={crop.history} color={crop.change24h > 0 ? '#22c55e' : crop.change24h < 0 ? '#ef4444' : '#a1a1aa'} />
+                      <Sparkline data={crop.history} color={crop.change7d > 0 ? '#22c55e' : crop.change7d < 0 ? '#ef4444' : '#a1a1aa'} />
                     </div>
                     <button
                       onClick={(e) => {
@@ -279,9 +280,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                   </div>
                 </div>
               </div>
-              <div className={`h-1.5 w-full ${
-                crop.demand === 'High' ? 'bg-red-500' : crop.demand === 'Medium' ? 'bg-orange-500' : 'bg-green-500'
-              }`} />
+
             </div>
           ))
         )}

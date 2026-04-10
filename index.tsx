@@ -1610,7 +1610,7 @@ const App = () => {
   }, [allVendors, selectedVendor?.id]);
 
   const analyticsData = useMemo(() => {
-    const topGainer = [...crops].sort((a, b) => b.change24h - a.change24h)[0];
+    const topGainer = [...crops].sort((a, b) => b.change7d - a.change7d)[0];
 
     const fruits = crops.filter(c => c.category === 'Fruit');
     const veggies = crops.filter(c => c.category !== 'Fruit');
@@ -1680,7 +1680,7 @@ const App = () => {
       case 'price-asc': result = [...result].sort((a, b) => a.currentPrice - b.currentPrice); break;
       case 'price-desc': result = [...result].sort((a, b) => b.currentPrice - a.currentPrice); break;
       case 'demand': result = [...result].sort((a, b) => { const d = { High: 3, Medium: 2, Low: 1 }; return (d[b.demand as keyof typeof d] || 0) - (d[a.demand as keyof typeof d] || 0); }); break;
-      case 'trending': result = [...result].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)); break;
+      case 'trending': result = [...result].sort((a, b) => Math.abs(b.change7d) - Math.abs(a.change7d)); break;
     }
     return result;
   }, [search, crops, activeCategory, sortBy]);
@@ -2056,9 +2056,10 @@ const App = () => {
             {shopSearch && (
               <button 
                 onClick={() => setShopSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:bg-green-500/15 hover:text-green-500 hover:border-green-500/30 active:scale-90 transition-all"
+                aria-label="Clear search"
               >
-                <X size={16} />
+                <X size={15} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -2322,7 +2323,7 @@ const App = () => {
           <Zap className="text-yellow-400 absolute top-8 right-8 group-hover:scale-150 transition-transform duration-500 opacity-20" size={64} />
           <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-4">Market Demand Signal</p>
           {(() => {
-            const avgChange = crops.reduce((sum, c) => sum + c.change24h, 0) / crops.length;
+            const avgChange = crops.reduce((sum, c) => sum + c.change7d, 0) / crops.length;
             const signal = avgChange >= 3 ? 'BULLISH' : avgChange >= 0 ? 'NEUTRAL' : 'BEARISH';
             const signalColor = avgChange >= 3 ? 'text-green-400' : avgChange >= 0 ? 'text-yellow-400' : 'text-red-500';
             const signalLabel = avgChange >= 3 ? 'Optimal Liquidity Period' : avgChange >= 0 ? 'Stable Market Conditions' : 'Caution: Declining Prices';
@@ -2837,7 +2838,7 @@ const App = () => {
               </div>
             </div>
             <div className="space-y-4">
-              {[...vendorInventory].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5).map((crop, idx) => {
+              {[...vendorInventory].sort((a, b) => Math.abs(b.change7d) - Math.abs(a.change7d)).slice(0, 5).map((crop, idx) => {
                 const myEntry = crop.vendors.find(v => v.id === currentVendorId)!;
                 return (
                   <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-700 dark:hover:border-zinc-600 transition-colors group">
@@ -2849,9 +2850,9 @@ const App = () => {
                         <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-mono">{formatPrice(myEntry.price)}</p>
                       </div>
                     </div>
-                    <div className={`flex items-center gap-1 font-mono font-black text-sm px-3 py-1.5 rounded-xl ${crop.change24h > 0 ? 'text-green-400 bg-green-400/10' : crop.change24h < 0 ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 bg-zinc-400/10'}`}>
-                      {crop.change24h > 0 ? <ChevronUp size={14} /> : crop.change24h < 0 ? <ChevronDown size={14} /> : <Minus size={14} />}
-                      {Math.abs(crop.change24h)}%
+                    <div className={`flex items-center gap-1 font-mono font-black text-sm px-3 py-1.5 rounded-xl ${crop.change7d > 0 ? 'text-green-400 bg-green-400/10' : crop.change7d < 0 ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 bg-zinc-400/10'}`}>
+                      {crop.change7d > 0 ? <ChevronUp size={14} /> : crop.change7d < 0 ? <ChevronDown size={14} /> : <Minus size={14} />}
+                      {Math.abs(crop.change7d)}%
                     </div>
                   </div>
                 );
@@ -3102,7 +3103,7 @@ const App = () => {
             <div className="space-y-4">
               {[...crops].sort((a, b) => {
                 const demandScore = { High: 3, Medium: 2, Low: 1 };
-                return ((demandScore[b.demand as keyof typeof demandScore] || 0) + b.change24h) - ((demandScore[a.demand as keyof typeof demandScore] || 0) + a.change24h);
+                return ((demandScore[b.demand as keyof typeof demandScore] || 0) + b.change7d) - ((demandScore[a.demand as keyof typeof demandScore] || 0) + a.change7d);
               }).slice(0, 5).map((crop, idx) => (
                 <div key={crop.id} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                   <div className="flex items-center gap-4">
@@ -3129,8 +3130,8 @@ const App = () => {
       {vendorInventory.length > 0 && (() => {
         const vendorCropIds = new Set(vendorInventory.map(c => c.id));
         const unstockedHighDemand = crops
-          .filter(c => !vendorCropIds.has(c.id) && (c.demand === 'High' || c.change24h > 3))
-          .sort((a, b) => b.change24h - a.change24h)
+          .filter(c => !vendorCropIds.has(c.id) && (c.demand === 'High' || c.change7d > 3))
+          .sort((a, b) => b.change7d - a.change7d)
           .slice(0, 4);
         if (unstockedHighDemand.length === 0) return null;
         return (
@@ -3157,7 +3158,7 @@ const App = () => {
                   <p className="font-mono text-green-400 font-bold text-lg">{formatPrice(crop.currentPrice)}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${crop.demand === 'High' ? 'bg-green-400/10 text-green-400' : 'bg-yellow-400/10 text-yellow-400'}`}>{crop.demand}</span>
-                    <span className="text-green-400 text-[9px] font-mono font-bold">+{crop.change24h}%</span>
+                    <span className="text-green-400 text-[9px] font-mono font-bold">+{crop.change7d}%</span>
                   </div>
                 </div>
               ))}
@@ -3632,7 +3633,7 @@ const App = () => {
                   c.name,
                   c.category,
                   formatPrice(c.currentPrice),
-                  `${c.change24h}%`,
+                  `${c.change7d}%`,
                   c.demand,
                   c.vendors.length.toString()
                 ]);
@@ -3650,7 +3651,7 @@ const App = () => {
                 addAuditEntry('EXPORT_REPORT_PDF', 'Market Report', 'PDF Export Generated');
               }} className="flex-1 sm:flex-none bg-red-500 text-white px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-red-500/10"><FileText size={14} /> <span>PDF</span></button>
 
-              <button onClick={() => { const headers = ['Crop', 'Category', 'Price', 'Change24h', 'Demand', 'Vendors', 'AvgVendorPrice']; const rows = crops.map(c => { const avg = c.vendors.length > 0 ? (c.vendors.reduce((s: number, v: any) => s + v.price, 0) / c.vendors.length).toFixed(2) : c.currentPrice.toFixed(2); return [c.name, c.category, c.currentPrice, c.change24h, c.demand, c.vendors.length, avg]; }); const csv = [headers, ...rows, [], ['USER SUMMARY'], ['Total Users', users.length], ['Active', users.filter(u => u.status === 'active').length], ['Pending', users.filter(u => u.status === 'pending').length], ['Banned', users.filter(u => u.status === 'banned').length]].map(r => r.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `agripresyo_report_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url); addAuditEntry('EXPORT_REPORT', 'Market Report', `CSV with ${crops.length} crops`); }} className="flex-1 sm:flex-none bg-emerald-500 text-black px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/10"><Download size={14} /> <span>CSV</span></button>
+              <button onClick={() => { const headers = ['Crop', 'Category', 'Price', 'change7d', 'Demand', 'Vendors', 'AvgVendorPrice']; const rows = crops.map(c => { const avg = c.vendors.length > 0 ? (c.vendors.reduce((s: number, v: any) => s + v.price, 0) / c.vendors.length).toFixed(2) : c.currentPrice.toFixed(2); return [c.name, c.category, c.currentPrice, c.change7d, c.demand, c.vendors.length, avg]; }); const csv = [headers, ...rows, [], ['USER SUMMARY'], ['Total Users', users.length], ['Active', users.filter(u => u.status === 'active').length], ['Pending', users.filter(u => u.status === 'pending').length], ['Banned', users.filter(u => u.status === 'banned').length]].map(r => r.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `agripresyo_report_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url); addAuditEntry('EXPORT_REPORT', 'Market Report', `CSV with ${crops.length} crops`); }} className="flex-1 sm:flex-none bg-emerald-500 text-black px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/10"><Download size={14} /> <span>CSV</span></button>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -4293,6 +4294,14 @@ const App = () => {
                 >
                   <Facebook size={16} className="fill-current" />
                 </a>
+                <a
+                  href="mailto:agripresyo@gmail.com"
+                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 hover:bg-red-500 hover:text-white transition-all duration-300"
+                  aria-label="Email AgriPresyo"
+                  title="Email us at agripresyo@gmail.com"
+                >
+                  <Mail size={16} />
+                </a>
               </div>
             </div>
             <div>
@@ -4633,8 +4642,8 @@ const App = () => {
               <div className="bg-zinc-50 dark:bg-zinc-950 p-4 sm:p-8 rounded-2xl sm:rounded-[36px] border border-zinc-200 dark:border-zinc-800 shadow-inner">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest">Local Market Index</p>
-                  <div className={`flex items-center gap-1 font-bold text-lg font-mono ${selectedCrop.change24h > 0 ? 'text-green-600' : selectedCrop.change24h < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
-                    {selectedCrop.change24h > 0 ? <TrendingUp size={18} /> : selectedCrop.change24h < 0 ? <TrendingDown size={18} /> : <Minus size={18} />} {Math.abs(selectedCrop.change24h)}%
+                  <div className={`flex items-center gap-1 font-bold text-lg font-mono ${selectedCrop.change7d > 0 ? 'text-green-600' : selectedCrop.change7d < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                    {selectedCrop.change7d > 0 ? <TrendingUp size={18} /> : selectedCrop.change7d < 0 ? <TrendingDown size={18} /> : <Minus size={18} />} {Math.abs(selectedCrop.change7d)}%
                   </div>
                 </div>
                 <p className="text-3xl sm:text-5xl font-black font-mono text-zinc-900 dark:text-white tracking-tighter">{formatPrice(selectedCrop.currentPrice)} <span className="text-base sm:text-xl text-zinc-400 dark:text-zinc-500">/ kg</span></p>
@@ -4655,8 +4664,8 @@ const App = () => {
                       <AreaChart data={selectedCrop.history.slice(-52)}>
                         <defs>
                           <linearGradient id="historyGrad" x1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0} />
+                            <stop offset="5%" stopColor={selectedCrop.change7d > 0 ? '#4ade80' : selectedCrop.change7d < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={selectedCrop.change7d > 0 ? '#4ade80' : selectedCrop.change7d < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -4687,7 +4696,7 @@ const App = () => {
                         <Area
                           type="monotone"
                           dataKey="price"
-                          stroke={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'}
+                          stroke={selectedCrop.change7d > 0 ? '#4ade80' : selectedCrop.change7d < 0 ? '#ef4444' : '#a1a1aa'}
                           fill="url(#historyGrad)"
                           strokeWidth={2}
                           dot={false}
