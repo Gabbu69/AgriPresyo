@@ -133,15 +133,22 @@ export const MarketView: React.FC<MarketViewProps> = ({
           <div className="flex justify-between items-start relative z-10">
             <span className="text-green-400 font-bold text-xs uppercase tracking-widest">{t('sections.topGainer')}</span>
           </div>
-          <div className="mt-4 relative z-10">
-            <h4 className="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">
-              {analyticsData.topGainer ? tc(analyticsData.topGainer) : t('common.loading')}
-            </h4>
-            <div className="flex items-center gap-2">
-              {analyticsData.topGainer && <CropIcon crop={analyticsData.topGainer} size="lg" />}
-              <p className="text-green-400 font-mono font-bold text-xl">
-                +{analyticsData.topGainer?.change24h}%
-              </p>
+          <div className="mt-4 relative z-10 flex items-center gap-4">
+            {analyticsData.topGainer && (
+              <div className="shrink-0 drop-shadow-2xl">
+                <CropIcon crop={analyticsData.topGainer} size="xl" />
+              </div>
+            )}
+            <div>
+              <h4 className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white leading-tight">
+                {analyticsData.topGainer ? tc(analyticsData.topGainer) : t('common.loading')}
+              </h4>
+              <div className="flex items-center gap-2 mt-1">
+                <TrendingUp size={20} className="text-green-400" />
+                <p className="text-green-400 font-mono font-bold text-xl sm:text-2xl">
+                  +{analyticsData.topGainer?.change24h}%
+                </p>
+              </div>
             </div>
           </div>
         </div>
