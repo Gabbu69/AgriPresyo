@@ -73,7 +73,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
           </div>
           <h2 className="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">{t('sections.smartAssetProjection')}</h2>
         </div>
-        <p className="text-zinc-500 font-medium">{t('sections.autoCalculating')}</p>
+        <p className="text-zinc-500 dark:text-zinc-400 font-medium">{t('sections.autoCalculating')}</p>
       </div>
       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto flex-wrap justify-end">
         {budgetItems.length > 0 && (
@@ -101,8 +101,8 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
     </div>
 
     {budgetItems.length === 0 ? (
-      <div className="text-center py-12 sm:py-20 border-2 border-dashed border-zinc-800 dark:border-zinc-700 rounded-2xl sm:rounded-[32px] bg-zinc-900/10 dark:bg-zinc-100/5">
-        <Package className="mx-auto text-zinc-800 dark:text-zinc-600 mb-6" size={64} aria-hidden />
+      <div className="text-center py-12 sm:py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[32px] bg-zinc-50 dark:bg-zinc-900/50">
+        <Package className="mx-auto text-zinc-400 dark:text-zinc-600 mb-6" size={64} aria-hidden />
         <p className="text-zinc-400 dark:text-zinc-500 text-xl font-black uppercase tracking-tighter">
           {t('sections.noActiveTrades')}
         </p>
@@ -160,7 +160,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                             : item.quantity - 1
                         )
                       }
-                      className="p-1.5 sm:p-2 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"
+                      className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"
                       aria-label="Decrease quantity"
                     >
                       <Minus size={16} />
@@ -197,7 +197,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                             : item.quantity + 1
                         )
                       }
-                      className="p-1.5 sm:p-2 hover:bg-green-400/10 hover:text-green-400 transition-all rounded-lg"
+                      className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-green-400/10 hover:text-green-500 transition-all rounded-lg"
                       aria-label="Increase quantity"
                     >
                       <Plus size={16} />
@@ -210,7 +210,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                   </div>
                   <button
                     onClick={() => removeFromBudget(item.cropId)}
-                    className="text-zinc-300 hover:text-red-500 transition-all p-2 sm:p-3"
+                    className="text-zinc-400 dark:text-zinc-500 hover:text-red-500 transition-all p-2 sm:p-3"
                     aria-label="Remove from budget"
                   >
                     <Trash2 size={20} />
@@ -241,7 +241,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
                 <span className="text-zinc-400">{t('sections.liquidityUsed')}</span>
                 <span
                   className={
-                    budgetStats.totalCost > budgetLimit ? 'text-red-500' : 'text-green-600'
+                    budgetStats.totalCost > budgetLimit ? 'text-red-500' : 'text-green-500'
                   }
                 >
                   {Math.round((budgetStats.totalCost / budgetLimit) * 100)}%

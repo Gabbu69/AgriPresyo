@@ -57,6 +57,8 @@ import {
   Mail,
   Lock,
   TrendingUp,
+  TrendingDown,
+  Minus,
   ChevronUp,
   Star,
   ArrowRight,
@@ -2847,8 +2849,8 @@ const App = () => {
                         <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-mono">{formatPrice(myEntry.price)}</p>
                       </div>
                     </div>
-                    <div className={`flex items-center gap-1 font-mono font-black text-sm px-3 py-1.5 rounded-xl ${crop.change24h >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
-                      {crop.change24h >= 0 ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    <div className={`flex items-center gap-1 font-mono font-black text-sm px-3 py-1.5 rounded-xl ${crop.change24h > 0 ? 'text-green-400 bg-green-400/10' : crop.change24h < 0 ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 bg-zinc-400/10'}`}>
+                      {crop.change24h > 0 ? <ChevronUp size={14} /> : crop.change24h < 0 ? <ChevronDown size={14} /> : <Minus size={14} />}
                       {Math.abs(crop.change24h)}%
                     </div>
                   </div>
@@ -4631,8 +4633,8 @@ const App = () => {
               <div className="bg-zinc-50 dark:bg-zinc-950 p-4 sm:p-8 rounded-2xl sm:rounded-[36px] border border-zinc-200 dark:border-zinc-800 shadow-inner">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-widest">Local Market Index</p>
-                  <div className="flex items-center gap-1 text-green-600 font-bold text-lg font-mono">
-                    <TrendingUp size={18} /> {selectedCrop.change24h}%
+                  <div className={`flex items-center gap-1 font-bold text-lg font-mono ${selectedCrop.change24h > 0 ? 'text-green-600' : selectedCrop.change24h < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                    {selectedCrop.change24h > 0 ? <TrendingUp size={18} /> : selectedCrop.change24h < 0 ? <TrendingDown size={18} /> : <Minus size={18} />} {Math.abs(selectedCrop.change24h)}%
                   </div>
                 </div>
                 <p className="text-3xl sm:text-5xl font-black font-mono text-zinc-900 dark:text-white tracking-tighter">{formatPrice(selectedCrop.currentPrice)} <span className="text-base sm:text-xl text-zinc-400 dark:text-zinc-500">/ kg</span></p>
@@ -4653,8 +4655,8 @@ const App = () => {
                       <AreaChart data={selectedCrop.history.slice(-52)}>
                         <defs>
                           <linearGradient id="historyGrad" x1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'} stopOpacity={0} />
+                            <stop offset="5%" stopColor={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'} stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -4685,7 +4687,7 @@ const App = () => {
                         <Area
                           type="monotone"
                           dataKey="price"
-                          stroke={selectedCrop.change24h >= 0 ? '#4ade80' : '#ef4444'}
+                          stroke={selectedCrop.change24h > 0 ? '#4ade80' : selectedCrop.change24h < 0 ? '#ef4444' : '#a1a1aa'}
                           fill="url(#historyGrad)"
                           strokeWidth={2}
                           dot={false}
