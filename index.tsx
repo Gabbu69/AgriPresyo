@@ -1669,6 +1669,8 @@ const App = () => {
 
   const [isAddCropModalOpen, setIsAddCropModalOpen] = useState(false);
   const [addCropPhoto, setAddCropPhoto] = useState<string | null>(null);
+  const [isAddingNewListing, setIsAddingNewListing] = useState(false);
+  const [processingPhotos, setProcessingPhotos] = useState<Record<string, 'approving' | 'rejecting'>>({});
   const [editingInventoryCrop, setEditingInventoryCrop] = useState<Crop | null>(null);
   const [editCropPhoto, setEditCropPhoto] = useState<string | null>(null);
 
@@ -1867,31 +1869,51 @@ const App = () => {
 
   const handleAddCropToVendor = (cropId: string, price: number, stock: number, listingName?: string, customPhoto?: string) => {
     const now = new Date().toISOString();
-    setCrops(prev => prev.map(c => {
-      if (c.id === cropId) {
-        if (c.vendors.some(v => v.id === currentVendorId)) return c;
-        const newEntry: Vendor = {
-          id: currentVendorId,
-          name: 'My Shop',
-          rating: 5.0,
-          reviewCount: 1,
-          specialty: vendorShopType === 'Fruit' ? 'Premium Fruit Hub' : 'Highland Veggie Outlet',
-          price,
-          stock,
-          isHot: true,
-          listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
-          customPhoto,
-          customPhotoStatus: customPhoto ? 'pending' : undefined,
-          openTime: currentUser?.openTime,
-          closeTime: currentUser?.closeTime,
+    setCrops(prev => {
+      const newEntry: Vendor = {
+        id: currentVendorId,
+        name: 'My Shop',
+        rating: 5.0,
+        reviewCount: 1,
+        specialty: vendorShopType === 'Fruit' ? 'Premium Fruit Hub' : 'Highland Veggie Outlet',
+        price,
+        stock,
+        isHot: true,
+        listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
+        customPhoto,
+        customPhotoStatus: customPhoto ? 'pending' : undefined,
+        openTime: currentUser?.openTime,
+        closeTime: currentUser?.closeTime,
+      };
+
+      if (prev.some(c => c.id === cropId)) {
+        return prev.map(c => {
+          if (c.id === cropId) {
+            if (c.vendors.some(v => v.id === currentVendorId)) return c;
+            const newHistory = [...c.history, { date: now.slice(0, 10), price }];
+            return { ...c, vendors: [...c.vendors, newEntry], lastUpdated: now, history: newHistory };
+          }
+          return c;
+        });
+      } else {
+        const newCrop: Crop = {
+          id: cropId === 'custom-crop' ? `custom-${Date.now()}` : cropId,
+          name: listingName || 'Custom Crop',
+          category: vendorShopType === 'Fruit' ? 'Fruit' : 'Vegetables',
+          currentPrice: price,
+          change7d: 0,
+          demand: 'Medium',
+          history: [{ date: now.slice(0, 10), price }],
+          lastUpdated: now,
+          vendors: [newEntry]
         };
-        const newHistory = [...c.history, { date: now.slice(0, 10), price }];
-        return { ...c, vendors: [...c.vendors, newEntry], lastUpdated: now, history: newHistory };
+        return [...prev, newCrop];
       }
-      return c;
-    }));
+    });
+
     setIsAddCropModalOpen(false);
     setAddCropPhoto(null);
+    addToast('Listing successfully sent for review!', 'success');
   };
 
   const handleRateVendor = (vId: string, newRating: number) => {
@@ -3474,30 +3496,56 @@ const App = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {crops.flatMap(c => c.vendors.filter(v => v.customPhotoStatus === 'pending').map(v => ({ crop: c, vendor: v }))).map((item, idx) => (
-                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden group">
+              {crops.flatMap(c => c.vendors.filter(v => v.customPhotoStatus === 'pending').map(v => ({ crop: c, vendor: v }))).map((item, idx) => {
+                const processingState = processingPhotos[`${item.crop.id}-${item.vendor.id}`];
+                const sellerUser = users.find(u => u.email === item.vendor.id) || users.find(u => u.name === item.vendor.id);
+                const sellerName = sellerUser?.name || item.vendor.id;
+
+                return (
+                <div key={idx} className={`bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden group transition-all duration-500 ${processingState ? 'opacity-50 scale-95 pointer-events-none' : ''}`}>
                   <div className="h-40 w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 relative">
-                    <img src={item.vendor.customPhoto} alt="Uploaded Crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={item.vendor.customPhoto} alt="Uploaded Crop" className={`w-full h-full object-cover ${!processingState ? 'group-hover:scale-105' : ''} transition-transform duration-500`} />
                     <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Store size={12} /> {item.vendor.name}</div>
+                    {processingState && (
+                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2 text-white">
+                          <div className={`w-8 h-8 rounded-full border-4 border-t-transparent animate-spin ${processingState === 'approving' ? 'border-green-400' : 'border-red-400'}`} />
+                          <span className="text-[10px] font-black uppercase tracking-widest">{processingState === 'approving' ? 'Approving...' : 'Rejecting...'}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 space-y-4">
                     <div>
                       <p className="font-bold text-zinc-900 dark:text-white text-sm truncate">{item.vendor.listingName || item.crop.name}</p>
                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center gap-1 mt-0.5"><Leaf size={10} /> {item.crop.name} Base Crop</p>
+                      <div className="mt-2.5 inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+                        <User size={12} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Sent by: {sellerName}</span>
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button onClick={() => {
-                        setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhotoStatus: 'approved' } : v) } : c));
-                        addToast(`Approved photo for ${item.vendor.name}`, 'success');
+                        setProcessingPhotos(prev => ({ ...prev, [`${item.crop.id}-${item.vendor.id}`]: 'approving' }));
+                        setTimeout(() => {
+                          setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhotoStatus: 'approved' } : v) } : c));
+                          setProcessingPhotos(prev => { const next = { ...prev }; delete next[`${item.crop.id}-${item.vendor.id}`]; return next; });
+                          addToast(`Approved photo from ${sellerName}`, 'success');
+                        }, 800);
                       }} className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"><CheckCircle size={14} /> Approve</button>
                       <button onClick={() => {
-                        setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhoto: undefined, customPhotoStatus: undefined } : v) } : c));
-                        addToast(`Rejected photo for ${item.vendor.name}`, 'destructive');
+                        setProcessingPhotos(prev => ({ ...prev, [`${item.crop.id}-${item.vendor.id}`]: 'rejecting' }));
+                        setTimeout(() => {
+                          setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhoto: undefined, customPhotoStatus: undefined } : v) } : c));
+                          setProcessingPhotos(prev => { const next = { ...prev }; delete next[`${item.crop.id}-${item.vendor.id}`]; return next; });
+                          addToast(`Rejected photo from ${sellerName}`, 'destructive');
+                        }, 800);
                       }} className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"><XCircle size={14} /> Reject</button>
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -4999,7 +5047,13 @@ const App = () => {
                   </div>
                   <input type="file" id="upload-add-crop" accept="image/*" className="hidden" onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
-                      setAddCropPhoto(URL.createObjectURL(e.target.files[0]));
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          setAddCropPhoto(event.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(e.target.files[0]);
                     }
                   }} />
                   {!addCropPhoto ? (
@@ -5093,6 +5147,7 @@ const App = () => {
               </div>
 
               <button onClick={() => {
+                if (isAddingNewListing) return;
                 const nameInput = document.getElementById('admin-name') as HTMLInputElement;
                 const priceInput = document.getElementById('admin-p') as HTMLInputElement;
                 const stockInput = document.getElementById('admin-s') as HTMLInputElement;
@@ -5107,15 +5162,28 @@ const App = () => {
                   alert('Please enter a valid price and stock amount.');
                   return;
                 }
-                handleAddCropToVendor(addCropModalSelection?.id || 'custom-crop', p, s, name || addCropModalSelection?.name || 'Unnamed Crop', addCropPhoto || undefined);
-                // Reset form
-                nameInput.value = '';
-                priceInput.value = '';
-                stockInput.value = '';
-                setAddCropModalSelection(null);
-              }} className="w-full bg-green-500 text-white py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-green-500/25 text-sm sm:text-base flex items-center justify-center gap-3">
-                <Upload size={20} />
-                Add New Listing
+                setIsAddingNewListing(true);
+                setTimeout(() => {
+                  handleAddCropToVendor(addCropModalSelection?.id || 'custom-crop', p, s, name || addCropModalSelection?.name || 'Unnamed Crop', addCropPhoto || undefined);
+                  // Reset form
+                  nameInput.value = '';
+                  priceInput.value = '';
+                  stockInput.value = '';
+                  setAddCropModalSelection(null);
+                  setIsAddingNewListing(false);
+                }, 1000);
+              }} className={`w-full text-white py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.2em] transition-all shadow-2xl text-sm sm:text-base flex items-center justify-center gap-3 ${isAddingNewListing ? 'bg-green-600 opacity-80 cursor-wait' : 'bg-green-500 hover:scale-[1.02] active:scale-95 shadow-green-500/25'}`} disabled={isAddingNewListing}>
+                {isAddingNewListing ? (
+                  <>
+                    <div className="w-5 h-5 border-4 border-white border-t-white/30 rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={20} />
+                    Add New Listing
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -5138,7 +5206,13 @@ const App = () => {
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">Update Photo</label>
                 <input type="file" id="upload-edit-crop" accept="image/*" className="hidden" onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
-                    setEditCropPhoto(URL.createObjectURL(e.target.files[0]));
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      if (event.target?.result) {
+                        setEditCropPhoto(event.target.result as string);
+                      }
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
                   }
                 }} />
                 <label htmlFor="upload-edit-crop" className="w-full flex items-center justify-center gap-3 bg-zinc-50 dark:bg-zinc-950 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 cursor-pointer hover:border-green-400/50 hover:bg-green-500/5 hover:text-green-500 text-zinc-400 transition-all font-black uppercase tracking-widest text-[10px] sm:text-xs">

@@ -3,17 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import FuturisticVinesBackground from '../components/ui/FuturisticVinesBackground';
 import { Logo } from '../components/ui/Logo';
-import { ArrowRight, Leaf, TrendingUp, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Leaf, TrendingUp, ShieldCheck, Loader2 } from 'lucide-react';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 
 export const LandingPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigatingLogin, setIsNavigatingLogin] = useState(false);
 
   const handleGetStartedClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsNavigating(true);
+    setTimeout(() => {
+      navigate('/login');
+    }, 600);
+  };
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsNavigatingLogin(true);
     setTimeout(() => {
       navigate('/login');
     }, 600);
@@ -34,12 +43,19 @@ export const LandingPage = () => {
         </div>
         <div className="flex items-center gap-4">
           <LanguageToggle />
-          <Link
-            to="/login"
-            className="hidden sm:flex items-center justify-center gap-2 bg-green-500 text-black w-[140px] py-2.5 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
+          <button
+            onClick={handleLoginClick}
+            disabled={isNavigatingLogin}
+            className={`hidden sm:flex items-center justify-center gap-2 text-black w-[140px] h-[36px] rounded-full font-black uppercase tracking-widest text-xs transition-all duration-300
+              ${!isNavigatingLogin ? 'bg-green-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] active:scale-95' : 'bg-green-600 scale-95 opacity-90 shadow-inner'}
+            `}
           >
-            {t('landing.logIn')}
-          </Link>
+            {isNavigatingLogin ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              t('landing.logIn')
+            )}
+          </button>
         </div>
       </nav>
 

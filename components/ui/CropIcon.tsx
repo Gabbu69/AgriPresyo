@@ -95,7 +95,17 @@ interface CropIconProps {
 
 export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
   const colors = CROP_COLORS[crop.id] || ['#6b7280', '#374151'];
-  const imgSrc = CROP_IMAGES[crop.id];
+  let imgSrc = CROP_IMAGES[crop.id];
+  let isCustomPhoto = false;
+  
+  if (!imgSrc && crop.vendors && crop.vendors.length > 0) {
+    const vendorWithPhoto = crop.vendors.find(v => v.customPhoto);
+    if (vendorWithPhoto) {
+      imgSrc = vendorWithPhoto.customPhoto;
+      isCustomPhoto = true;
+    }
+  }
+
   const [imgError, setImgError] = useState(false);
   const sizeMap: Record<string, { box: string, img: number }> = {
     sm: { box: 'w-10 h-10', img: 28 },
@@ -106,7 +116,7 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
   const s = sizeMap[size];
   return (
     <div
-      className={`${s.box} rounded-2xl flex items-center justify-center shadow-lg shrink-0 select-none border border-white/10`}
+      className={`${s.box} rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shrink-0 select-none border border-white/10`}
       style={{ background: `linear-gradient(135deg, ${colors[0]}33, ${colors[1]}33)` }}
       title={crop.name}
     >
@@ -114,14 +124,14 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
         <img 
           src={imgSrc} 
           alt={crop.name} 
-          width={s.img} 
-          height={s.img} 
+          width={isCustomPhoto ? undefined : s.img} 
+          height={isCustomPhoto ? undefined : s.img} 
           loading="eager"
           decoding="async"
-          className="object-contain drop-shadow-md" 
+          className={isCustomPhoto ? 'w-full h-full object-cover' : 'object-contain drop-shadow-md'} 
           style={
-            crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : 
-            crop.id === 'upo' ? { transform: 'scale(1.15)' } : 
+            !isCustomPhoto && crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : 
+            !isCustomPhoto && crop.id === 'upo' ? { transform: 'scale(1.15)' } : 
             undefined
           }
           onError={() => setImgError(true)} 
