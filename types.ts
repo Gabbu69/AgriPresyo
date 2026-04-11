@@ -23,6 +23,7 @@ export interface Vendor {
   isHot?: boolean;
   listingName?: string; // optional vendor-specific display name for a crop listing
   customPhoto?: string; // custom uploaded photo mapping
+  customPhotoStatus?: 'pending' | 'approved' | 'rejected';
   openTime?: string;
   closeTime?: string;
 }

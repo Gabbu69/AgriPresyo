@@ -1881,6 +1881,7 @@ const App = () => {
           isHot: true,
           listingName: listingName && listingName.trim() ? listingName.trim() : undefined,
           customPhoto,
+          customPhotoStatus: customPhoto ? 'pending' : undefined,
           openTime: currentUser?.openTime,
           closeTime: currentUser?.closeTime,
         };
@@ -1940,7 +1941,7 @@ const App = () => {
     const now = new Date().toISOString();
     setCrops(prev => prev.map(c => {
       if (c.id === cropId) {
-        const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName, customPhoto: newCustomPhoto || v.customPhoto } : v);
+        const updatedVendors = c.vendors.map(v => v.id === currentVendorId ? { ...v, price: newPrice, stock: newStock, listingName: newListingName?.trim() ? newListingName : v.listingName, customPhoto: newCustomPhoto || v.customPhoto, customPhotoStatus: newCustomPhoto ? 'pending' : v.customPhotoStatus } : v);
         const newHistory = [...c.history, { date: now.slice(0, 10), price: newPrice }];
         return { ...c, vendors: updatedVendors, lastUpdated: now, history: newHistory };
       }
@@ -3413,6 +3414,7 @@ const App = () => {
   const renderAdminView = () => {
     const pendingVerifications = users.filter(u => u.role === UserRole.VENDOR && u.verificationStatus === 'pending_review');
     const verifiedVendors = users.filter(u => u.role === UserRole.VENDOR && u.verificationStatus === 'verified');
+    const pendingPhotosCount = crops.reduce((acc, crop) => acc + crop.vendors.filter(v => v.customPhotoStatus === 'pending').length, 0);
     return (
       <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
         <div>
@@ -3446,16 +3448,60 @@ const App = () => {
             <p className="text-3xl font-black font-mono text-red-500 tracking-tight">{complaints.filter(c => c.status === 'open').length}</p>
             <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Need Attention</p>
           </div>
-          <div onClick={() => document.getElementById('admin-verification-requests')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-emerald-400/40 transition-all">
-            <ShieldCheck className="text-emerald-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Verification</p>
-            <p className="text-3xl font-black font-mono text-emerald-500 tracking-tight">{pendingVerifications.length}</p>
-            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Pending Verify</p>
+          <div onClick={() => document.getElementById('admin-photo-verification')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group cursor-pointer hover:border-emerald-400/40 transition-all">
+            <Camera className="text-emerald-500 absolute top-4 right-4 opacity-10 group-hover:scale-125 transition-transform" size={48} />
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">Photo Moderation</p>
+            <p className="text-3xl font-black font-mono text-emerald-500 tracking-tight">{pendingPhotosCount}</p>
+            <p className="text-[10px] text-zinc-500 font-bold mt-2 uppercase tracking-widest">Pending Review</p>
           </div>
         </div>
 
 
-        {/* Vendor Verification Requests */}
+        {/* Photo Moderation Requests */}
+        <div id="admin-photo-verification" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 rounded-2xl bg-emerald-400/10 border border-emerald-400/20"><Camera className="text-emerald-400" size={24} /></div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Photo Moderation</h3>
+              <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{pendingPhotosCount} photos waiting for review</p>
+            </div>
+          </div>
+          {pendingPhotosCount === 0 ? (
+            <div className="text-center py-12 text-zinc-400">
+              <Camera size={40} className="mx-auto mb-3 opacity-30" />
+              <p className="font-black uppercase tracking-widest text-sm">No Pending Photos</p>
+              <p className="text-xs text-zinc-500 mt-1">Vendor uploaded crop photos will appear here</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {crops.flatMap(c => c.vendors.filter(v => v.customPhotoStatus === 'pending').map(v => ({ crop: c, vendor: v }))).map((item, idx) => (
+                <div key={idx} className="bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden group">
+                  <div className="h-40 w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 relative">
+                    <img src={item.vendor.customPhoto} alt="Uploaded Crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Store size={12} /> {item.vendor.name}</div>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div>
+                      <p className="font-bold text-zinc-900 dark:text-white text-sm truncate">{item.vendor.listingName || item.crop.name}</p>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center gap-1 mt-0.5"><Leaf size={10} /> {item.crop.name} Base Crop</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => {
+                        setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhotoStatus: 'approved' } : v) } : c));
+                        addToast(`Approved photo for ${item.vendor.name}`, 'success');
+                      }} className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"><CheckCircle size={14} /> Approve</button>
+                      <button onClick={() => {
+                        setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhoto: undefined, customPhotoStatus: undefined } : v) } : c));
+                        addToast(`Rejected photo for ${item.vendor.name}`, 'destructive');
+                      }} className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"><XCircle size={14} /> Reject</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Vendor Document Verification Requests */}
         <div id="admin-verification-requests" className="bg-white dark:bg-zinc-900 p-6 lg:p-8 rounded-[40px] border border-zinc-200 dark:border-zinc-800 shadow-xl scroll-mt-24">
           <div className="flex items-center gap-4 mb-8">
