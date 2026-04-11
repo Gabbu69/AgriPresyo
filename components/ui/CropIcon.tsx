@@ -43,6 +43,8 @@ export const CROP_IMAGES: Record<string, string> = {
   'upo': '/crops/upo.webp',
   'kalabasa': '/crops/kalabasa.webp',
   'pipino': '/crops/pickle_ultimate.webp',
+  'durian': '/crops/durian.webp',
+  'langka': '/crops/langka.webp',
 };
 
 export const CROP_COLORS: Record<string, [string, string]> = {
@@ -86,6 +88,8 @@ export const CROP_COLORS: Record<string, [string, string]> = {
   'upo': ['#86efac', '#22c55e'],
   'kalabasa': ['#fbbf24', '#b45309'],
   'pipino': ['#bbf7d0', '#22c55e'],
+  'durian': ['#84cc16', '#4d7c0f'],
+  'langka': ['#4ade80', '#166534'],
 };
 
 interface CropIconProps {
@@ -132,6 +136,8 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
           style={
             !isCustomPhoto && crop.id === 'pineapple-premium' ? { transform: 'scale(1.35)' } : 
             !isCustomPhoto && crop.id === 'upo' ? { transform: 'scale(1.15)' } : 
+            !isCustomPhoto && crop.id === 'durian' ? { transform: 'scale(1.65)' } : 
+            !isCustomPhoto && crop.id === 'langka' ? { transform: 'scale(1.35)' } : 
             undefined
           }
           onError={() => setImgError(true)} 

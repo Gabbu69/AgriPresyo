@@ -639,7 +639,7 @@ export const MOCK_CROPS: Crop[] = [
     name: 'Pickle',
     category: 'Vegetable',
     currentPrice: 100,
-    change7d: 0.0,
+    change7d: -2.3,
     history: generateHistory(100),
     demand: 'Medium',
     icon: '🥒',
@@ -655,7 +655,7 @@ export const MOCK_CROPS: Crop[] = [
     name: 'Fuji Apple',
     category: 'Fruit',
     currentPrice: 10,
-    change7d: 0.0,
+    change7d: 5.4,
     history: generateHistory(10),
     demand: 'High',
     icon: '🍎',
@@ -693,6 +693,36 @@ export const MOCK_CROPS: Crop[] = [
     vendors: [
       { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 22, stock: 400, openTime: '04:30', closeTime: '14:00' },
       { id: 'v_fruit_3', name: 'Nanay Coring\'s Tropicals', rating: 4.9, reviewCount: 42, specialty: 'Masarap na Tropikal', price: 28, stock: 350, openTime: '05:00', closeTime: '17:00' }
+    ]
+  },
+  {
+    id: 'durian',
+    name: 'Durian',
+    category: 'Fruit',
+    currentPrice: 350,
+    change7d: 2.1,
+    history: generateHistory(350),
+    demand: 'High',
+    icon: '🍈',
+    weightPerUnit: 2.5,
+    vendors: [
+      { id: 'v_fruit_1', name: 'Aling Nena\'s Prutas', rating: 4.8, reviewCount: 120, specialty: 'Sariwang Prutas', price: 340, stock: 20, openTime: '05:30', closeTime: '18:00' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 360, stock: 15, openTime: '06:00', closeTime: '16:00' }
+    ]
+  },
+  {
+    id: 'langka',
+    name: 'Langka (Jackfruit)',
+    category: 'Fruit',
+    currentPrice: 85,
+    change7d: 3.5,
+    history: generateHistory(85),
+    demand: 'High',
+    icon: '🍈',
+    weightPerUnit: 5.0,
+    vendors: [
+      { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 80, stock: 40, openTime: '04:30', closeTime: '14:00' },
+      { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 90, stock: 35, openTime: '06:00', closeTime: '18:00' }
     ]
   }
 ];

@@ -64,7 +64,9 @@
     "pipino": "Pickle",
     "fuji-apple": "Apple",
     "grapes": "Grapes",
-    "poncan": "Poncan"
+    "poncan": "Poncan",
+    "durian": "Durian",
+    "langka": "Jackfruit"
   },
   "roles": {
     "customer": "CUSTOMER",
