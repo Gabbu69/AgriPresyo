@@ -1899,10 +1899,12 @@ const App = () => {
         const newCrop: Crop = {
           id: cropId === 'custom-crop' ? `custom-${Date.now()}` : cropId,
           name: listingName || 'Custom Crop',
-          category: vendorShopType === 'Fruit' ? 'Fruit' : 'Vegetables',
+          category: vendorShopType === 'Fruit' ? 'Fruit' : 'Vegetable',
           currentPrice: price,
           change7d: 0,
           demand: 'Medium',
+          icon: '🌱',
+          weightPerUnit: 1,
           history: [{ date: now.slice(0, 10), price }],
           lastUpdated: now,
           vendors: [newEntry]
@@ -4855,7 +4857,7 @@ const App = () => {
                 </div>
               </div>
 
-              <button onClick={() => setSelectedVendor(null)} className="w-full bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mt-6 sm:mt-10 transition-all hover:text-zinc-900 dark:hover:text-white text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">Terminate Connection</button>
+              <button onClick={() => setSelectedVendor(null)} className="w-full bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mt-6 sm:mt-10 transition-all hover:text-zinc-900 dark:hover:text-white text-sm sm:text-base border border-zinc-200 dark:border-zinc-700 hover:scale-[1.02] active:scale-95">Terminate Connection</button>
             </div>
           </div>
         </div>
@@ -5021,7 +5023,7 @@ const App = () => {
               </div>
               <div className="flex gap-4">
                 <button onClick={() => { addToBudget(selectedCrop.id); setSelectedCrop(null); }} className="flex-1 bg-green-500 text-black py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-green-500/10 text-sm sm:text-base">{t('actions.addToAssets')}</button>
-                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-zinc-900 dark:hover:text-white transition-colors text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">{t('actions.closeView')}</button>
+                <button onClick={() => setSelectedCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest hover:text-zinc-900 dark:hover:text-white transition-all text-sm sm:text-base border border-zinc-200 dark:border-zinc-700 hover:scale-[1.02] active:scale-95">{t('actions.closeView')}</button>
               </div>
               </div>
             </div>
@@ -5034,7 +5036,7 @@ const App = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }}></div>
           <div className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-3xl sm:rounded-[50px] overflow-hidden relative border border-zinc-200 dark:border-zinc-800 shadow-2xl">
-            <button onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <button onClick={() => { setIsAddCropModalOpen(false); setAddCropModalSelection(null); }} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all hover:scale-110 active:scale-90"><X size={20} /></button>
             <div className="p-5 sm:p-8 lg:p-12 space-y-5 sm:space-y-7 max-h-[90vh] overflow-y-auto scrollbar-hide">
               <h2 className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tighter">Add New {vendorShopType} Listing</h2>
 
@@ -5195,7 +5197,7 @@ const App = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setEditingInventoryCrop(null)}></div>
           <div className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-3xl sm:rounded-[50px] p-5 sm:p-8 lg:p-12 relative border border-zinc-200 dark:border-zinc-800 text-center space-y-6 sm:space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
-            <button onClick={() => setEditingInventoryCrop(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <button onClick={() => setEditingInventoryCrop(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all hover:scale-110 active:scale-90"><X size={20} /></button>
             <div className="mx-auto"><CropIcon crop={editingInventoryCrop} size="xl" /></div>
             <div>
               <h2 className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tighter">Update {editingInventoryCrop.name}</h2>
@@ -5250,7 +5252,7 @@ const App = () => {
                 }
                 handleUpdateVendorListing(editingInventoryCrop.id, p, s, name, editCropPhoto || undefined);
               }} className="flex-1 bg-green-500 text-white py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase tracking-widest transition-all shadow-xl hover:scale-[1.02] active:scale-95 shadow-green-500/25 text-sm sm:text-base">Save Changes</button>
-              <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase transition-colors hover:text-zinc-900 dark:hover:text-white text-sm sm:text-base border border-zinc-200 dark:border-zinc-700">Cancel</button>
+              <button onClick={() => setEditingInventoryCrop(null)} className="flex-1 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-400 dark:text-zinc-500 py-4 sm:py-5 rounded-2xl sm:rounded-[28px] font-black uppercase transition-all hover:text-zinc-900 dark:hover:text-white text-sm sm:text-base border border-zinc-200 dark:border-zinc-700 hover:scale-[1.02] active:scale-95">Cancel</button>
             </div>
           </div>
         </div>
@@ -5259,7 +5261,7 @@ const App = () => {
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setIsComplaintModalOpen(false)}></div>
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl sm:rounded-[40px] p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 relative">
-            <button onClick={() => setIsComplaintModalOpen(false)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <button onClick={() => setIsComplaintModalOpen(false)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all hover:scale-110 active:scale-90"><X size={20} /></button>
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20"><AlertCircle className="text-red-500" size={24} /></div>
               <div>
@@ -5283,7 +5285,7 @@ const App = () => {
                   <p className="text-xs text-zinc-600 dark:text-zinc-300">{complaintForm.message}</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setComplaintConfirmStep(false)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700">Go Back</button>
+                  <button onClick={() => setComplaintConfirmStep(false)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700 hover:scale-[1.02] active:scale-95">Go Back</button>
                   <button onClick={confirmSubmitComplaint} className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-red-500/20 flex items-center justify-center gap-2"><CheckCircle size={18} /> Confirm</button>
                 </div>
               </div>
@@ -5329,7 +5331,7 @@ const App = () => {
         <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-6">
           <div className="absolute inset-0 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl" onClick={() => setAdminNoteComplaintId(null)}></div>
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-3xl sm:rounded-[40px] p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in zoom-in-95 duration-200 relative">
-            <button onClick={() => setAdminNoteComplaintId(null)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"><X size={20} /></button>
+            <button onClick={() => setAdminNoteComplaintId(null)} className="absolute top-4 right-4 z-20 w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all hover:scale-110 active:scale-90"><X size={20} /></button>
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-2xl bg-green-500/10 border border-green-500/20"><CheckCircle className="text-green-500" size={24} /></div>
               <div>
@@ -5363,7 +5365,7 @@ const App = () => {
                 />
               </div>
               <div className="flex gap-3">
-                <button onClick={() => setAdminNoteComplaintId(null)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700 text-sm">Cancel</button>
+                <button onClick={() => setAdminNoteComplaintId(null)} className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all border border-zinc-200 dark:border-zinc-700 text-sm hover:scale-[1.02] active:scale-95">Cancel</button>
                 <button onClick={() => {
                   const comp = complaints.find(c => c.id === adminNoteComplaintId);
                   setComplaints(prev => prev.map(x => x.id === adminNoteComplaintId ? { ...x, status: 'resolved' as const, adminNote: adminNoteText.trim() || undefined } : x));
