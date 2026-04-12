@@ -136,13 +136,34 @@ export default function handler(req, res) {
       getCrop('coconut', 'Buko (Young Coconut)', 'Fruit', '🥥', 1.5, 35, 'High', 21),
       getCrop('pomelo', 'Davao Pomelo', 'Fruit', '🍊', 1.2, 130, 'Medium', 22),
       getCrop('rambutan', 'Rambutan', 'Fruit', '🔴', 1.0, 80, 'High', 23),
-      
+      getCrop('lanzones', 'Lanzones', 'Fruit', '🟡', 1.0, 100, 'Medium', 29),
+      getCrop('strawberry', 'Baguio Strawberries', 'Fruit', '🍓', 0.25, 480, 'Medium', 30),
+      getCrop('avocado', 'Hass Avocado', 'Fruit', '🥑', 0.3, 220, 'High', 31),
+      getCrop('fuji-apple', 'Fuji Apple', 'Fruit', '🍎', 0.2, 10, 'High', 32),
+      getCrop('grapes', 'Grapes', 'Fruit', '🍇', 1.0, 250, 'High', 33),
+      getCrop('poncan', 'Poncan', 'Fruit', '🍊', 0.15, 25, 'Medium', 34),
+      getCrop('durian', 'Durian', 'Fruit', '🍈', 2.5, 350, 'High', 35),
+      getCrop('langka', 'Langka (Jackfruit)', 'Fruit', '🍈', 5.0, 85, 'High', 36),
+
       // Roots
       getCrop('potato-baguio', 'Granola Potato', 'Vegetable', '🥔', 0.15, 95, 'High', 24),
       getCrop('carrots-premium', 'Highland Carrots', 'Vegetable', '🥕', 0.12, 110, 'High', 25),
       getCrop('sweet-potato', 'Yellow Kamote', 'Vegetable', '🍠', 0.2, 55, 'Medium', 26),
       getCrop('cassava', 'Fresh Cassava', 'Root', '🪵', 0.8, 40, 'Low', 27),
+      getCrop('taro-gabi', 'Gabi (Taro)', 'Root', '🟤', 0.4, 75, 'Medium', 37),
       getCrop('ube', 'Ube (Purple Yam)', 'Root', '🍠', 0.5, 140, 'High', 28),
+
+      // Additional Vegetables
+      getCrop('cabbage-rare', 'Scorpio Cabbage', 'Vegetable', '🥬', 1.5, 85, 'Medium', 38),
+      getCrop('kangkong', 'Kangkong (Water Spinach)', 'Vegetable', '🌱', 0.15, 30, 'High', 39),
+      getCrop('pechay', 'Pechay (Bok Choy)', 'Vegetable', '🥗', 0.2, 45, 'High', 40),
+      getCrop('sayote', 'Sayote (Chayote)', 'Vegetable', '🍐', 0.3, 25, 'High', 41),
+      getCrop('lemongrass', 'Tanglad (Lemongrass)', 'Spice', '🌿', 0.05, 25, 'Medium', 42),
+      getCrop('black-pepper', 'Black Pepper (Paminta)', 'Spice', '⚫', 0.01, 400, 'Medium', 43),
+      getCrop('upo', 'Upo (Bottle Gourd)', 'Vegetable', '🥒', 1.0, 55, 'Medium', 44),
+      getCrop('kalabasa', 'Kalabasa (Squash)', 'Vegetable', '🎃', 1.5, 50, 'High', 45),
+      getCrop('atsal', 'Atsal (Bell Pepper)', 'Spice', '🫑', 0.1, 280, 'High', 46),
+      getCrop('pipino', 'Pickle', 'Vegetable', '🥒', 0.25, 100, 'Medium', 47),
   ];
 
   res.status(200).json({
