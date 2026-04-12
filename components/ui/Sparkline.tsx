@@ -11,7 +11,7 @@ export const Sparkline = ({ data, color }: { data: any[], color: string }) => {
     ? [ { ...data[0], date: 'previous' }, ...data ] 
     : data;
 
-  const yDomain = [(dataMin: number) => (dataMin === 0 ? 0 : dataMin * 0.95), (dataMax: number) => (dataMax === 0 ? 10 : dataMax * 1.05)];
+  const yDomain: [number | string | ((...args: any[]) => any), number | string | ((...args: any[]) => any)] = [(dataMin: number) => (dataMin === 0 ? 0 : dataMin * 0.95), (dataMax: number) => (dataMax === 0 ? 10 : dataMax * 1.05)];
 
   return (
     <div className="h-12 w-24">
