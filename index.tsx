@@ -3551,6 +3551,67 @@ const App = () => {
               })}
             </div>
           )}
+
+          {/* Approved Photos — with delete option */}
+          {(() => {
+            const approvedPhotos = crops.flatMap(c => c.vendors.filter(v => v.customPhotoStatus === 'approved' && v.customPhoto).map(v => ({ crop: c, vendor: v })));
+            if (approvedPhotos.length === 0) return null;
+            return (
+              <div className="mt-8 pt-8 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-xl bg-green-400/10 border border-green-400/20"><CheckCircle className="text-green-400" size={18} /></div>
+                  <div>
+                    <h4 className="text-sm font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Approved Photos</h4>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{approvedPhotos.length} photo{approvedPhotos.length !== 1 ? 's' : ''} live</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {approvedPhotos.map((item, idx) => {
+                    const sellerUser = users.find(u => u.email === item.vendor.id) || users.find(u => u.name === item.vendor.id);
+                    const sellerName = sellerUser?.name || item.vendor.id;
+                    const processingState = processingPhotos[`approved-${item.crop.id}-${item.vendor.id}`];
+
+                    return (
+                      <div key={idx} className={`bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden group transition-all duration-500 ${processingState ? 'opacity-50 scale-95 pointer-events-none' : ''}`}>
+                        <div className="h-40 w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 relative">
+                          <img src={item.vendor.customPhoto} alt="Approved Crop" className={`w-full h-full object-cover ${!processingState ? 'group-hover:scale-105' : ''} transition-transform duration-500`} />
+                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><Store size={12} /> {item.vendor.name}</div>
+                          <div className="absolute top-2 right-2 bg-green-500/80 backdrop-blur-sm px-2 py-1 rounded border border-green-400/30 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><CheckCircle size={10} /> Approved</div>
+                          {processingState && (
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                              <div className="flex flex-col items-center gap-2 text-white">
+                                <div className="w-8 h-8 rounded-full border-4 border-t-transparent border-red-400 animate-spin" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Deleting...</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div>
+                            <p className="font-bold text-zinc-900 dark:text-white text-sm truncate">{item.vendor.listingName || item.crop.name}</p>
+                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center gap-1 mt-0.5"><Leaf size={10} /> {item.crop.name} Base Crop</p>
+                            <div className="mt-2 inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+                              <User size={12} />
+                              <span className="text-[10px] font-black uppercase tracking-widest">By: {sellerName}</span>
+                            </div>
+                          </div>
+                          <button onClick={() => {
+                            setProcessingPhotos(prev => ({ ...prev, [`approved-${item.crop.id}-${item.vendor.id}`]: 'deleting' }));
+                            setTimeout(() => {
+                              setCrops(prev => prev.map(c => c.id === item.crop.id ? { ...c, vendors: c.vendors.map(v => v.id === item.vendor.id ? { ...v, customPhoto: undefined, customPhotoStatus: undefined } : v) } : c));
+                              setProcessingPhotos(prev => { const next = { ...prev }; delete next[`approved-${item.crop.id}-${item.vendor.id}`]; return next; });
+                              addToast(`Deleted approved photo from ${sellerName}`, 'destructive');
+                              addAuditEntry('PHOTO_DELETE', sellerName, `Deleted approved photo for ${item.crop.name}`);
+                            }, 800);
+                          }} className="w-full bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 active:scale-95"><Trash2 size={14} /> Delete Photo</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Vendor Document Verification Requests */}
