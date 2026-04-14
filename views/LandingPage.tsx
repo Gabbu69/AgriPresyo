@@ -63,7 +63,7 @@ export const LandingPage = () => {
       <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-5 sm:px-6 text-center mt-[-20px] sm:mt-[-40px]">
 
         {/* Glow effects */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 bg-green-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 bg-green-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
         <h2 className="text-4xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.1] mb-4 sm:mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           {t('landing.heroTitle1')} <br className="hidden sm:block" />

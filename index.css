@@ -50,9 +50,8 @@ html {
     overscroll-behavior-y: contain;
 }
 
-/* Smooth scroll for all scrollable containers */
+/* Tap highlight removal — scroll-behavior: smooth is ONLY on html (not *) for perf */
 * {
-    scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -443,9 +442,12 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
     background-size: 200% 100%;
 }
 
-/* Header scroll shadow — smooth transition */
+/* Header scroll shadow — smooth transition + GPU promotion */
 header {
     transition: box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+    transform: translateZ(0);
+    contain: layout style;
 }
 
 .header-scrolled {
@@ -543,9 +545,14 @@ header {
    PROFESSIONAL BUTTON ANIMATIONS
    ============================================ */
 
-/* Base button transitions */
+/* Base button transitions — specific properties only (never 'all') for perf */
 button {
-    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+               background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+               border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+               color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+               box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+               opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     overflow: hidden;
 }
 

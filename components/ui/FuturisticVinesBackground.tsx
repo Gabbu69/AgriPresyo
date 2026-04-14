@@ -190,7 +190,7 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
   if (!mounted) return null;
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 ${interactive ? 'z-[10]' : 'z-[-1]'} overflow-hidden bg-transparent pointer-events-none`}>
+    <div ref={containerRef} className={`fixed inset-0 ${interactive ? 'z-[10]' : 'z-[-1]'} overflow-hidden bg-transparent pointer-events-none`} style={{ contain: 'strict', willChange: 'auto' }}>
       <style>
         {`
           @keyframes growVine {
@@ -198,21 +198,16 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
             5% { opacity: 1; }
             100% { stroke-dashoffset: 0; opacity: 1; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.4)); }
           }
-          
-          @keyframes pulseVineGlow {
-            0%, 100% { filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.4)); }
-            50% { filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.7)); }
+
+          @keyframes pulseLeafOpacity {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
           }
 
           @keyframes bloomLeaf {
             0% { transform: scale(0); opacity: 0; }
             50% { transform: scale(1.3); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
-          }
-          
-          @keyframes pulseLeafGlow {
-            0%, 100% { filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.4)); transform: scale(1); opacity: 0.9; }
-            50% { filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.8)); transform: scale(1.05); opacity: 1; }
           }
 
           .vine-path {
@@ -280,7 +275,7 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
                   d={d}
                   pathLength="100"
                   style={{
-                    animation: `growVine 12s cubic-bezier(0.25, 1, 0.5, 1) ${vine.pathDelay}s forwards, pulseVineGlow 5s ease-in-out infinite alternate ${vine.pathDelay + 2}s`
+                    animation: `growVine 12s cubic-bezier(0.25, 1, 0.5, 1) ${vine.pathDelay}s forwards`
                   }}
                 />
 
@@ -304,7 +299,8 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
                             transformOrigin: '0px 0px',
                             transform: 'scale(0)',
                             opacity: 0,
-                            animation: `bloomLeaf 2s cubic-bezier(0.34, 1.56, 0.64, 1) ${leaf.delay}s forwards, pulseLeafGlow 4s ease-in-out infinite alternate ${leaf.delay + 2}s`
+                            animation: `bloomLeaf 2s cubic-bezier(0.34, 1.56, 0.64, 1) ${leaf.delay}s forwards`,
+                            filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))'
                           }}
                         />
                       )}

@@ -37,7 +37,7 @@ export const AboutPage = () => {
       <main className="flex-1 relative z-10 px-4 sm:px-6 max-w-4xl mx-auto w-full pt-12 pb-24">
         
         {/* Glow effects */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 blur-[60px] rounded-full pointer-events-none"></div>
 
         <Link 
           to="/"

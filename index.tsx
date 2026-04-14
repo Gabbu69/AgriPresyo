@@ -517,8 +517,8 @@ const LoginPage = ({
     <div className="min-h-screen flex flex-col items-center justify-center px-5 py-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
       <FuturisticVinesBackground interactive={true} />
       <div className="absolute top-4 right-4 z-50"><LanguageToggle /></div>
-      <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[60px] rounded-full"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[60px] rounded-full"></div>
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-500 mt-4 sm:mt-8">
         <div className="flex flex-col items-center mb-4 sm:mb-6">
@@ -4049,7 +4049,42 @@ const App = () => {
 
   return (
     <div className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
-      <FuturisticVinesBackground />
+      {/* Static vine background — no animations, GPU-friendly */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none" style={{ contain: 'strict' }}>
+        <svg className="absolute w-full h-full opacity-15 dark:opacity-25" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="rgba(34, 197, 94, 0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M 200 1100 Q 300 800 250 600 Q 200 400 400 300 Q 600 200 350 -50" />
+            <path d="M 800 1100 Q 650 850 750 550 Q 850 250 600 250 Q 350 250 700 -50" />
+            <path d="M 250 600 Q 150 500 100 200" />
+            <path d="M 400 300 Q 550 250 500 100" />
+            <path d="M 750 550 Q 850 450 950 350 Q 1050 250 900 100" />
+            <path d="M 600 250 Q 450 150 550 -50" />
+            <path d="M 0 900 Q 100 850 50 650 Q 0 450 -50 400" />
+            <path d="M 1000 800 Q 900 750 950 500 Q 1000 250 1050 300" />
+          </g>
+          <defs>
+            <g id="static-leaf">
+              <path d="M 0 0 C 10 -15, 25 -15, 30 0 C 25 15, 10 15, 0 0" fill="rgba(34, 197, 94, 0.3)" stroke="rgba(34, 197, 94, 0.7)" strokeWidth="1.2" />
+            </g>
+          </defs>
+          <use href="#static-leaf" transform="translate(230, 700) rotate(20)" />
+          <use href="#static-leaf" transform="translate(220, 520) rotate(-40)" />
+          <use href="#static-leaf" transform="translate(350, 350) rotate(30)" />
+          <use href="#static-leaf" transform="translate(430, 250) rotate(-20)" />
+          <use href="#static-leaf" transform="translate(380, 50) rotate(45)" />
+          <use href="#static-leaf" transform="translate(720, 700) rotate(-30)" />
+          <use href="#static-leaf" transform="translate(780, 450) rotate(25)" />
+          <use href="#static-leaf" transform="translate(650, 300) rotate(-35)" />
+          <use href="#static-leaf" transform="translate(580, 200) rotate(40)" />
+          <use href="#static-leaf" transform="translate(700, 50) rotate(-25)" />
+          <use href="#static-leaf" transform="translate(120, 400) rotate(-50)" />
+          <use href="#static-leaf" transform="translate(480, 150) rotate(35)" />
+          <use href="#static-leaf" transform="translate(900, 300) rotate(20)" />
+          <use href="#static-leaf" transform="translate(830, 150) rotate(-40)" />
+          <use href="#static-leaf" transform="translate(70, 700) rotate(-15)" />
+          <use href="#static-leaf" transform="translate(970, 550) rotate(30)" />
+        </svg>
+      </div>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ActionGraphicModal alert={activeGraphicAlert} />
       {/* Inline ActionConfirmModal to prevent re-mount on state change */}
@@ -4153,7 +4188,7 @@ const App = () => {
       })()}
       <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
-      <header className={`sticky top-10 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`}>
+      <header className={`sticky top-10 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-12">
             <div className="flex items-center gap-2 sm:gap-4 group cursor-pointer shrink-0" onClick={() => navigate('/market')}>
@@ -4597,7 +4632,7 @@ const App = () => {
         </div>
       </footer>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-2 sm:px-8 py-2.5 sm:py-5 flex justify-around items-center z-50 rounded-t-2xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 px-2 sm:px-8 py-2.5 sm:py-5 flex justify-around items-center z-50 rounded-t-2xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
         <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} aria-label="Market" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <MarketsIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.markets')}</span>
