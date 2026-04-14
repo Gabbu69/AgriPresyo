@@ -724,5 +724,20 @@ export const MOCK_CROPS: Crop[] = [
       { id: 'v_fruit_6', name: 'Lolo Pepe\'s Harvest', rating: 4.5, reviewCount: 38, specialty: 'Bagong-Pitas na Prutas', price: 80, stock: 40, openTime: '04:30', closeTime: '14:00' },
       { id: 'v_fruit_4', name: 'Kuya Jun\'s Farm', rating: 4.6, reviewCount: 75, specialty: 'Piling-Pili na Ani', price: 90, stock: 35, openTime: '06:00', closeTime: '18:00' }
     ]
+  },
+  {
+    id: 'corn',
+    name: 'Sweet Corn (Mais)',
+    category: 'Vegetable',
+    currentPrice: 45,
+    change7d: 1.2,
+    history: generateHistory(45),
+    demand: 'High',
+    icon: '🌽',
+    weightPerUnit: 0.3,
+    vendors: [
+      { id: 'v_veg_2', name: 'Mang Jose\'s Gulayan', rating: 4.8, reviewCount: 92, specialty: 'Sariwang Gulay', price: 40, stock: 150, openTime: '05:00', closeTime: '17:00' },
+      { id: 'v_veg_4', name: 'Kabukiran Fresh', rating: 4.6, reviewCount: 56, specialty: 'Organikong Ani', price: 48, stock: 120, openTime: '06:00', closeTime: '16:00' }
+    ]
   }
 ];

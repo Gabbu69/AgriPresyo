@@ -1064,6 +1064,184 @@ select:focus-visible {
 }
 
 /* ============================================
+   AGRI LOADER — THEMED LOADING SCREEN
+   ============================================ */
+
+/* Pulsing outer ring */
+@keyframes agriRingPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+        border-color: rgba(34, 197, 94, 0.2);
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 0.7;
+        border-color: rgba(34, 197, 94, 0.5);
+    }
+}
+
+.agri-loader-ring {
+    animation: agriRingPulse 2s ease-in-out infinite;
+}
+
+.agri-loader-ring-delayed {
+    animation: agriRingPulse 2s ease-in-out infinite 0.5s;
+}
+
+/* Center logo breathing */
+@keyframes agriBreathe {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+    }
+    50% {
+        transform: scale(1.04);
+        box-shadow: 0 0 50px rgba(34, 197, 94, 0.25);
+    }
+}
+
+.agri-loader-breathe {
+    animation: agriBreathe 2.5s ease-in-out infinite;
+}
+
+/* Logo bounce */
+@keyframes agriBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.agri-loader-bounce {
+    animation: agriBounce 1.5s ease-in-out infinite;
+}
+
+/* Progress bar sweep */
+@keyframes agriProgress {
+    0% { transform: translateX(-100%); width: 40%; }
+    50% { width: 70%; }
+    100% { transform: translateX(300%); width: 40%; }
+}
+
+.agri-loader-progress {
+    animation: agriProgress 1.8s ease-in-out infinite;
+}
+
+/* Text pulse */
+@keyframes agriTextPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.agri-loader-text-pulse {
+    animation: agriTextPulse 2s ease-in-out infinite;
+}
+
+/* Floating leaf particles */
+@keyframes agriFloat1 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(0.8); opacity: 0; }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.6; }
+    100% { transform: translate(-30px, -50px) rotate(180deg) scale(0.5); opacity: 0; }
+}
+
+@keyframes agriFloat2 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(0.7); opacity: 0; }
+    20% { opacity: 0.7; }
+    80% { opacity: 0.5; }
+    100% { transform: translate(35px, -45px) rotate(-120deg) scale(0.4); opacity: 0; }
+}
+
+@keyframes agriFloat3 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(0.9); opacity: 0; }
+    20% { opacity: 0.9; }
+    80% { opacity: 0.4; }
+    100% { transform: translate(-20px, -60px) rotate(90deg) scale(0.3); opacity: 0; }
+}
+
+@keyframes agriFloat4 {
+    0% { transform: translate(0, 0) rotate(0deg) scale(0.6); opacity: 0; }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.3; }
+    100% { transform: translate(25px, -55px) rotate(-200deg) scale(0.3); opacity: 0; }
+}
+
+.agri-leaf-particle {
+    position: absolute;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.agri-leaf-1 {
+    bottom: 30%;
+    left: 20%;
+    animation: agriFloat1 3s ease-out infinite;
+}
+
+.agri-leaf-2 {
+    bottom: 25%;
+    right: 20%;
+    animation: agriFloat2 3.5s ease-out infinite 0.5s;
+}
+
+.agri-leaf-3 {
+    bottom: 35%;
+    left: 40%;
+    animation: agriFloat3 2.8s ease-out infinite 1s;
+}
+
+.agri-leaf-4 {
+    bottom: 20%;
+    right: 35%;
+    animation: agriFloat4 3.2s ease-out infinite 1.5s;
+}
+
+/* ============================================
+   MOBILE PADDING & LAYOUT FIXES
+   ============================================ */
+@media (max-width: 640px) {
+    /* Fix main content padding on small screens */
+    #main-content {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        padding-top: 12px !important;
+    }
+
+    /* Ensure cards don't touch screen edges */
+    .glass-card {
+        border-radius: 20px;
+    }
+
+    /* Fix modal padding on mobile */
+    .modal-content-enter {
+        margin: 8px;
+    }
+
+    /* Fix sort bar overflow on small screens */
+    .scroll-snap-x > * {
+        scroll-snap-align: start;
+    }
+
+    /* Improve touch target sizes */
+    button {
+        min-height: 36px;
+    }
+
+    /* Fix header spacing */
+    header {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+}
+
+/* Extra small devices (< 375px) */
+@media (max-width: 374px) {
+    #main-content {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+}
+
+/* ============================================
    PREFERS REDUCED MOTION
    Disables ALL animations for accessibility
    ============================================ */

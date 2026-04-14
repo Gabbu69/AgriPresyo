@@ -33,7 +33,7 @@ export const LandingPage = () => {
       <FuturisticVinesBackground interactive={true} />
 
       {/* Top Navigation */}
-      <nav className="relative z-20 flex items-center justify-between p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
+      <nav className="relative z-20 flex items-center justify-between px-4 py-4 sm:p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
         <div className="flex items-center gap-3">
           <Logo size={40} className="text-green-500" />
           <h1 className="text-2xl font-black tracking-tighter hidden sm:block">
@@ -60,21 +60,21 @@ export const LandingPage = () => {
       </nav>
 
       {/* Main Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-4 sm:px-6 text-center mt-[-40px]">
+      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-5 sm:px-6 text-center mt-[-20px] sm:mt-[-40px]">
 
         {/* Glow effects */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 bg-green-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <h2 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.1] mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <h2 className="text-4xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.1] mb-4 sm:mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           {t('landing.heroTitle1')} <br className="hidden sm:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">{t('landing.heroTitle2')}</span>
         </h2>
 
-        <p className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto mb-12 font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-150">
+        <p className="text-base sm:text-xl text-zinc-500 max-w-2xl mx-auto mb-8 sm:mb-12 font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-150 px-2">
           {t('landing.heroSubtitle')}
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300 px-1">
           <button
             onClick={handleGetStartedClick}
             disabled={isNavigating}
@@ -108,22 +108,22 @@ export const LandingPage = () => {
         </div>
 
         {/* Feature Highlights using Glassmorphism */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-24 max-w-5xl mx-auto animate-in fade-in duration-1000 delay-500">
-          <div className="glass-card p-6 rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-16 sm:mt-24 max-w-5xl mx-auto animate-in fade-in duration-1000 delay-500 w-full">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl sm:rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
             <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
               <TrendingUp className="text-green-500" size={24} />
             </div>
             <h3 className="text-lg font-black mb-2">{t('landing.featureRealTimeTitle')}</h3>
             <p className="text-sm text-zinc-500">{t('landing.featureRealTimeDesc')}</p>
           </div>
-          <div className="glass-card p-6 rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl sm:rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
             <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4">
               <ShieldCheck className="text-emerald-500" size={24} />
             </div>
             <h3 className="text-lg font-black mb-2">{t('landing.featureTransparentTitle')}</h3>
             <p className="text-sm text-zinc-500">{t('landing.featureTransparentDesc')}</p>
           </div>
-          <div className="glass-card p-6 rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl sm:rounded-3xl text-left border border-zinc-200 dark:border-zinc-800">
             <div className="w-12 h-12 bg-lime-500/10 rounded-2xl flex items-center justify-center mb-4">
               <Leaf className="text-lime-500" size={24} />
             </div>
@@ -135,7 +135,7 @@ export const LandingPage = () => {
       </main>
 
       {/* Simple Footer */}
-      <footer className="relative z-20 border-t border-zinc-200 dark:border-zinc-900 bg-stone-50/50 dark:bg-black/50 backdrop-blur-md p-6 text-center">
+      <footer className="relative z-20 border-t border-zinc-200 dark:border-zinc-900 bg-stone-50/50 dark:bg-black/50 backdrop-blur-md px-4 py-5 sm:p-6 text-center">
         <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">{t('footer.builtFor')}</p>
         <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-2">
           Contact us: <a href="mailto:agripresyo@gmail.com" className="hover:text-green-500 transition-colors lowercase">agripresyo@gmail.com</a>

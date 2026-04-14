@@ -61,7 +61,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
 
   return (
   <section
-    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-4 sm:p-6 lg:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12 mb-16 sm:mb-20"
+    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[40px] p-3 sm:p-6 lg:p-10 shadow-2xl relative overflow-hidden mt-6 sm:mt-12 mb-12 sm:mb-20"
     aria-label="Budget calculator"
   >
     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400/50 to-transparent" />

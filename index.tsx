@@ -90,6 +90,7 @@ import { AnimatedCounter } from './components/ui/AnimatedCounter';
 import { CropIcon, CROP_IMAGES, CROP_COLORS } from './components/ui/CropIcon';
 import { AnnouncementBanner } from './components/ui/AnnouncementBanner';
 import { LanguageToggle } from './components/ui/LanguageToggle';
+import { AgriLoader } from './components/ui/AgriLoader';
 import { ThemeProvider, ThemeToggle, useTheme } from './components/ui/Theme';
 import { ToastProvider, useToasts } from './components/ui/Toast';
 const MarketView = lazy(() => import('./views/MarketView').then((m) => ({ default: m.MarketView })));
@@ -513,7 +514,7 @@ const LoginPage = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-4 sm:p-6 relative overflow-hidden text-zinc-900 dark:text-white">
       <FuturisticVinesBackground interactive={true} />
       <div className="absolute top-4 right-4 z-50"><LanguageToggle /></div>
       <div className="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-green-400/10 blur-[120px] rounded-full"></div>
@@ -546,7 +547,7 @@ const LoginPage = ({
           <p className="text-zinc-500 font-bold mt-2 uppercase tracking-widest text-[10px]">{t('login.tagline')}</p>
         </div>
 
-        <div className="bg-stone-50/80 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20">
+        <div className="bg-stone-50/80 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl sm:rounded-[40px] p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-20 w-full">
           <RoleDropdown role={role} setRole={setRole} isAdminUnlocked={isAdminUnlocked} />
 
           {showRegister ? (
@@ -2006,11 +2007,11 @@ const App = () => {
 
   const ShopCard = ({ vendor, icon: Icon }: { vendor: any, icon: any, key?: any }) => (
     <div
-      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[36px] p-4 sm:p-6 lg:p-8 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between h-full shadow-lg"
+      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[36px] p-3 sm:p-6 lg:p-8 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between h-full shadow-lg"
       onClick={() => setSelectedVendor(vendor)}
     >
       <div>
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-4 sm:mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-3 sm:mb-8">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-[28px] bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-xl sm:text-3xl text-zinc-900 dark:text-white group-hover:bg-green-500 group-hover:text-black transition-all border border-zinc-200 dark:border-zinc-700 group-hover:border-transparent">
               {vendor.name[0]}
@@ -2065,7 +2066,7 @@ const App = () => {
   );
 
   const renderShopsView = () => (
-    <div className="space-y-16 pb-32 lg:pb-12 animate-in fade-in duration-700">
+    <div className="space-y-10 sm:space-y-16 pb-24 lg:pb-12 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white">Shops</h2>
@@ -2208,7 +2209,7 @@ const App = () => {
   );
 
   const renderAnalyticsDashboard = () => (
-    <div className="space-y-16 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-10 sm:space-y-16 animate-in fade-in duration-700 pb-24 lg:pb-20">
       <div>
         <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Price Rankings</h2>
         <p className="text-zinc-500 text-lg mt-2 font-medium">See which products are most and least expensive right now</p>
@@ -2318,7 +2319,7 @@ const App = () => {
   );
 
   const renderVendorView = () => (
-    <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
+    <div className="space-y-8 sm:space-y-12 pb-24 lg:pb-12 animate-in slide-in-from-bottom duration-700">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[40px] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group shadow-2xl flex flex-col justify-between">
           <div>
@@ -4436,7 +4437,7 @@ const App = () => {
         </div>
       </header>
 
-      <main id="main-content" className="flex-1 p-4 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full" role="main">
+      <main id="main-content" className="flex-1 px-3 py-3 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full" role="main">
         {isAuthenticated && <AnnouncementBanner announcements={announcements} dismissedIds={dismissedIds} onDismiss={handleDismissAnnouncement} />}
         <div className="page-transition-enter">
           <Routes>
@@ -4445,7 +4446,7 @@ const App = () => {
               path="/market"
               element={
                 <ErrorBoundary>
-                  <Suspense fallback={<div className="flex items-center justify-center py-24"><div className="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin" aria-label="Loading" /></div>}>
+                  <Suspense fallback={<AgriLoader message="Loading Market..." />}>
                     <MarketView
                       crops={crops}
                       filteredCrops={filteredCrops}
@@ -4596,7 +4597,7 @@ const App = () => {
         </div>
       </footer>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-3 sm:py-5 flex justify-around items-center z-50 rounded-t-3xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 px-2 sm:px-8 py-2.5 sm:py-5 flex justify-around items-center z-50 rounded-t-2xl sm:rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] safe-area-bottom" aria-label="Mobile navigation">
         <button onClick={() => navigate('/market')} aria-current={location.pathname === '/market' ? 'page' : undefined} aria-label="Market" className={`flex flex-col items-center gap-2 transition-all ${location.pathname === '/market' ? 'text-green-500 scale-110 nav-active-glow' : 'text-zinc-400 hover:text-zinc-600'}`}>
           <MarketsIcon size={26} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.markets')}</span>

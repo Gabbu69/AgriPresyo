@@ -72,7 +72,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
   const favoriteCrops = crops.filter((c) => favorites.includes(c.id));
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-32 lg:pb-12 animate-in fade-in duration-500">
+    <div className="space-y-4 sm:space-y-8 pb-28 lg:pb-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="relative group">
@@ -84,7 +84,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               placeholder={t('actions.search')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500/50 text-zinc-900 dark:text-white transition-all text-sm sm:text-lg shadow-xl hover:border-zinc-300 dark:hover:border-zinc-800"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 sm:py-4 pl-12 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500/50 text-zinc-900 dark:text-white transition-all text-sm sm:text-lg shadow-xl hover:border-zinc-300 dark:hover:border-zinc-800 placeholder:text-zinc-400"
               aria-label="Search crops"
             />
             {search && (
@@ -189,7 +189,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
         {isInitialLoading ? (
           [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
         ) : filteredCrops.length === 0 ? (
@@ -204,11 +204,11 @@ export const MarketView: React.FC<MarketViewProps> = ({
           filteredCrops.map((crop) => (
             <div
               key={crop.id}
-              className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] overflow-hidden hover:border-green-400/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all cursor-pointer relative flex flex-col h-full"
+              className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[32px] overflow-hidden hover:border-green-400/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all cursor-pointer relative flex flex-col h-full"
               onClick={() => setSelectedCrop(crop)}
             >
-              <div className="p-5 sm:p-6 lg:p-8 flex flex-col flex-1">
-                <div className="flex justify-between items-start mb-6">
+              <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-1">
+                <div className="flex justify-between items-start mb-4 sm:mb-6">
                   <div className="flex items-center gap-4">
                     <div className="group-hover:scale-110 transition-transform duration-500">
                       <CropIcon crop={crop} size="lg" />
@@ -246,13 +246,13 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white font-mono tracking-tighter">
+                  <span className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white font-mono tracking-tighter">
                     {formatPrice(crop.currentPrice)}
                   </span>
                   <span className="text-zinc-400 dark:text-zinc-600 font-bold text-xs">/ kg</span>
                 </div>
 
-                <div className="flex items-center gap-2 mb-8">
+                <div className="flex items-center gap-2 mb-5 sm:mb-8">
                   <div className={`flex items-center gap-1 font-mono font-black text-xs px-2 py-0.5 rounded-full ${
                     crop.change7d > 0 ? 'bg-green-500/10 text-green-500' : crop.change7d < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-500/10 text-zinc-500'
                   }`}>
