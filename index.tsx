@@ -1778,18 +1778,28 @@ const App = () => {
     setSystemAlerts(prev => prev.filter(a => a.id !== alert.id));
   };
 
+  // Login transition preloader state
+  const [isLoginTransition, setIsLoginTransition] = useState(false);
+
   const handleLogin = (userRole: UserRole, email?: string) => {
+    // Show the spinning logo preloader during login transition
+    setIsLoginTransition(true);
     setRole(userRole);
-    setIsAuthenticated(true);
     if (email) setCurrentUserEmail(email);
-    // Profile picture will auto-load via the profilePicKey useEffect
-    if (userRole === UserRole.VENDOR) {
-      navigate('/');
-    } else if (userRole === UserRole.ADMIN) {
-      navigate('/admin');
-    } else {
-      navigate('/market');
-    }
+
+    // Brief delay to show the preloader, then navigate (made much faster)
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      if (userRole === UserRole.VENDOR) {
+        navigate('/');
+      } else if (userRole === UserRole.ADMIN) {
+        navigate('/admin');
+      } else {
+        navigate('/market');
+      }
+      // Fade out the preloader after navigation
+      setTimeout(() => setIsLoginTransition(false), 250);
+    }, 400);
   };
 
   const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
@@ -4089,6 +4099,13 @@ const App = () => {
       setIsLoggingOut(false);
     }, 500);
   };
+
+  // Full-screen login transition preloader
+  if (isLoginTransition) return (
+    <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-stone-50 dark:bg-black login-preloader-enter">
+      <AgriLoader message="Preparing your dashboard" />
+    </div>
+  );
 
   if (!isAuthenticated) return (
     <Routes>
