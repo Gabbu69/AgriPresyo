@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo" width="160" />
+  <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo™" width="160" />
 
-  # AgriPresyo
+  # AgriPresyo™
 
   **Agricultural commodity intelligence for the Philippine market**
 
@@ -21,7 +21,7 @@
 
 ## About
 
-**AgriPresyo** (from Agriculture + Presyo, the Filipino word for "price") is a market intelligence platform built for the Philippine agricultural supply chain. It gives farmers, vendors, and consumers a shared window into commodity pricing, so everyone involved in getting food from the farm to the table can make better-informed decisions.
+**AgriPresyo™** (from Agriculture + Presyo, the Filipino word for "price") is a market intelligence platform built for the Philippine agricultural supply chain. It gives farmers, vendors, and consumers a shared window into commodity pricing, so everyone involved in getting food from the farm to the table can make better-informed decisions.
 
 The platform simulates a real-time trading terminal with live price tickers, vendor discovery, budget planning tools, and role-based dashboards. 
 

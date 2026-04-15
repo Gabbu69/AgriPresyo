@@ -4628,7 +4628,7 @@ const App = () => {
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed max-w-sm">Your real-time agricultural price monitoring platform. Connecting Philippine farmers, vendors and consumers with transparent market data.</p>
               <div className="flex items-center gap-6 mt-6">
-                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest shrink-0">© {new Date().getFullYear()} AgriPresyo</span>
+                <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest shrink-0">© {new Date().getFullYear()} AgriPresyo™</span>
                 <a
                   href="https://www.facebook.com/share/18M4UkCV77/"
                   target="_blank"
