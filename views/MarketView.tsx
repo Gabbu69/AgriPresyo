@@ -40,13 +40,65 @@ interface MarketViewProps {
   setSortBy: (v: SortBy) => void;
   toggleFavorite: (id: string) => void;
   setSelectedCrop: (c: Crop | null) => void;
-  addToBudget: (id: string) => void;
-  budgetItems: { cropId: string }[];
+  addToBudget: (id: string, qty?: number) => void;
+  budgetItems: { cropId: string, quantity?: number }[];
   budgetLimit: number;
   analyticsData: AnalyticsData;
   getSeasonalStatus: (crop: Crop) => { inSeason: boolean; label: string };
-  isInitialLoading: boolean;
 }
+
+const DebouncedAddButton = ({ 
+  cropId, 
+  budgetItems, 
+  onAdd, 
+  t 
+}: { 
+  cropId: string; 
+  budgetItems: { cropId: string, quantity?: number }[]; 
+  onAdd: (id: string, qty?: number) => void;
+  t: any;
+}) => {
+  const [localClicks, setLocalClicks] = React.useState(0);
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  
+  const existingItem = budgetItems.find(i => i.cropId === cropId);
+  const globalQty = existingItem?.quantity || 0;
+  const displayQty = globalQty + localClicks;
+
+  React.useEffect(() => {
+    if (localClicks > 0) {
+      const timer = setTimeout(() => {
+        onAdd(cropId, localClicks);
+        setLocalClicks(0);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [localClicks, cropId, onAdd]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLocalClicks(prev => prev + 1);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 150);
+  };
+
+  return (
+    <div className={`relative ${isAnimating ? 'scale-90 opacity-80' : ''} transition-transform duration-150`}>
+      <button
+        onClick={handleClick}
+        className="w-12 h-12 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-110 active:scale-95 shadow-xl shadow-zinc-900/10 dark:shadow-white/5 transition-transform duration-150"
+        title={t('actions.addToBudget')}
+      >
+        <Calculator size={20} />
+      </button>
+      {displayQty > 0 && (
+        <span className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 z-20 bg-green-500 text-black text-xs font-black w-6 h-6 flex items-center justify-center rounded-full shadow-xl border-2 border-white dark:border-zinc-900 animate-in zoom-in duration-200 pointer-events-none">
+          {displayQty}
+        </span>
+      )}
+    </div>
+  );
+};
 
 export const MarketView: React.FC<MarketViewProps> = ({
   crops,
@@ -267,16 +319,12 @@ export const MarketView: React.FC<MarketViewProps> = ({
                     <div className="flex-1">
                       <Sparkline data={crop.history} color={crop.change7d > 0 ? '#22c55e' : crop.change7d < 0 ? '#ef4444' : '#a1a1aa'} />
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToBudget(crop.id);
-                      }}
-                      className="w-12 h-12 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl shadow-zinc-900/10 dark:shadow-white/5"
-                      title={t('actions.addToBudget')}
-                    >
-                      <Calculator size={20} />
-                    </button>
+                    <DebouncedAddButton
+                      cropId={crop.id}
+                      budgetItems={budgetItems}
+                      onAdd={addToBudget}
+                      t={t}
+                    />
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calculator, Package, Plus, Minus, Trash2, Download } from 'lucide-react';
+import { Calculator, Package, Plus, Minus, Trash2, Download, ChevronUp, ChevronDown } from 'lucide-react';
 import type { Crop } from '../types';
 import type { BudgetListItem } from '../types';
 import { formatPrice } from '../lib/formatters';
@@ -16,6 +16,178 @@ interface BudgetCalculatorViewProps {
   removeFromBudget: (cropId: string) => void;
   budgetStats: { totalCost: number; totalWeight: number };
 }
+
+const AnimatedBudgetRow = ({ item, crop, tc, toggleBudgetUnit, updateBudgetQty, removeFromBudget, formatPrice }: any) => {
+  const [isRemoving, setIsRemoving] = React.useState(false);
+  const weight = item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
+  const displayQty = item.unit === 'kg' ? `${item.quantity}kg` : `${item.quantity} units`;
+  const stepVal = item.unit === 'kg' ? 0.1 : 1;
+  const minVal = item.unit === 'kg' ? 0.1 : 1;
+
+  const handleRemove = () => {
+    setIsRemoving(true);
+    setTimeout(() => removeFromBudget(item.cropId), 300);
+  };
+
+  return (
+    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isRemoving ? 'opacity-0 scale-95 max-h-0' : 'opacity-100 scale-100 max-h-64'}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-50 dark:bg-zinc-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 transition-colors group gap-4">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="group-hover:scale-110 transition-transform">
+            <CropIcon crop={crop} size="md" />
+          </div>
+          <div>
+            <h4 className="font-black text-base sm:text-xl text-zinc-900 dark:text-white">
+              {tc(crop)}
+            </h4>
+            <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
+              <span>{displayQty}</span>
+              <span>≈ {weight.toFixed(2)}kg</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 sm:gap-8 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => toggleBudgetUnit(item.cropId)}
+            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shadow-sm ${
+              item.unit === 'kg'
+                ? 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                : 'bg-green-500/10 text-green-500 border-green-500/30'
+            }`}
+          >
+            {item.unit === 'qty' ? 'QTY' : 'KG'}
+          </button>
+          <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
+            <button
+               onClick={() =>
+                 updateBudgetQty(
+                   item.cropId,
+                   item.unit === 'kg'
+                     ? Number((item.quantity - stepVal).toFixed(2))
+                     : item.quantity - 1
+                 )
+               }
+              className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"
+              aria-label="Decrease quantity"
+            >
+              <Minus size={16} />
+            </button>
+            <input
+              type="number"
+              step={item.unit === 'kg' ? '0.1' : '1'}
+              min="0"
+              className="w-16 sm:w-20 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white bg-transparent outline-none focus:bg-zinc-100 dark:focus:bg-zinc-800 p-1 focus:ring-2 focus:ring-green-400/50 rounded-lg transition-all appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              style={{ MozAppearance: 'textfield' }}
+              value={item.quantity === 0 ? '' : item.quantity}
+              onChange={(e) => {
+                if (e.target.value === '') {
+                  updateBudgetQty(item.cropId, 0);
+                } else {
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val) && val >= 0) {
+                    updateBudgetQty(item.cropId, item.unit === 'kg' ? Number(val.toFixed(2)) : Math.floor(val));
+                  }
+                }
+              }}
+              onBlur={(e) => {
+                 if (!item.quantity || item.quantity <= 0) {
+                     updateBudgetQty(item.cropId, item.unit === 'kg' ? 0.1 : 1);
+                 }
+              }}
+            />
+            <button
+              onClick={() =>
+                updateBudgetQty(
+                  item.cropId,
+                  item.unit === 'kg'
+                    ? Number((item.quantity + stepVal).toFixed(2))
+                    : item.quantity + 1
+                )
+              }
+              className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-green-400/10 hover:text-green-500 transition-all rounded-lg"
+              aria-label="Increase quantity"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <div className="text-right flex-1 sm:w-32 sm:flex-none">
+            <p className="font-mono text-lg sm:text-2xl font-bold text-zinc-900 dark:text-white">
+              {formatPrice(weight * crop.currentPrice)}
+            </p>
+          </div>
+          <button
+            onClick={handleRemove}
+            className="text-zinc-400 dark:text-zinc-500 hover:text-red-500 transition-all p-2 sm:p-3"
+            aria-label="Remove from budget"
+          >
+            <Trash2 size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LiquidityControl = ({ budgetLimit, setBudgetLimit }: { budgetLimit: number; setBudgetLimit: (v: number) => void }) => {
+  const [localVal, setLocalVal] = React.useState<string>(budgetLimit.toString());
+
+  React.useEffect(() => {
+    if (Number(localVal) !== budgetLimit) {
+      setLocalVal(budgetLimit.toString());
+    }
+  }, [budgetLimit]);
+
+  const updateVal = (newValStr: string) => {
+    setLocalVal(newValStr);
+    const parsed = Number(newValStr);
+    if (!isNaN(parsed)) {
+      React.startTransition(() => {
+        setBudgetLimit(parsed);
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1 group/input relative">
+      <input
+        type="number"
+        className="bg-transparent w-32 text-right font-mono text-2xl font-bold focus:outline-none text-green-600 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none transition-all pr-2"
+        value={localVal}
+        style={{ MozAppearance: 'textfield' }}
+        onChange={(e) => updateVal(e.target.value)}
+        onBlur={(e) => {
+           if (e.target.value === '') { updateVal('0'); }
+        }}
+        aria-label="Budget limit in pesos"
+        min={0}
+      />
+      <div className="flex flex-col gap-0.5 opacity-50 group-hover/input:opacity-100 transition-opacity">
+        <button 
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            updateVal(Math.max(0, Number(localVal) + 100).toString());
+          }} 
+          className="text-zinc-400 hover:text-green-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded p-1 select-none active:scale-90 transition-transform"
+          aria-label="Increase budget"
+        >
+          <ChevronUp size={18} strokeWidth={3} />
+        </button>
+        <button 
+          type="button"
+          onClick={(e) => {
+             e.preventDefault();
+             updateVal(Math.max(0, Number(localVal) - 100).toString());
+          }} 
+          className="text-zinc-400 hover:text-red-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded p-1 select-none active:scale-90 transition-transform"
+          aria-label="Decrease budget"
+        >
+          <ChevronDown size={18} strokeWidth={3} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
   crops,
@@ -87,14 +259,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
         )}
         <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 shadow-inner w-full sm:w-auto">
           <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('sections.liquidity')}</span>
-          <input
-            type="number"
-            className="bg-transparent w-32 text-right font-mono text-2xl font-bold focus:outline-none text-green-600"
-            value={budgetLimit}
-            onChange={(e) => setBudgetLimit(Number(e.target.value))}
-            aria-label="Budget limit in pesos"
-            min={0}
-          />
+          <LiquidityControl budgetLimit={budgetLimit} setBudgetLimit={setBudgetLimit} />
           <span className="text-sm font-black text-zinc-400 font-mono">₱</span>
         </div>
       </div>
@@ -115,109 +280,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
         <div className="grid gap-4">
           {budgetItems.map((item) => {
             const crop = crops.find((c) => c.id === item.cropId)!;
-            const weight =
-              item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
-            const displayQty = item.unit === 'kg' ? `${item.quantity}kg` : `${item.quantity} units`;
-            const stepVal = item.unit === 'kg' ? 0.1 : 1;
-            const minVal = item.unit === 'kg' ? 0.1 : 1;
-            return (
-              <div
-                key={item.cropId}
-                className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-50 dark:bg-zinc-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 transition-colors group gap-4"
-              >
-                <div className="flex items-center gap-4 sm:gap-6">
-                  <div className="group-hover:scale-110 transition-transform">
-                    <CropIcon crop={crop} size="md" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-base sm:text-xl text-zinc-900 dark:text-white">
-                      {tc(crop)}
-                    </h4>
-                    <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
-                      <span>{displayQty}</span>
-                      <span>≈ {weight.toFixed(2)}kg</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-8 flex-wrap sm:flex-nowrap">
-                  <button
-                    onClick={() => toggleBudgetUnit(item.cropId)}
-                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shadow-sm ${
-                      item.unit === 'kg'
-                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/30'
-                        : 'bg-green-500/10 text-green-500 border-green-500/30'
-                    }`}
-                  >
-                    {item.unit === 'qty' ? 'QTY' : 'KG'}
-                  </button>
-                  <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
-                    <button
-                      onClick={() =>
-                        updateBudgetQty(
-                          item.cropId,
-                          item.unit === 'kg'
-                            ? Number((item.quantity - stepVal).toFixed(2))
-                            : item.quantity - 1
-                        )
-                      }
-                      className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-red-500/10 hover:text-red-500 transition-all rounded-lg"
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <input
-                      type="number"
-                      step={item.unit === 'kg' ? '0.1' : '1'}
-                      min="0"
-                      className="w-16 sm:w-20 text-center text-sm sm:text-lg font-black font-mono text-zinc-900 dark:text-white bg-transparent outline-none focus:bg-zinc-100 dark:focus:bg-zinc-800 p-1 focus:ring-2 focus:ring-green-400/50 rounded-lg transition-all appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      style={{ MozAppearance: 'textfield' }}
-                      value={item.quantity || ''}
-                      onChange={(e) => {
-                        if (e.target.value === '') {
-                          updateBudgetQty(item.cropId, 0);
-                        } else {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val) && val >= 0) {
-                            updateBudgetQty(item.cropId, item.unit === 'kg' ? Number(val.toFixed(2)) : Math.floor(val));
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                         if (!item.quantity || item.quantity <= 0) {
-                             updateBudgetQty(item.cropId, item.unit === 'kg' ? 0.1 : 1);
-                         }
-                      }}
-                    />
-                    <button
-                      onClick={() =>
-                        updateBudgetQty(
-                          item.cropId,
-                          item.unit === 'kg'
-                            ? Number((item.quantity + stepVal).toFixed(2))
-                            : item.quantity + 1
-                        )
-                      }
-                      className="p-1.5 sm:p-2 text-zinc-400 dark:text-zinc-500 hover:bg-green-400/10 hover:text-green-500 transition-all rounded-lg"
-                      aria-label="Increase quantity"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  <div className="text-right flex-1 sm:w-32 sm:flex-none">
-                    <p className="font-mono text-lg sm:text-2xl font-bold text-zinc-900 dark:text-white">
-                      {formatPrice(weight * crop.currentPrice)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => removeFromBudget(item.cropId)}
-                    className="text-zinc-400 dark:text-zinc-500 hover:text-red-500 transition-all p-2 sm:p-3"
-                    aria-label="Remove from budget"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              </div>
-            );
+            return <AnimatedBudgetRow key={item.cropId} item={item} crop={crop} tc={tc} toggleBudgetUnit={toggleBudgetUnit} updateBudgetQty={updateBudgetQty} removeFromBudget={removeFromBudget} formatPrice={formatPrice} />;
           })}
         </div>
 

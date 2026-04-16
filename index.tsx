@@ -1704,13 +1704,13 @@ const App = () => {
     return { totalCost, totalWeight };
   }, [budgetItems, crops]);
 
-  const addToBudget = (cropId: string) => {
+  const addToBudget = (cropId: string, addedQty: number = 1) => {
     setBudgetItems(prev => {
       const existing = prev.find(i => i.cropId === cropId);
       if (existing) {
-        return prev.map(i => i.cropId === cropId ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.cropId === cropId ? { ...i, quantity: i.quantity + addedQty } : i);
       }
-      return [...prev, { cropId, quantity: 1, unit: 'qty' as const }];
+      return [...prev, { cropId, quantity: addedQty, unit: 'qty' as const }];
     });
   };
 
