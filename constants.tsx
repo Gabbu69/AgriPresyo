@@ -654,15 +654,15 @@ export const MOCK_CROPS: Crop[] = [
     id: 'fuji-apple',
     name: 'Fuji Apple',
     category: 'Fruit',
-    currentPrice: 10,
+    currentPrice: 180,
     change7d: 5.4,
-    history: generateHistory(10),
+    history: generateHistory(180),
     demand: 'High',
     icon: '🍎',
     weightPerUnit: 0.2,
     vendors: [
-      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 9, stock: 500, openTime: '05:00', closeTime: '17:30' },
-      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 11, stock: 450, openTime: '06:00', closeTime: '16:00' }
+      { id: 'v_fruit_2', name: 'Mang Tomas Fruits', rating: 4.5, reviewCount: 85, specialty: 'Taga-Bukid na Prutas', price: 170, stock: 500, openTime: '05:00', closeTime: '17:30' },
+      { id: 'v_fruit_5', name: 'Tita Merly\'s Orchard', rating: 4.7, reviewCount: 64, specialty: 'Prutas na De-Kalidad', price: 190, stock: 450, openTime: '06:00', closeTime: '16:00' }
     ]
   },
   {

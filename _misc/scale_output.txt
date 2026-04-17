@@ -1,2 +1,0 @@
-C:\Users\gabri\.gemini\antigravity\scratch\AgriPresyo\public\crops\watermelon.png: size=400x442, max bounding dim=442, ratio=1.00
-C:\Users\gabri\.gemini\antigravity\scratch\AgriPresyo\public\crops\pickle_ultimate.png: size=512x512, max bounding dim=512, ratio=1.00
