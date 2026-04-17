@@ -131,7 +131,15 @@
     "inSeason": "TAMANG PANAHON",
     "offSeason": "HINDI PANAHON",
     "todaysHighlight": "Tampok Ngayon",
-    "last7Days": "Nakaraang 7 Araw"
+    "last7Days": "Nakaraang 7 Araw",
+    "priceRankings": "Mga Ranggo ng Presyo",
+    "priceRankingsDesc": "Tingnan kung anong mga produkto ang pinakamahal at pinakamura ngayon",
+    "premiumFruits": "Mga Espesyal na Prutas",
+    "valueFruits": "Mga Sulit na Prutas",
+    "premiumVeggies": "Mga Espesyal na Gulay",
+    "valueVeggies": "Mga Sulit na Gulay",
+    "mostExpensive": "Pinakamahal",
+    "mostAffordable": "Pinakamura"
   },
   "login": {
     "tagline": "Alamin ang Presyo Bago Ka Bumili.",

@@ -136,7 +136,7 @@ interface Props {
   interactive?: boolean;
 }
 
-const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => {
+const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false, animated = true }) => {
   const [mounted, setMounted] = useState(false);
   const [fallenLeaves, setFallenLeaves] = useState<Set<string>>(new Set());
   const [fallingLeaves, setFallingLeaves] = useState<FallingLeaf[]>([]);
@@ -275,7 +275,10 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
                   d={d}
                   pathLength="100"
                   style={{
-                    animation: `growVine 12s cubic-bezier(0.25, 1, 0.5, 1) ${vine.pathDelay}s forwards`
+                    animation: animated ? `growVine 12s cubic-bezier(0.25, 1, 0.5, 1) ${vine.pathDelay}s forwards` : 'none',
+                    strokeDashoffset: animated ? undefined : 0,
+                    opacity: animated ? undefined : 1,
+                    filter: animated ? undefined : 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))'
                   }}
                 />
 
@@ -297,9 +300,9 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false }) => 
                           onClick={(e) => handleLeafClick(leafId, e)}
                           style={{
                             transformOrigin: '0px 0px',
-                            transform: 'scale(0)',
-                            opacity: 0,
-                            animation: `bloomLeaf 2s cubic-bezier(0.34, 1.56, 0.64, 1) ${leaf.delay}s forwards`,
+                            transform: animated ? 'scale(0)' : 'scale(1)',
+                            opacity: animated ? 0 : 0.9,
+                            animation: animated ? `bloomLeaf 2s cubic-bezier(0.34, 1.56, 0.64, 1) ${leaf.delay}s forwards` : 'none',
                             filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))'
                           }}
                         />

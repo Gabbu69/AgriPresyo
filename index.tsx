@@ -1614,7 +1614,7 @@ const App = () => {
     const topGainer = [...crops].sort((a, b) => b.change7d - a.change7d)[0];
 
     const fruits = crops.filter(c => c.category === 'Fruit');
-    const veggies = crops.filter(c => c.category !== 'Fruit');
+    const veggies = crops.filter(c => c.category === 'Vegetable');
 
     const expFruits = [...fruits].sort((a, b) => b.currentPrice - a.currentPrice).slice(0, 3);
     const cheapFruits = [...fruits].sort((a, b) => a.currentPrice - b.currentPrice).slice(0, 3);
@@ -2204,11 +2204,11 @@ const App = () => {
               className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-green-400/30 transition-colors group cursor-pointer"
               onClick={() => onCropClick?.(crop)}
             >
-              <div className="flex items-center gap-4">
-                <span className="text-xl font-black text-zinc-700 font-mono w-6">#{idx + 1}</span>
-                <div className="group-hover:scale-110 transition-transform"><CropIcon crop={crop} size="md" /></div>
-                <div>
-                  <h4 className="font-black text-zinc-900 dark:text-white text-sm">{crop.name}</h4>
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <span className="text-xl font-black text-zinc-700 font-mono w-6 shrink-0">#{idx + 1}</span>
+                <div className="group-hover:scale-110 transition-transform shrink-0"><CropIcon crop={crop} size="md" /></div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-black text-zinc-900 dark:text-white text-sm break-words leading-snug">{t(`crops.${crop.id}`, crop.name)}</h4>
                 </div>
               </div>
             </div>
@@ -2221,35 +2221,35 @@ const App = () => {
   const renderAnalyticsDashboard = () => (
     <div className="space-y-10 sm:space-y-16 animate-in fade-in duration-700 pb-24 lg:pb-20">
       <div>
-        <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">Price Rankings</h2>
-        <p className="text-zinc-500 text-lg mt-2 font-medium">See which products are most and least expensive right now</p>
+        <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">{t('sections.priceRankings', 'Price Rankings')}</h2>
+        <p className="text-zinc-500 text-lg mt-2 font-medium">{t('sections.priceRankingsDesc', 'See which products are most and least expensive right now')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <RankingCard
-          title="Premium Fruits"
-          subtitle="Most Expensive"
+          title={t('sections.premiumFruits', 'Premium Fruits')}
+          subtitle={t('sections.mostExpensive', 'Most Expensive')}
           items={analyticsData.expFruits}
           color="yellow"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
-          title="Value Fruits"
-          subtitle="Most Affordable"
+          title={t('sections.valueFruits', 'Value Fruits')}
+          subtitle={t('sections.mostAffordable', 'Most Affordable')}
           items={analyticsData.cheapFruits}
           color="green"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
-          title="Premium Veggies"
-          subtitle="Most Expensive"
+          title={t('sections.premiumVeggies', 'Premium Veggies')}
+          subtitle={t('sections.mostExpensive', 'Most Expensive')}
           items={analyticsData.expVeggies}
           color="yellow"
           onCropClick={(crop) => setSelectedCrop(crop)}
         />
         <RankingCard
-          title="Value Veggies"
-          subtitle="Most Affordable"
+          title={t('sections.valueVeggies', 'Value Veggies')}
+          subtitle={t('sections.mostAffordable', 'Most Affordable')}
           items={analyticsData.cheapVeggies}
           color="green"
           onCropClick={(crop) => setSelectedCrop(crop)}
@@ -4128,41 +4128,7 @@ const App = () => {
   return (
     <div className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? 'page-exit-animation' : 'modal-overlay-enter'}`}>
       {/* Static vine background — no animations, GPU-friendly */}
-      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none" style={{ contain: 'strict' }}>
-        <svg className="absolute w-full h-full opacity-15 dark:opacity-25" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="rgba(34, 197, 94, 0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M 200 1100 Q 300 800 250 600 Q 200 400 400 300 Q 600 200 350 -50" />
-            <path d="M 800 1100 Q 650 850 750 550 Q 850 250 600 250 Q 350 250 700 -50" />
-            <path d="M 250 600 Q 150 500 100 200" />
-            <path d="M 400 300 Q 550 250 500 100" />
-            <path d="M 750 550 Q 850 450 950 350 Q 1050 250 900 100" />
-            <path d="M 600 250 Q 450 150 550 -50" />
-            <path d="M 0 900 Q 100 850 50 650 Q 0 450 -50 400" />
-            <path d="M 1000 800 Q 900 750 950 500 Q 1000 250 1050 300" />
-          </g>
-          <defs>
-            <g id="static-leaf">
-              <path d="M 0 0 C 10 -15, 25 -15, 30 0 C 25 15, 10 15, 0 0" fill="rgba(34, 197, 94, 0.3)" stroke="rgba(34, 197, 94, 0.7)" strokeWidth="1.2" />
-            </g>
-          </defs>
-          <use href="#static-leaf" transform="translate(230, 700) rotate(20)" />
-          <use href="#static-leaf" transform="translate(220, 520) rotate(-40)" />
-          <use href="#static-leaf" transform="translate(350, 350) rotate(30)" />
-          <use href="#static-leaf" transform="translate(430, 250) rotate(-20)" />
-          <use href="#static-leaf" transform="translate(380, 50) rotate(45)" />
-          <use href="#static-leaf" transform="translate(720, 700) rotate(-30)" />
-          <use href="#static-leaf" transform="translate(780, 450) rotate(25)" />
-          <use href="#static-leaf" transform="translate(650, 300) rotate(-35)" />
-          <use href="#static-leaf" transform="translate(580, 200) rotate(40)" />
-          <use href="#static-leaf" transform="translate(700, 50) rotate(-25)" />
-          <use href="#static-leaf" transform="translate(120, 400) rotate(-50)" />
-          <use href="#static-leaf" transform="translate(480, 150) rotate(35)" />
-          <use href="#static-leaf" transform="translate(900, 300) rotate(20)" />
-          <use href="#static-leaf" transform="translate(830, 150) rotate(-40)" />
-          <use href="#static-leaf" transform="translate(70, 700) rotate(-15)" />
-          <use href="#static-leaf" transform="translate(970, 550) rotate(30)" />
-        </svg>
-      </div>
+      <FuturisticVinesBackground animated={false} interactive={false} />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ActionGraphicModal alert={activeGraphicAlert} />
       {/* Inline ActionConfirmModal to prevent re-mount on state change */}

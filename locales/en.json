@@ -131,7 +131,15 @@
     "inSeason": "IN SEASON",
     "offSeason": "OFF SEASON",
     "todaysHighlight": "Today's Highlight",
-    "last7Days": "Last 7 Days"
+    "last7Days": "Last 7 Days",
+    "priceRankings": "Price Rankings",
+    "priceRankingsDesc": "See which products are most and least expensive right now",
+    "premiumFruits": "Premium Fruits",
+    "valueFruits": "Value Fruits",
+    "premiumVeggies": "Premium Veggies",
+    "valueVeggies": "Value Veggies",
+    "mostExpensive": "Most Expensive",
+    "mostAffordable": "Most Affordable"
   },
   "login": {
     "tagline": "Know the Price Before You Buy.",

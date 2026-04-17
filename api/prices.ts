@@ -27,16 +27,21 @@ export default function handler(req, res) {
 
   const generateHistory = (base, cropSeed) => {
     const start = new Date();
-    start.setDate(today.getDate() - 30); // 30 days history
+    start.setDate(today.getDate() - 365); // 1 year history
     const data = [];
     
-    for (let i = 0; i <= 30; i++) {
+    for (let i = 0; i <= 52; i++) {
         const d = new Date(start);
-        d.setDate(start.getDate() + i);
-        const loopSeed = cropSeed + d.getDate() + d.getMonth() * i;
-        const fluctuation = getRnd(loopSeed, -0.05, 0.05); // +/- 5% max fluctuation
+        d.setDate(start.getDate() + (i * 7)); // weekly points
         
-        let historicPrice = base + (base * fluctuation);
+        // Add seasonal wave and noise
+        const monthsFromStart = i / 4.3; // approx months
+        const seasonal = Math.sin((monthsFromStart / 12) * Math.PI * 2) * 0.06; // annual seasonality ±6%
+        
+        const loopSeed = cropSeed + d.getDate() + d.getMonth() * i;
+        const noise = getRnd(loopSeed, -0.05, 0.05); // +/- 5% max fluctuation
+        
+        let historicPrice = base + (base * (seasonal + noise));
         data.push({ 
             date: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`, 
             price: Number(historicPrice.toFixed(2)) 
