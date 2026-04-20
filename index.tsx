@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense, lazy } from 'react';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { createRoot } from 'react-dom/client';
@@ -100,6 +100,14 @@ import { AboutPage } from './views/AboutPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { EmptyState } from './components/ui/EmptyState';
 import { SkeletonCard } from './components/ui/SkeletonCard';
+import { useSupabaseAuth } from './hooks/useSupabaseAuth';
+import { useProfiles, profileToUserRecord } from './hooks/useProfiles';
+import { useAuditLog } from './hooks/useAuditLog';
+import { useAnnouncements as useAnnouncementsHook } from './hooks/useAnnouncements';
+import { useComplaints as useComplaintsHook } from './hooks/useComplaints';
+import { useFavorites as useFavoritesHook } from './hooks/useFavorites';
+import { useVendorRatings as useVendorRatingsHook } from './hooks/useVendorRatings';
+import { useUserSettings } from './hooks/useUserSettings';
 
 // Simulated Intelligence Engine
 const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
@@ -167,14 +175,6 @@ const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
   };
 };
 
-// Simple hash function for password storage (not cryptographically secure, but far better than plain text)
-const simpleHash = async (str: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
 
 const Logo = ({ size = 100, className = "", onUnlock }: { size?: number, className?: string, onUnlock?: () => void }) => {
   const [clicks, setClicks] = useState(0);
@@ -923,19 +923,32 @@ const LoginPage = ({
 
 const App = () => {
   const { t } = useTranslation();
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('AP_isAuthenticated') === 'true');
-  const [role, setRole] = useState<UserRole>(() => (localStorage.getItem('AP_role') as UserRole) || UserRole.CONSUMER);
-  const [currentUserEmail, setCurrentUserEmail] = useState(() => localStorage.getItem('AP_currentUserEmail') || '');
+
+  // ── Supabase hooks ──
+  const sbAuth = useSupabaseAuth();
+  const sbProfiles = useProfiles();
+  const sbAuditLog = useAuditLog();
+  const sbAnnouncements = useAnnouncementsHook();
+  const sbComplaints = useComplaintsHook();
+  const sbFavorites = useFavoritesHook();
+  const sbVendorRatings = useVendorRatingsHook();
+  const sbSettings = useUserSettings();
+
+  // ── Auth state (driven by Supabase session) ──
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
 
   // Sign-out exit animation state
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Secret Admin Access State
+  // Secret Admin Access State (kept client-side)
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => localStorage.getItem('AP_admin_unlocked') === 'true');
 
   useEffect(() => {
     localStorage.setItem('AP_admin_unlocked', String(isAdminUnlocked));
   }, [isAdminUnlocked]);
+
 
   const SEEDED_ADMIN: UserRecord = {
     name: 'Gab The Admin',
@@ -957,53 +970,74 @@ const App = () => {
     verificationStatus: 'none',
   };
 
-  const [users, setUsers] = useState<UserRecord[]>(() => {
-    try {
-      const raw = localStorage.getItem('AP_users');
-      const parsed: UserRecord[] = raw ? JSON.parse(raw) : [];
-      // Migrate old users without status; also migrate pending vendors to active and set verificationStatus
-      const migrated = parsed.map((u: any) => {
-        let s = u.status || 'active';
-        // Vendors no longer need admin approval to log in — migrate pending to active
-        if (u.role === 'VENDOR' && s === 'pending') s = 'active';
-        // Set verificationStatus based on legacy fields
-        let vs = u.verificationStatus;
-        if (!vs) {
-          if (u.isVerified) vs = 'verified';
-          else if (u.verificationRequestedAt && !u.isVerified) vs = 'pending_review';
-          else vs = 'none';
-        }
-        return { ...u, status: s, verificationStatus: vs };
-      });
-      // Ensure seeded admin always exists
-      if (!migrated.find(u => u.email === SEEDED_ADMIN.email)) {
-        const withSeeds = [...migrated, SEEDED_ADMIN, MOCK_VENDOR_GAB];
-        localStorage.setItem('AP_users', JSON.stringify(withSeeds));
-        return withSeeds;
-      }
-      return migrated;
-    } catch (e) {
-      localStorage.setItem('AP_users', JSON.stringify([SEEDED_ADMIN, MOCK_VENDOR_GAB]));
-      return [SEEDED_ADMIN, MOCK_VENDOR_GAB];
+  const [users, setUsers] = useState<UserRecord[]>([]);
+
+  // ── Load all data from Supabase on auth change ──
+  const loadSupabaseData = useCallback(async (userId: string) => {
+    // Profiles → users
+    const profiles = await sbProfiles.fetchAllProfiles();
+    const userRecords = profiles.map(p => profileToUserRecord(p));
+    setUsers(userRecords);
+
+    // Audit log
+    const logRows = await sbAuditLog.fetchAuditLog();
+    setAuditLog(logRows.map(r => ({ id: r.id, action: r.action, target: r.target, details: r.details, timestamp: r.created_at })));
+
+    // Announcements
+    const anns = await sbAnnouncements.fetchAnnouncements();
+    setAnnouncements(anns);
+
+    // Complaints
+    const comps = await sbComplaints.fetchComplaints();
+    setComplaints(comps);
+
+    // Dismissed / Seen announcements
+    const dismissed = await sbAnnouncements.fetchDismissedIds(userId);
+    setDismissedIds(dismissed);
+    const seen = await sbAnnouncements.fetchSeenIds(userId);
+    setSeenAnnouncementIds(seen);
+
+    // Favorites
+    const favs = await sbFavorites.fetchFavorites(userId);
+    setFavorites(favs);
+
+    // Vendor ratings
+    const userRatings = await sbVendorRatings.fetchUserRatings(userId);
+    setUserVendorRatings(userRatings);
+    const aggRatings = await sbVendorRatings.fetchAggregateRatings();
+    setVendorRatingData(aggRatings);
+
+    // User settings
+    const settings = await sbSettings.fetchSettings(userId);
+    setNotificationsEnabled(settings.notifications_enabled);
+    setPriceAlertThreshold(settings.price_alert_threshold);
+  }, [sbProfiles, sbAuditLog, sbAnnouncements, sbComplaints, sbFavorites, sbVendorRatings, sbSettings]);
+
+  // ── Restore session on mount ──
+  useEffect(() => {
+    if (sbAuth.loading) return;
+    if (sbAuth.user && sbAuth.session) {
+      const meta = sbAuth.user.user_metadata;
+      const userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
+      setIsAuthenticated(true);
+      setRole(userRole);
+      setCurrentUserEmail(sbAuth.user.email || '');
+      loadSupabaseData(sbAuth.user.id);
+    } else {
+      setIsAuthenticated(false);
+      setRole(UserRole.CONSUMER);
+      setCurrentUserEmail('');
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sbAuth.loading, sbAuth.user?.id]);
 
   // Admin feature states
-  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_auditLog') || '[]'); } catch { return []; }
-  });
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_announcements') || '[]'); } catch { return []; }
-  });
-  const [complaints, setComplaints] = useState<Complaint[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_complaints') || '[]'); } catch { return []; }
-  });
-  const [dismissedIds, setDismissedIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_dismissed_announcements') || '[]'); } catch { return []; }
-  });
-  const [seenAnnouncementIds, setSeenAnnouncementIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_seen_announcements') || '[]'); } catch { return []; }
-  });
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+  const [seenAnnouncementIds, setSeenAnnouncementIds] = useState<string[]>([]);
+
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   // Router navigation - activeTab removed, use useNavigate instead
@@ -1014,8 +1048,8 @@ const App = () => {
   const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
   const [budgetLimit, setBudgetLimit] = useState<number>(1000);
   const [budgetItems, setBudgetItems] = useState<BudgetListItem[]>([]);
-  const [userVendorRatings, setUserVendorRatings] = useState<Record<string, number>>(() => { try { const s = localStorage.getItem('AP_userVendorRatings'); return s ? JSON.parse(s) : {}; } catch { return {}; } });
-  const [vendorRatingData, setVendorRatingData] = useState<Record<string, { rating: number; reviewCount: number }>>(() => { try { const s = localStorage.getItem('AP_vendorRatingData'); return s ? JSON.parse(s) : {}; } catch { return {}; } });
+  const [userVendorRatings, setUserVendorRatings] = useState<Record<string, number>>({});
+  const [vendorRatingData, setVendorRatingData] = useState<Record<string, { rating: number; reviewCount: number }>>({});
 
   // Vendor-specific state
   const [vendorShopType, setVendorShopType] = useState<'Fruit' | 'Vegetable'>('Fruit');
@@ -1038,7 +1072,7 @@ const App = () => {
 
   // Consumer features
   const [favorites, setFavorites] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem('AP_favorites') || '[]'); } catch { return []; }
+    return [];
   });
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'demand' | 'trending'>('default');
 
@@ -1060,73 +1094,64 @@ const App = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
   const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem('AP_notifications') !== 'false');
-  const [priceAlertThreshold, setPriceAlertThreshold] = useState(() => Number(localStorage.getItem('AP_priceAlertThreshold') || '10'));
-  // Profile picture scoped per user (role + email) to prevent cross-account sharing
-  const profilePicKey = currentUserEmail && role ? `AP_profilePicture_${role}_${currentUserEmail}` : null;
-  const [profilePicture, setProfilePicture] = useState<string | null>(() => {
-    if (!profilePicKey) return null;
-    return localStorage.getItem(profilePicKey);
-  });
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [priceAlertThreshold, setPriceAlertThreshold] = useState(10);
+  // Profile picture (loaded from Supabase profiles.avatar_url)
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
-  // Load correct profile picture when user/role changes (e.g. on login)
+  // Load profile picture from Supabase when user changes
   useEffect(() => {
-    if (profilePicKey) {
-      setProfilePicture(localStorage.getItem(profilePicKey));
-    } else {
-      setProfilePicture(null);
-    }
-  }, [profilePicKey]);
-
-  // Persist profile picture to the scoped key
-  useEffect(() => {
-    if (!profilePicKey) return;
-    if (profilePicture) localStorage.setItem(profilePicKey, profilePicture);
-    else localStorage.removeItem(profilePicKey);
-  }, [profilePicture, profilePicKey]);
+    if (!sbAuth.user) { setProfilePicture(null); return; }
+    sbProfiles.fetchProfile(sbAuth.user.id).then(p => {
+      setProfilePicture(p?.avatar_url ?? null);
+    });
+  }, [sbAuth.user?.id, sbProfiles]);
 
   // Vendor verification modal state
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationModalDocs, setVerificationModalDocs] = useState<string[]>([]);
 
-  useEffect(() => { localStorage.setItem('AP_notifications', String(notificationsEnabled)); }, [notificationsEnabled]);
-  useEffect(() => { localStorage.setItem('AP_priceAlertThreshold', String(priceAlertThreshold)); }, [priceAlertThreshold]);
+  // Sync settings to Supabase
+  useEffect(() => {
+    if (!sbAuth.user) return;
+    sbSettings.updateSettings(sbAuth.user.id, { notifications_enabled: notificationsEnabled, price_alert_threshold: priceAlertThreshold });
+  }, [notificationsEnabled, priceAlertThreshold, sbAuth.user, sbSettings]);
 
   const currentUser = useMemo(() => users.find(u => u.email === currentUserEmail), [users, currentUserEmail]);
 
   const handleSaveProfileName = async () => {
     if (!profileNameDraft.trim()) return;
     setIsSavingProfileName(true);
-    await new Promise(resolve => setTimeout(resolve, 600)); // Simulate save delay for UI feedback
-    setUsers(prev => {
-      const next = prev.map(u => u.email === currentUserEmail ? { ...u, name: profileNameDraft.trim() } : u);
-      localStorage.setItem('AP_users', JSON.stringify(next));
-      return next;
-    });
+    await sbProfiles.updateProfileByEmail(currentUserEmail, { name: profileNameDraft.trim() });
+    setUsers(prev => prev.map(u => u.email === currentUserEmail ? { ...u, name: profileNameDraft.trim() } : u));
     setEditingProfileName(false);
     setIsSavingProfileName(false);
   };
 
-  const handleSaveShopProfile = () => {
-    setUsers(prev => {
-      const next = prev.map(u => u.email === currentUserEmail ? {
-        ...u,
-        shopName: shopProfileDraft.shopName.trim() || undefined,
-        specialty: shopProfileDraft.specialty.trim() || undefined,
-        shopDescription: shopProfileDraft.shopDescription.trim() || undefined,
-        shopLocation: shopProfileDraft.shopLocation.trim() || undefined,
-        openTime: shopProfileDraft.openTime.trim() || undefined,
-        closeTime: shopProfileDraft.closeTime.trim() || undefined,
-      } : u);
-      localStorage.setItem('AP_users', JSON.stringify(next));
-      return next;
+  const handleSaveShopProfile = async () => {
+    await sbProfiles.updateProfileByEmail(currentUserEmail, {
+      shop_name: shopProfileDraft.shopName.trim() || null,
+      specialty: shopProfileDraft.specialty.trim() || null,
+      shop_description: shopProfileDraft.shopDescription.trim() || null,
+      shop_location: shopProfileDraft.shopLocation.trim() || null,
+      open_time: shopProfileDraft.openTime.trim() || null,
+      close_time: shopProfileDraft.closeTime.trim() || null,
     });
+    setUsers(prev => prev.map(u => u.email === currentUserEmail ? {
+      ...u,
+      shopName: shopProfileDraft.shopName.trim() || undefined,
+      specialty: shopProfileDraft.specialty.trim() || undefined,
+      shopDescription: shopProfileDraft.shopDescription.trim() || undefined,
+      shopLocation: shopProfileDraft.shopLocation.trim() || undefined,
+      openTime: shopProfileDraft.openTime.trim() || undefined,
+      closeTime: shopProfileDraft.closeTime.trim() || undefined,
+    } : u));
     setEditingShopProfile(false);
   };
 
   const handleChangePassword = async () => {
     setPasswordMsg(null);
-    if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm) {
+    if (!passwordForm.newPass || !passwordForm.confirm) {
       setPasswordMsg({ text: 'Please fill in all fields', type: 'error' }); return;
     }
     if (passwordForm.newPass.length < 8) {
@@ -1135,17 +1160,10 @@ const App = () => {
     if (passwordForm.newPass !== passwordForm.confirm) {
       setPasswordMsg({ text: 'New passwords do not match', type: 'error' }); return;
     }
-    const encoder = new TextEncoder();
-    const currentHashed = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(passwordForm.current)))).map(b => b.toString(16).padStart(2, '0')).join('');
-    if (currentUser?.password !== currentHashed) {
-      setPasswordMsg({ text: 'Current password is incorrect', type: 'error' }); return;
+    const result = await sbAuth.updatePassword(passwordForm.newPass);
+    if (!result.ok) {
+      setPasswordMsg({ text: result.error || 'Failed to change password', type: 'error' }); return;
     }
-    const newHashed = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(passwordForm.newPass)))).map(b => b.toString(16).padStart(2, '0')).join('');
-    setUsers(prev => {
-      const next = prev.map(u => u.email === currentUserEmail ? { ...u, password: newHashed } : u);
-      localStorage.setItem('AP_users', JSON.stringify(next));
-      return next;
-    });
     setPasswordForm({ current: '', newPass: '', confirm: '' });
     setPasswordMsg({ text: 'Password changed successfully!', type: 'success' });
     setTimeout(() => { setPasswordMsg(null); setShowChangePassword(false); }, 2000);
@@ -1208,23 +1226,11 @@ const App = () => {
     img.src = cropImageSrc;
   };
 
-  // Save favorites to localStorage
-  useEffect(() => { localStorage.setItem('AP_favorites', JSON.stringify(favorites)); }, [favorites]);
-  useEffect(() => { localStorage.setItem('AP_isAuthenticated', String(isAuthenticated)); }, [isAuthenticated]);
-  useEffect(() => { localStorage.setItem('AP_role', role); }, [role]);
-  useEffect(() => { localStorage.setItem('AP_currentUserEmail', currentUserEmail); }, [currentUserEmail]);
-  // Sync location to localStorage for debugging
-  useEffect(() => { localStorage.setItem('AP_currentPath', location.pathname); }, [location.pathname]);
-  useEffect(() => { localStorage.setItem('AP_auditLog', JSON.stringify(auditLog)); }, [auditLog]);
-  useEffect(() => { localStorage.setItem('AP_announcements', JSON.stringify(announcements)); }, [announcements]);
-  useEffect(() => { localStorage.setItem('AP_complaints', JSON.stringify(complaints)); }, [complaints]);
-  useEffect(() => { localStorage.setItem('AP_dismissed_announcements', JSON.stringify(dismissedIds)); }, [dismissedIds]);
-  useEffect(() => { localStorage.setItem('AP_seen_announcements', JSON.stringify(seenAnnouncementIds)); }, [seenAnnouncementIds]);
-  useEffect(() => { localStorage.setItem('AP_userVendorRatings', JSON.stringify(userVendorRatings)); }, [userVendorRatings]);
-  useEffect(() => { localStorage.setItem('AP_vendorRatingData', JSON.stringify(vendorRatingData)); }, [vendorRatingData]);
+  // (Persistence is handled by Supabase — no localStorage sync needed)
 
   const handleDismissAnnouncement = (id: string) => {
     setDismissedIds(prev => prev.includes(id) ? prev : [...prev, id]);
+    if (sbAuth.user) sbAnnouncements.dismissAnnouncement(sbAuth.user.id, id);
   };
 
   const addAuditEntry = (action: string, target: string, details: string) => {
@@ -1236,10 +1242,16 @@ const App = () => {
       timestamp: new Date().toLocaleString()
     };
     setAuditLog(prev => [entry, ...prev].slice(0, 100));
+    sbAuditLog.addAuditEntry(action, target, details);
   };
 
   const toggleFavorite = (cropId: string) => {
-    setFavorites(prev => prev.includes(cropId) ? prev.filter(f => f !== cropId) : [...prev, cropId]);
+    const removing = favorites.includes(cropId);
+    setFavorites(prev => removing ? prev.filter(f => f !== cropId) : [...prev, cropId]);
+    if (sbAuth.user) {
+      if (removing) sbFavorites.removeFavorite(sbAuth.user.id, cropId);
+      else sbFavorites.addFavorite(sbAuth.user.id, cropId);
+    }
   };
 
   // Seasonal helper
@@ -1580,7 +1592,8 @@ const App = () => {
     });
     if (vendorsToVerify.length > 0) {
       const nextUsers = users.map(u => vendorsToVerify.includes(u.email) ? { ...u, isVerified: true } : u);
-      localStorage.setItem('AP_users', JSON.stringify(nextUsers));
+      // Sync to Supabase
+      vendorsToVerify.forEach(email => sbProfiles.updateProfileByEmail(email, { is_verified: true }));
       // Trigger state update on next tick to avoid render-during-render
       setTimeout(() => setUsers(nextUsers), 0);
     }
@@ -1750,7 +1763,7 @@ const App = () => {
       subtitle: 'This will permanently delete all user accounts. This action cannot be undone.',
       onConfirm: () => {
         setUsers([]);
-        localStorage.removeItem('AP_users');
+        // Note: Supabase profiles are tied to auth users — this only clears local state
         triggerGraphicAlert('REJECT', 'Registry Cleared', 'All user data has been removed');
       }
     });
@@ -1787,6 +1800,11 @@ const App = () => {
     setRole(userRole);
     if (email) setCurrentUserEmail(email);
 
+    // Load all persisted data from Supabase
+    if (sbAuth.user) {
+      loadSupabaseData(sbAuth.user.id);
+    }
+
     // Brief delay to show the preloader, then navigate (made much faster)
     setTimeout(() => {
       setIsAuthenticated(true);
@@ -1803,41 +1821,34 @@ const App = () => {
   };
 
   const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
-    // Static admin login — hardcoded credentials
-    if (userRole === UserRole.ADMIN) {
-      if (email === 'gabtheadmin@yahoo.com' && password === '12345678') return 'ok';
-      return 'not_found';
-    }
-    const hashed = await simpleHash(password);
-    const found = users.find(u => u.email === email && u.password === hashed && u.role === userRole);
-    if (!found) return 'not_found';
-    if (found.status === 'banned') return 'banned';
+    // Use Supabase Auth for login
+    const result = await sbAuth.login(email, password);
+    if (!result.ok) return 'not_found';
+    // Check if user profile exists and is not banned
+    const profiles = await sbProfiles.fetchAllProfiles();
+    const profile = profiles.find(p => p.email === email);
+    if (profile && profile.status === 'banned') return 'banned';
     return 'ok';
   };
 
   const registerUser = async (name: string, email: string, password: string, userRole: UserRole, docs?: string[]): Promise<string> => {
     if (userRole === UserRole.ADMIN) return 'forbidden';
-    if (users.find(u => u.email === email)) return 'exists';
-    const hashed = await simpleHash(password);
-    // Vendors are active immediately — no admin approval needed to log in
-    const newUser: UserRecord = {
-      name: name || undefined,
-      email,
-      password: hashed,
-      role: userRole,
-      status: 'active',
-      isVerified: false,
-      verificationStatus: 'none',
-    };
-    // If vendor uploaded docs at registration, submit them for review
-    if (userRole === UserRole.VENDOR && docs && docs.length > 0) {
-      newUser.verificationDocs = docs;
-      newUser.verificationStatus = 'pending_review';
-      newUser.verificationSubmittedAt = new Date().toISOString();
+    const result = await sbAuth.register(name, email, password, userRole as string);
+    if (!result.ok) {
+      if (result.code === 'exists') return 'exists';
+      return 'error';
     }
-    const next: UserRecord[] = [...users, newUser];
-    setUsers(next);
-    try { localStorage.setItem('AP_users', JSON.stringify(next)); } catch (e) { }
+    // If vendor uploaded docs, update profile with docs
+    if (userRole === UserRole.VENDOR && docs && docs.length > 0 && result.user) {
+      await sbProfiles.updateProfile(result.user.id, {
+        verification_docs: docs,
+        verification_status: 'pending_review',
+        verification_submitted_at: new Date().toISOString(),
+      } as any);
+    }
+    // Reload profiles
+    const profiles = await sbProfiles.fetchAllProfiles();
+    setUsers(profiles.map(p => profileToUserRecord(p)));
     return 'ok';
   };
 
@@ -1957,6 +1968,8 @@ const App = () => {
 
     // Always store in vendorRatingData (works for ALL vendors)
     setVendorRatingData(prev => ({ ...prev, [vId]: { rating: finalAvg, reviewCount: newCount } }));
+    // Sync to Supabase
+    if (sbAuth.user) sbVendorRatings.rateVendor(sbAuth.user.id, vId, finalUserRating);
 
     // Also update in crops if vendor exists there
     if (cropVendor) {
@@ -2009,6 +2022,7 @@ const App = () => {
       timestamp: new Date().toISOString()
     };
     setComplaints(prev => [newComplaint, ...prev]);
+    sbComplaints.submitComplaint({ id: newComplaint.id, from: newComplaint.from, fromRole: newComplaint.fromRole as string, subject: newComplaint.subject, message: newComplaint.message });
     setComplaintForm({ subject: '', message: '' });
     setComplaintConfirmStep(false);
     setIsComplaintModalOpen(false);
@@ -2727,7 +2741,7 @@ const App = () => {
                         verificationSubmittedAt: new Date().toISOString(),
                         verificationRejectedReason: undefined,
                       } : u);
-                      localStorage.setItem('AP_users', JSON.stringify(next));
+                      sbProfiles.updateProfileByEmail(currentUserEmail, { verification_docs: verificationModalDocs, verification_status: 'pending_review', verification_submitted_at: new Date().toISOString(), verification_rejected_reason: null });
                       return next;
                     });
                     setShowVerificationModal(false);
@@ -3652,8 +3666,8 @@ const App = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified badge to ${user.name || user.email}? This confirms their business documents are valid.`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationStatus: 'verified' as const, verificationRejectedReason: undefined } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official badge granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Accept</button>
-                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Decline Documents?', subtitle: `Reject verification documents from ${user.name || user.email}? Please provide a reason.`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: false, verificationStatus: 'rejected' as const, verificationRejectedReason: reason || 'Documents did not meet requirements' } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected documents for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Documents Declined', `Verification denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Decline</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'VERIFY', title: 'Verify Vendor?', subtitle: `Grant official verified badge to ${user.name || user.email}? This confirms their business documents are valid.`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: true, verificationStatus: 'verified' as const, verificationRejectedReason: undefined } : u); return next; }); sbProfiles.updateProfileByEmail(user.email, { is_verified: true, verification_status: 'verified', verification_rejected_reason: null }); addAuditEntry('VERIFY_VENDOR', user.email, `Verified vendor: ${user.name || user.email}`); triggerGraphicAlert('VERIFY', 'Vendor Verified', `Official badge granted to ${user.name || user.email}`); } })} className="bg-green-500 text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-1"><CheckCircle size={14} /> Accept</button>
+                      <button onClick={() => setActiveConfirmAlert({ type: 'REJECT', title: 'Decline Documents?', subtitle: `Reject verification documents from ${user.name || user.email}? Please provide a reason.`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, isVerified: false, verificationStatus: 'rejected' as const, verificationRejectedReason: reason || 'Documents did not meet requirements' } : u); return next; }); sbProfiles.updateProfileByEmail(user.email, { is_verified: false, verification_status: 'rejected', verification_rejected_reason: reason || 'Documents did not meet requirements' }); addAuditEntry('REJECT_VERIFICATION', user.email, `Rejected documents for: ${user.name || user.email}. Reason: ${reason}`); triggerGraphicAlert('REJECT', 'Documents Declined', `Verification denied for ${user.name || user.email}`); } })} className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all flex items-center gap-1"><XCircle size={14} /> Decline</button>
                     </div>
                   </div>
                   {/* Uploaded Documents */}
@@ -3840,7 +3854,9 @@ const App = () => {
                 return;
               }
 
-              setAnnouncements(prev => [{ id: `ann-${Date.now()}`, title, message, timestamp: new Date().toLocaleString(), priority, active: true, duration }, ...prev]);
+              const annId = `ann-${Date.now()}`;
+              setAnnouncements(prev => [{ id: annId, title, message, timestamp: new Date().toLocaleString(), priority, active: true, duration }, ...prev]);
+              sbAnnouncements.createAnnouncement({ id: annId, title, message, priority, active: true, duration });
               addAuditEntry('CREATE_ANNOUNCEMENT', title, `Posted ${priority} announcement${duration ? ` (${duration}s)` : ''}`);
               titleEl.value = '';
               messageEl.value = '';
@@ -3905,11 +3921,11 @@ const App = () => {
                       )}
                     </div>
                     <div className="flex flex-col gap-1 shrink-0">
-                      {comp.status === 'open' && <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'reviewing' } : x)); addAuditEntry('REVIEW_COMPLAINT', comp.subject, `Reviewing from ${comp.from}`); }} className="text-[10px] font-black bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Review</button>}
+                      {comp.status === 'open' && <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'reviewing' } : x)); sbComplaints.updateComplaint(comp.id, { status: 'reviewing' }); addAuditEntry('REVIEW_COMPLAINT', comp.subject, `Reviewing from ${comp.from}`); }} className="text-[10px] font-black bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Review</button>}
                       {(comp.status === 'open' || comp.status === 'reviewing') && (
                         <>
                           <button onClick={() => { setAdminNoteComplaintId(comp.id); setAdminNoteText(''); }} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Resolve</button>
-                          <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'dismissed' } : x)); addAuditEntry('DISMISS_COMPLAINT', comp.subject, `Dismissed from ${comp.from}`); }} className="text-[10px] font-black bg-zinc-400/20 text-zinc-500 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Dismiss</button>
+                          <button onClick={() => { setComplaints(prev => prev.map(x => x.id === comp.id ? { ...x, status: 'dismissed' } : x)); sbComplaints.updateComplaint(comp.id, { status: 'dismissed' }); addAuditEntry('DISMISS_COMPLAINT', comp.subject, `Dismissed from ${comp.from}`); }} className="text-[10px] font-black bg-zinc-400/20 text-zinc-500 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase">Dismiss</button>
                         </>
                       )}
                     </div>
@@ -4033,9 +4049,9 @@ const App = () => {
                       {user.role !== UserRole.ADMIN && (
                         <div className="flex gap-2 justify-end">
                           {user.status === 'banned' ? (
-                            <button onClick={() => setActiveConfirmAlert({ type: 'UNBAN', title: 'Unban User?', subtitle: `Restore access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); triggerGraphicAlert('UNBAN', 'User Restored', `Access regranted for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
+                            <button onClick={() => setActiveConfirmAlert({ type: 'UNBAN', title: 'Unban User?', subtitle: `Restore access for ${user.name || user.email}?`, onConfirm: () => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'active' as const } : u); return next; }); sbProfiles.updateProfileByEmail(user.email, { status: 'active' }); addAuditEntry('UNBAN_USER', user.email, `Unbanned ${user.name || user.email}`); triggerGraphicAlert('UNBAN', 'User Restored', `Access regranted for ${user.name || user.email}`); } })} className="text-[10px] font-black bg-green-400/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><CheckCircle size={12} /> Unban</button>
                           ) : user.status === 'active' ? (
-                            <button onClick={() => setActiveConfirmAlert({ type: 'BAN', title: 'Ban User?', subtitle: `Revoke platform access for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); localStorage.setItem('AP_users', JSON.stringify(next)); return next; }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role}). Reason: ${reason}`); triggerGraphicAlert('BAN', 'User Suspended', `${user.name || user.email} restricted.`); } })} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
+                            <button onClick={() => setActiveConfirmAlert({ type: 'BAN', title: 'Ban User?', subtitle: `Revoke platform access for ${user.name || user.email}?`, onConfirm: (reason) => { setUsers(prev => { const next = prev.map(u => u.email === user.email ? { ...u, status: 'banned' as const } : u); return next; }); sbProfiles.updateProfileByEmail(user.email, { status: 'banned' }); addAuditEntry('BAN_USER', user.email, `Banned ${user.name || user.email} (${user.role}). Reason: ${reason}`); triggerGraphicAlert('BAN', 'User Suspended', `${user.name || user.email} restricted.`); } })} className="text-[10px] font-black bg-red-400/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:scale-105 transition-all uppercase flex items-center gap-1"><Ban size={12} /> Ban</button>
                           ) : null}
                         </div>
                       )}
@@ -4084,9 +4100,10 @@ const App = () => {
 
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsLoggingOut(true);
     setShowProfileModal(false);
+    await sbAuth.logout();
     setTimeout(() => {
       setIsAuthenticated(false);
       setBudgetItems([]);
