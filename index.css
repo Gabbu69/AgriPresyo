@@ -652,6 +652,44 @@ button.btn-signout:active:not(:disabled) {
 }
 
 /* ============================================
+   PROFILE DROPDOWN ANIMATIONS
+   ============================================ */
+@keyframes profileDropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes profileBackdropIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.profile-dropdown-enter {
+    animation: profileDropdownIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform-origin: top right;
+}
+
+.profile-backdrop-enter {
+    animation: profileBackdropIn 0.2s ease forwards;
+}
+
+.profile-dropdown-enter .profile-section {
+    opacity: 0;
+    animation: staggerFadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.profile-dropdown-enter .profile-section:nth-child(1) { animation-delay: 0.05s; }
+.profile-dropdown-enter .profile-section:nth-child(2) { animation-delay: 0.1s; }
+.profile-dropdown-enter .profile-section:nth-child(3) { animation-delay: 0.15s; }
+.profile-dropdown-enter .profile-section:nth-child(4) { animation-delay: 0.2s; }
+
+/* ============================================
    GRAPHIC ALERT ANIMATIONS
    ============================================ */
 

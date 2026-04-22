@@ -4308,10 +4308,10 @@ const App = () => {
               </button>
               {showProfileModal && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowProfileModal(false)} />
-                  <div className="absolute right-0 top-14 sm:top-16 w-[calc(100vw-2rem)] sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in zoom-in-95 fade-in duration-200 max-h-[85vh] overflow-y-auto scrollbar-hide">
+                  <div className="fixed inset-0 z-40 profile-backdrop-enter" onClick={() => setShowProfileModal(false)} />
+                  <div className="absolute right-0 top-14 sm:top-16 w-[calc(100vw-2rem)] sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden profile-dropdown-enter max-h-[85vh] overflow-y-auto scrollbar-hide">
                     {/* Profile Header */}
-                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/5 p-6 border-b border-zinc-200 dark:border-zinc-800">
+                    <div className="profile-section bg-gradient-to-br from-green-500/10 to-emerald-500/5 p-6 border-b border-zinc-200 dark:border-zinc-800">
                       <div className="flex items-center gap-4">
                         <div className="relative group flex flex-col items-center">
                           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-green-500/30 border-2 border-green-400/30 overflow-hidden">
@@ -4382,7 +4382,7 @@ const App = () => {
                     </div>
 
                     {/* Profile Info */}
-                    <div className="p-4 space-y-3">
+                    <div className="profile-section p-4 space-y-3">
                       <div className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><ShieldCheck size={16} className="text-blue-500" /></div>
@@ -4423,7 +4423,7 @@ const App = () => {
                     </div>
 
                     {/* Settings Section */}
-                    <div className="px-4 pb-3 space-y-3">
+                    <div className="profile-section px-4 pb-3 space-y-3">
                       <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest px-1">Settings</p>
 
                       {/* Change Password */}
@@ -4490,7 +4490,7 @@ const App = () => {
                     </div>
 
                     {/* Logout */}
-                    <div className="p-4 pt-1">
+                    <div className="profile-section p-4 pt-1">
                       <button
                         onClick={() => handleLogout()}
                         className="btn-signout w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest transition-all"
