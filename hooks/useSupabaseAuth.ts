@@ -90,11 +90,12 @@ export function useSupabaseAuth() {
     return { ok: true };
   }, []);
   const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook', role?: string) => {
+    const redirectUrl = new URL(`${window.location.origin}/login`);
+    if (role) redirectUrl.searchParams.set('role', role);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/login`,
-        queryParams: role ? { role } : undefined,
+        redirectTo: redirectUrl.toString(),
       },
     });
     if (error) return { ok: false, error: error.message };
