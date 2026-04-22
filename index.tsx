@@ -2986,7 +2986,8 @@ const App = () => {
         const mergedData = chartCrops[0]?.history.map((point, idx) => {
           const entry: any = { date: point.date };
           chartCrops.forEach((crop, cIdx) => {
-            entry[crop.name] = crop.history[idx]?.price || 0;
+            const displayName = crop.vendors[0]?.listingName || crop.name;
+            entry[displayName] = crop.history[idx]?.price || 0;
           });
           return entry;
         }) || [];
@@ -3006,12 +3007,15 @@ const App = () => {
                 </div>
               </div>
               <div className="flex gap-3 flex-wrap">
-                {chartCrops.map((crop, idx) => (
-                  <div key={crop.id} className="flex items-center gap-2 bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: chartColors[idx] }} />
-                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase">{crop.name}</span>
-                  </div>
-                ))}
+                {chartCrops.map((crop, idx) => {
+                  const displayName = crop.vendors[0]?.listingName || crop.name;
+                  return (
+                    <div key={crop.id} className="flex items-center gap-2 bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: chartColors[idx] }} />
+                      <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase">{displayName}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div className="h-72">
@@ -3024,9 +3028,12 @@ const App = () => {
                     contentStyle={{ backgroundColor: '#09090b', borderRadius: '12px', border: '1px solid #27272a', fontFamily: 'Inter', padding: '10px' }}
                     formatter={(value: any, name: string) => [`₱${value}`, name]}
                   />
-                  {chartCrops.map((crop, idx) => (
-                    <Line key={crop.id} type="monotone" dataKey={crop.name} stroke={chartColors[idx]} strokeWidth={2} dot={false} />
-                  ))}
+                  {chartCrops.map((crop, idx) => {
+                    const displayName = crop.vendors[0]?.listingName || crop.name;
+                    return (
+                      <Line key={crop.id} type="monotone" dataKey={displayName} stroke={chartColors[idx]} strokeWidth={2} dot={false} />
+                    );
+                  })}
                 </LineChart>
               </ResponsiveContainer>
             </div>
