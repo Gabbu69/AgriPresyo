@@ -1804,6 +1804,14 @@ const App = () => {
     setRole(userRole);
     if (email) setCurrentUserEmail(email);
 
+    // For admin (bypasses Supabase Auth), inject the seeded admin into users
+    if (userRole === UserRole.ADMIN) {
+      setUsers(prev => {
+        const exists = prev.some(u => u.email === SEEDED_ADMIN.email);
+        return exists ? prev : [SEEDED_ADMIN, ...prev];
+      });
+    }
+
     // Load all persisted data from Supabase
     if (sbAuth.user) {
       loadSupabaseData(sbAuth.user.id);
