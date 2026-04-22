@@ -134,9 +134,71 @@ type FallingLeaf = {
 
 interface Props {
   interactive?: boolean;
+  animated?: boolean;
 }
 
 const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false, animated = true }) => {
+  // Static mode: render a pure SVG with no JS overhead
+  if (!animated) {
+    return (
+      <div className="fixed inset-0 z-[-1] overflow-hidden bg-transparent pointer-events-none" style={{ contain: 'strict' }}>
+        <svg
+          className="absolute w-full h-full opacity-30 dark:opacity-50"
+          viewBox="0 0 1000 1000"
+          preserveAspectRatio="xMidYMid slice"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <g id="neon-leaf-static">
+              <path
+                d="M 0 0 C 10 -15, 25 -15, 30 0 C 25 15, 10 15, 0 0"
+                fill="rgba(34, 197, 94, 0.4)"
+                stroke="rgba(34, 197, 94, 0.9)"
+                strokeWidth="1.2"
+              />
+              <line x1="2" y1="0" x2="28" y2="0" stroke="rgba(34, 197, 94, 0.5)" strokeWidth="0.6" />
+              <line x1="10" y1="0" x2="16" y2="-7" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+              <line x1="15" y1="0" x2="21" y2="-8" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+              <line x1="20" y1="0" x2="25" y2="-6" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+              <line x1="10" y1="0" x2="16" y2="7" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+              <line x1="15" y1="0" x2="21" y2="8" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+              <line x1="20" y1="0" x2="25" y2="6" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="0.4" />
+            </g>
+          </defs>
+          <g stroke="rgba(34, 197, 94, 0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {vinesData.map((vine, vIdx) => {
+              const d = vine.segments.map((s, i) => {
+                if (i === 0) return `M ${s[0][0]} ${s[0][1]} Q ${s[1][0]} ${s[1][1]} ${s[2][0]} ${s[2][1]}`;
+                return `Q ${s[1][0]} ${s[1][1]} ${s[2][0]} ${s[2][1]}`;
+              }).join(' ');
+              return (
+                <g key={`vine-${vIdx}`}>
+                  <path
+                    d={d}
+                    style={{ opacity: 1, filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))' }}
+                  />
+                  {vine.leaves.map((leaf, lIdx) => {
+                    const seg = vine.segments[leaf.seg];
+                    const { x, y } = getQuadPoint(leaf.t, seg[0], seg[1], seg[2]);
+                    const curveAngle = getQuadAngle(leaf.t, seg[0], seg[1], seg[2]);
+                    const leafAngle = curveAngle + (leaf.dir * 55);
+                    return (
+                      <g key={`${vIdx}-${lIdx}`} transform={`translate(${x}, ${y}) rotate(${leafAngle})`}>
+                        <use
+                          href="#neon-leaf-static"
+                          style={{ transformOrigin: '0px 0px', opacity: 0.9, filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))' }}
+                        />
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+      </div>
+    );
+  }
   const [mounted, setMounted] = useState(false);
   const [fallenLeaves, setFallenLeaves] = useState<Set<string>>(new Set());
   const [fallingLeaves, setFallingLeaves] = useState<FallingLeaf[]>([]);
