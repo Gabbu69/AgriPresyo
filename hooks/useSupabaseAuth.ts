@@ -82,5 +82,24 @@ export function useSupabaseAuth() {
     return { ok: true };
   }, []);
 
-  return { session, user, loading, login, register, logout, updatePassword };
+  const resetPassword = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }, []);
+  const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook', role?: string) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/login`,
+        queryParams: role ? { role } : undefined,
+      },
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }, []);
+
+  return { session, user, loading, login, register, logout, updatePassword, resetPassword, signInWithOAuth };
 }

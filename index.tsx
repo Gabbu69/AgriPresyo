@@ -339,14 +339,18 @@ const LoginPage = ({
   onRegister,
   isAdminUnlocked,
   onUnlock,
-  addToast
+  addToast,
+  onResetPassword,
+  onOAuthLogin
 }: {
   onLogin: (role: UserRole, email?: string) => void,
   attemptLogin: (email: string, password: string, role: UserRole) => Promise<string>,
   onRegister: (name: string, email: string, password: string, role: UserRole, docs?: string[]) => Promise<string>,
   isAdminUnlocked: boolean,
   onUnlock: () => void,
-  addToast: (msg: string, type: 'success' | 'destructive') => void
+  addToast: (msg: string, type: 'success' | 'destructive') => void,
+  onResetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>,
+  onOAuthLogin: (provider: 'google' | 'facebook', role?: string) => Promise<{ ok: boolean; error?: string }>
 }) => {
   const { t } = useTranslation();
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
@@ -404,16 +408,12 @@ const LoginPage = ({
     if (isLoading) return;
     setError('');
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const fakeEmail = `${provider}_user_${Date.now().toString(36)}@${provider}.com`;
-    const fakeName = provider === 'google' ? 'Google User' : 'Facebook User';
-    const result = await onRegister(fakeName, fakeEmail, 'oauth_' + Date.now(), role);
-    if (result === 'ok') {
-      onLogin(role, fakeEmail);
-    } else {
-      setError('We couldn\'t log you in. Please check your email and password.');
+    const result = await onOAuthLogin(provider, role);
+    if (!result.ok) {
+      setError(result.error || 'Sign-in failed. Please try again.');
+      setIsLoading(false);
     }
-    setIsLoading(false);
+    // If ok, the browser will redirect to the OAuth provider — no need to setIsLoading(false)
   };
 
   const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -464,14 +464,18 @@ const LoginPage = ({
     }, 1200);
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!forgotEmail.trim()) return;
     setIsLoading(true);
-    setTimeout(() => {
+    const result = await onResetPassword(forgotEmail.trim().toLowerCase());
+    setIsLoading(false);
+    if (result.ok) {
       setIsForgotSubmitted(true);
-      setIsLoading(false);
-      addToast('We sent a link to your email so you can change your password', 'success');
-    }, 1500);
+      addToast('We sent a password reset link to your email!', 'success');
+    } else {
+      addToast(result.error || 'Failed to send reset email. Please try again.', 'destructive');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -952,7 +956,7 @@ const App = () => {
 
   const SEEDED_ADMIN: UserRecord = {
     name: 'Gab The Admin',
-    email: 'gabtheadmin@yahoo.com',
+    email: 'agripresyo@gmail.com',
     password: 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', // SHA-256 of '12345678'
     role: UserRole.ADMIN,
     status: 'active',
@@ -1821,7 +1825,14 @@ const App = () => {
   };
 
   const attemptLogin = async (email: string, password: string, userRole: UserRole): Promise<string> => {
-    // Use Supabase Auth for login
+    // Admin login: bypass Supabase Auth and use built-in credentials
+    if (userRole === UserRole.ADMIN) {
+      if (email === SEEDED_ADMIN.email && password === '12345678') {
+        return 'ok';
+      }
+      return 'not_found';
+    }
+    // Use Supabase Auth for all other roles
     const result = await sbAuth.login(email, password);
     if (!result.ok) return 'not_found';
     // Check if user profile exists and is not banned
@@ -4136,6 +4147,8 @@ const App = () => {
           isAdminUnlocked={isAdminUnlocked} 
           onUnlock={() => setIsAdminUnlocked(true)} 
           addToast={addToast}
+          onResetPassword={sbAuth.resetPassword}
+          onOAuthLogin={sbAuth.signInWithOAuth}
         />
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
