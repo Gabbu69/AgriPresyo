@@ -22,6 +22,41 @@
     scrollbar-width: none;
 }
 
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f4f4f5;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+}
+
+.dark ::-webkit-scrollbar-track,
+:where(.dark) ::-webkit-scrollbar-track {
+    background: #09090b;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+:where(.dark) ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+:where(.dark) ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+}
+
 /* ============================================
    SMOOTH SCROLLING & SCROLL POLISH
    ============================================ */
@@ -82,22 +117,7 @@ html {
     }
 }
 
-/* Light mode scrollbar */
-:root:not(.dark) ::-webkit-scrollbar-track,
-html:not(.dark) ::-webkit-scrollbar-track {
-    background: #f4f4f5;
-}
 
-:root:not(.dark) ::-webkit-scrollbar-thumb,
-html:not(.dark) ::-webkit-scrollbar-thumb {
-    background: #d4d4d8;
-    border-radius: 10px;
-}
-
-:root:not(.dark) ::-webkit-scrollbar-thumb:hover,
-html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-    background: #a1a1aa;
-}
 
 /* ============================================
    OAUTH / SOCIAL SIGN-IN BUTTONS

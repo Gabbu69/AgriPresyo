@@ -152,7 +152,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
           
           <div className="flex flex-col gap-3 pb-2 w-full mt-2">
             {/* Category Row */}
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 scroll-smooth w-full">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 scroll-smooth w-full" role="group" aria-label="Category filters">
               {['All', 'Fruit', 'Vegetable', 'Spice', 'Root'].map((cat) => (
                 <button
                   key={cat}
@@ -162,6 +162,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
                       ? 'bg-green-400 border-green-400 text-black shadow-[0_0_20px_rgba(74,222,128,0.2)]'
                       : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-white'
                   }`}
+                  aria-label={`Filter by ${cat}`}
+                  aria-pressed={activeCategory === cat}
                 >
                   {cat === 'All' ? t('categories.all') : t(`categories.${cat.toLowerCase()}`)}
                 </button>
@@ -169,7 +171,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
             </div>
             
             {/* Sort Bar (Full Width Segmented Control) */}
-            <div className="flex items-center gap-1 w-full bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 w-full bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner overflow-x-auto scrollbar-hide" role="group" aria-label="Sort options">
               {[
                 { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
                 { key: 'price-asc' as const, label: 'Low', icon: <ChevronUp size={12} /> },
@@ -185,6 +187,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
                       ? 'bg-white dark:bg-zinc-700 text-green-500 dark:text-green-400 shadow-sm border border-zinc-200/50 dark:border-zinc-600'
                       : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-zinc-700/50'
                   }`}
+                  aria-label={`Sort by ${s.label}`}
+                  aria-pressed={sortBy === s.key}
                 >
                   {s.icon}
                   <span>{s.label}</span>
@@ -259,7 +263,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
               className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[32px] overflow-hidden hover:border-green-400/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all cursor-pointer relative flex flex-col h-full"
               onClick={() => setSelectedCrop(crop)}
             >
-              <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-1">
+              <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-1" role="article" aria-label={tc(crop)}>
                 <div className="flex justify-between items-start mb-4 sm:mb-6">
                   <div className="flex items-center gap-4">
                     <div className="group-hover:scale-110 transition-transform duration-500">
@@ -292,6 +296,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
                         ? 'bg-red-500/10 text-red-500'
                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-red-400'
                     }`}
+                    aria-label={favorites.includes(crop.id) ? `Remove ${tc(crop)} from favorites` : `Add ${tc(crop)} to favorites`}
+                    aria-pressed={favorites.includes(crop.id)}
                   >
                     <Heart size={20} fill={favorites.includes(crop.id) ? 'currentColor' : 'none'} />
                   </button>

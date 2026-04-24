@@ -4290,7 +4290,7 @@ const App = () => {
               <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block" />
               <h1 className="text-sm sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
                 <span className="text-green-500">Agri</span>
-                <span className="text-zinc-500 dark:text-zinc-400 hidden sm:inline">Presyo</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Presyo</span>
               </h1>
             </div>
             <nav className="hidden lg:flex items-center gap-4" aria-label="Main navigation">
@@ -4648,8 +4648,22 @@ const App = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-stone-50 dark:bg-black border-t border-zinc-200 dark:border-zinc-800 mt-20 hidden lg:block">
-        <div className="max-w-[1400px] mx-auto px-8 py-16">
+      <footer className="bg-stone-50 dark:bg-black border-t border-zinc-200 dark:border-zinc-800 mt-20">
+        {/* Compact Mobile Footer */}
+        <div className="lg:hidden px-4 py-6 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <Logo size={24} className="text-green-500" />
+            <span className="text-sm font-black tracking-tighter text-zinc-900 dark:text-white"><span className="text-green-500">Agri</span><span className="text-zinc-400">Presyo</span></span>
+          </div>
+          <p className="text-zinc-500 text-xs">{t('footer.builtFor')}</p>
+          <div className="flex items-center justify-center gap-4">
+            <a href="https://www.facebook.com/share/18M4UkCV77/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 hover:bg-[#1877F2] hover:text-white transition-all" aria-label="Facebook"><Facebook size={14} className="fill-current" /></a>
+            <a href="mailto:agripresyo@gmail.com" className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 hover:bg-red-500 hover:text-white transition-all" aria-label="Email"><Mail size={14} /></a>
+          </div>
+          <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">© {new Date().getFullYear()} AgriPresyo™</p>
+        </div>
+        {/* Full Desktop Footer */}
+        <div className="hidden lg:block max-w-[1400px] mx-auto px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-4">

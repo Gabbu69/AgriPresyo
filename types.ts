@@ -60,7 +60,7 @@ export interface SystemAlert {
 export interface UserRecord {
   name?: string;
   email: string;
-  password: string;
+  password?: string; // Only used for seeded mock users; Supabase handles real auth
   role: UserRole;
   status: 'active' | 'pending' | 'banned';
   isVerified?: boolean;
