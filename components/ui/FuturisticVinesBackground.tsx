@@ -29,8 +29,8 @@ const vinesData: VineData[] = [
     pathDelay: 0,
     segments: [
       [[200, 1100], [300, 800], [250, 600]],
-      [[250, 600], [200, 400], [400, 300]],
-      [[400, 300], [600, 200], [350, -50]],
+      [[250, 600], [200, 400], [300, 300]],
+      [[300, 300], [450, 150], [350, -50]],
     ],
     leaves: [
       { seg: 0, t: 0.2, dir: 1, delay: 1.5 },
@@ -47,8 +47,8 @@ const vinesData: VineData[] = [
     pathDelay: 1,
     segments: [
       [[800, 1100], [650, 850], [750, 550]],
-      [[750, 550], [850, 250], [600, 250]],
-      [[600, 250], [350, 250], [700, -50]],
+      [[750, 550], [850, 400], [780, 300]],
+      [[780, 300], [650, 150], [750, -50]],
     ],
     leaves: [
       { seg: 0, t: 0.3, dir: -1, delay: 2.5 },
@@ -63,7 +63,7 @@ const vinesData: VineData[] = [
   // Branch Left 1
   {
     pathDelay: 5,
-    segments: [[[250, 600], [150, 500], [100, 200]]],
+    segments: [[[250, 600], [100, 400], [50, 50]]],
     leaves: [
       { seg: 0, t: 0.5, dir: -1, delay: 6.5 },
     ]
@@ -71,7 +71,7 @@ const vinesData: VineData[] = [
   // Branch Left 2
   {
     pathDelay: 8,
-    segments: [[[400, 300], [550, 250], [500, 100]]],
+    segments: [[[300, 300], [200, 150], [150, -50]]],
     leaves: [
       { seg: 0, t: 0.6, dir: 1, delay: 9.5 },
     ]
@@ -91,7 +91,7 @@ const vinesData: VineData[] = [
   // Branch Right 2
   {
     pathDelay: 9,
-    segments: [[[600, 250], [450, 150], [550, -50]]],
+    segments: [[[780, 300], [900, 150], [850, -50]]],
     leaves: [
       { seg: 0, t: 0.5, dir: -1, delay: 10.5 },
     ]
@@ -143,7 +143,7 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false, anima
     return (
       <div className="fixed inset-0 z-[-1] overflow-hidden bg-transparent pointer-events-none" style={{ contain: 'strict' }}>
         <svg
-          className="absolute w-full h-full opacity-30 dark:opacity-50"
+          className="absolute w-full h-full opacity-15 sm:opacity-30 dark:opacity-25 sm:dark:opacity-50"
           viewBox="0 0 1000 1000"
           preserveAspectRatio="xMidYMid slice"
           xmlns="http://www.w3.org/2000/svg"
@@ -299,7 +299,7 @@ const FuturisticVinesBackground: React.FC<Props> = ({ interactive = false, anima
 
       <svg
         ref={svgRef}
-        className="absolute w-full h-full opacity-30 dark:opacity-50"
+        className="absolute w-full h-full opacity-15 sm:opacity-30 dark:opacity-25 sm:dark:opacity-50"
         viewBox="0 0 1000 1000"
         preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg"
