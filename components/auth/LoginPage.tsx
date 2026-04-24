@@ -62,15 +62,8 @@ export const LoginPage = ({
     if (isLoading) return;
     setError('');
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const fakeEmail = `${provider}_user_${Date.now().toString(36)}@${provider}.com`;
-    const fakeName = provider === 'google' ? 'Google User' : 'Facebook User';
-    const result = await onRegister(fakeName, fakeEmail, 'oauth_' + Date.now(), role);
-    if (result === 'ok') {
-      onLogin(role, fakeEmail);
-    } else {
-      setError("We couldn't log you in. Please try again.");
-    }
+    // Show "Loading..." — actual redirect is handled by the parent via Supabase OAuth
+    setError('OAuth login requires the onOAuthLogin prop. Please use the main LoginPage.');
     setIsLoading(false);
   };
 

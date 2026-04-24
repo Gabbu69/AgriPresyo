@@ -365,6 +365,7 @@ const LoginPage = ({
   const [otpInput, setOtpInput] = useState('');
   const [otpError, setOtpError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [oauthLoadingProvider, setOauthLoadingProvider] = useState<'google' | 'facebook' | null>(null);
   const [regDocs, setRegDocs] = useState<string[]>([]);
 
   // Task 1: Password Show/Hide
@@ -405,15 +406,15 @@ const LoginPage = ({
   );
 
   const handleOAuthLogin = async (provider: 'google' | 'facebook') => {
-    if (isLoading) return;
+    if (isLoading || oauthLoadingProvider) return;
     setError('');
-    setIsLoading(true);
+    setOauthLoadingProvider(provider);
     const result = await onOAuthLogin(provider, role);
     if (!result.ok) {
       setError(result.error || 'Sign-in failed. Please try again.');
-      setIsLoading(false);
+      setOauthLoadingProvider(null);
     }
-    // If ok, the browser will redirect to the OAuth provider — no need to setIsLoading(false)
+    // If ok, the browser will redirect to the OAuth provider — no need to clear loading
   };
 
   const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -704,7 +705,7 @@ const LoginPage = ({
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !!oauthLoadingProvider}
                   className={`w-full border py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${isLoading ? 'bg-green-500 text-black border-green-500 btn-loading btn-loading-glow opacity-90' : 'bg-stone-50 dark:bg-black text-green-600 dark:text-green-500 border-green-500/50 hover:bg-green-500 hover:text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.1)]'}`}
                 >
                   {isLoading ? <><span className="btn-spinner" /> <span className="ml-2">{t('login.loggingIn')}</span></> : t('actions.login')}
@@ -730,20 +731,18 @@ const LoginPage = ({
                     <button
                       type="button"
                       onClick={() => handleOAuthLogin('google')}
-                      disabled={isLoading}
+                      disabled={isLoading || !!oauthLoadingProvider}
                       className="btn-oauth btn-oauth-google"
                     >
-                      <GoogleIcon />
-                      {t('actions.signInGoogle')}
+                      {oauthLoadingProvider === 'google' ? <><span className="btn-spinner" /> <span className="ml-2">{t('common.loading')}</span></> : <><GoogleIcon /> {t('actions.signInGoogle')}</>}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleOAuthLogin('facebook')}
-                      disabled={isLoading}
+                      disabled={isLoading || !!oauthLoadingProvider}
                       className="btn-oauth btn-oauth-facebook"
                     >
-                      <FacebookIcon />
-                      {t('actions.signInFacebook')}
+                      {oauthLoadingProvider === 'facebook' ? <><span className="btn-spinner" /> <span className="ml-2">{t('common.loading')}</span></> : <><FacebookIcon /> {t('actions.signInFacebook')}</>}
                     </button>
                   </div>
                 </>

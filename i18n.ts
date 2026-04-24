@@ -5,9 +5,9 @@ import fil from './locales/fil.json';
 
 const savedLanguage = (() => {
   try {
-    return localStorage.getItem('AP_language') || 'fil';
+    return localStorage.getItem('AP_language') || 'en';
   } catch {
-    return 'fil';
+    return 'en';
   }
 })();
 
