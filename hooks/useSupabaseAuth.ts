@@ -96,6 +96,7 @@ export function useSupabaseAuth() {
       provider,
       options: {
         redirectTo: redirectUrl.toString(),
+        queryParams: provider === 'google' ? { prompt: 'select_account' } : undefined,
       },
     });
     if (error) return { ok: false, error: error.message };
