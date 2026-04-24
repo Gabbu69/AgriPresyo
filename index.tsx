@@ -4285,12 +4285,12 @@ const App = () => {
       <header className={`sticky top-10 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? 'header-scrolled border-transparent dark:border-transparent' : ''}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-12">
-            <div className="flex items-center gap-2 sm:gap-4 group cursor-pointer shrink-0" onClick={() => navigate('/market')}>
-              <Logo size={32} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
+            <div className="flex items-center gap-1 sm:gap-4 group cursor-pointer shrink-0" onClick={() => navigate('/market')}>
+              <Logo size={28} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
               <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block" />
-              <h1 className="text-base sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
+              <h1 className="text-sm sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
                 <span className="text-green-500">Agri</span>
-                <span className="text-zinc-500 dark:text-zinc-400">Presyo</span>
+                <span className="text-zinc-500 dark:text-zinc-400 hidden sm:inline">Presyo</span>
               </h1>
             </div>
             <nav className="hidden lg:flex items-center gap-4" aria-label="Main navigation">

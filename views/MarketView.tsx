@@ -171,11 +171,11 @@ export const MarketView: React.FC<MarketViewProps> = ({
             {/* Sort Bar (Full Width Segmented Control) */}
             <div className="flex items-center gap-1 w-full bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-[16px] border border-zinc-200 dark:border-zinc-700/80 shadow-inner overflow-x-auto scrollbar-hide">
               {[
-                { key: 'default' as const, label: 'Default', icon: <ArrowUpDown size={12} /> },
-                { key: 'price-asc' as const, label: 'Cheapest', icon: <ChevronUp size={12} /> },
-                { key: 'price-desc' as const, label: 'Priciest', icon: <ChevronDown size={12} /> },
-                { key: 'demand' as const, label: 'High Demand', icon: <Zap size={12} /> },
-                { key: 'trending' as const, label: 'Top Gainer', icon: <TrendingUp size={12} /> },
+                { key: 'default' as const, label: 'All', icon: <ArrowUpDown size={12} /> },
+                { key: 'price-asc' as const, label: 'Low', icon: <ChevronUp size={12} /> },
+                { key: 'price-desc' as const, label: 'High', icon: <ChevronDown size={12} /> },
+                { key: 'demand' as const, label: 'Demand', icon: <Zap size={12} /> },
+                { key: 'trending' as const, label: 'Trending', icon: <TrendingUp size={12} /> },
               ].map((s) => (
                 <button
                   key={s.key}

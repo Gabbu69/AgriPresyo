@@ -19,20 +19,20 @@ export const LanguageToggle = () => {
     >
       {/* Neutral Sliding Pill Indicator */}
       <div 
-        className={`absolute top-1 bottom-1 w-[44px] rounded-full bg-white dark:bg-zinc-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-          isFil ? 'translate-x-[44px]' : 'translate-x-0'
+        className={`absolute top-1 bottom-1 w-[32px] sm:w-[44px] rounded-full bg-white dark:bg-zinc-600 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          isFil ? 'translate-x-[32px] sm:translate-x-[44px]' : 'translate-x-0'
         }`}
       />
       
       {/* EN Text */}
-      <div className={`relative z-10 w-[44px] py-1 flex items-center justify-center text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${
+      <div className={`relative z-10 w-[32px] sm:w-[44px] py-1 flex items-center justify-center text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${
         !isFil ? 'text-green-500' : 'text-zinc-400 dark:text-zinc-500'
       }`}>
         EN
       </div>
 
       {/* FIL Text */}
-      <div className={`relative z-10 w-[44px] py-1 flex items-center justify-center text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${
+      <div className={`relative z-10 w-[32px] sm:w-[44px] py-1 flex items-center justify-center text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${
         isFil ? 'text-green-500' : 'text-zinc-400 dark:text-zinc-500'
       }`}>
         FIL
