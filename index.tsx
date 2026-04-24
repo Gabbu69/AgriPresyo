@@ -4286,9 +4286,9 @@ const App = () => {
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-12">
             <div className="flex items-center gap-2 sm:gap-4 group cursor-pointer shrink-0" onClick={() => navigate('/market')}>
-              <Logo size={40} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
+              <Logo size={32} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 sm:hidden" />
               <Logo size={56} className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block" />
-              <h1 className="text-lg sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
+              <h1 className="text-base sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
                 <span className="text-green-500">Agri</span>
                 <span className="text-zinc-500 dark:text-zinc-400">Presyo</span>
               </h1>

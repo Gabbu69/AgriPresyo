@@ -180,7 +180,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
                 <button
                   key={s.key}
                   onClick={() => setSortBy(s.key)}
-                  className={`flex items-center justify-center flex-1 shrink-0 gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center shrink-0 gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                     sortBy === s.key
                       ? 'bg-white dark:bg-zinc-700 text-green-500 dark:text-green-400 shadow-sm border border-zinc-200/50 dark:border-zinc-600'
                       : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-zinc-700/50'
