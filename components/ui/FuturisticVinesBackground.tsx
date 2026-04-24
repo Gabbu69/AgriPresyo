@@ -462,4 +462,4 @@ const FallingLeafElement: React.FC<{ leaf: FallingLeaf }> = ({ leaf }) => {
   );
 };
 
-export default FuturisticVinesBackground;
+export default React.memo(FuturisticVinesBackground);

@@ -83,8 +83,7 @@ import { MOCK_CROPS } from './constants';
 import { MarketsIcon, ShopsIcon, BudgetIcon, VendorIcon, AdminIcon, ConsumerRoleIcon, VendorRoleIcon, AdminRoleIcon } from './components/ui/NavIcons';
 import { Ticker } from './components/ui/Ticker';
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF + autoTable are loaded on demand (dynamic import) to avoid 200KB in the initial bundle
 import FuturisticVinesBackground from './components/ui/FuturisticVinesBackground';
 import { AnimatedCounter } from './components/ui/AnimatedCounter';
 import { CropIcon, CROP_IMAGES, CROP_COLORS } from './components/ui/CropIcon';
@@ -95,8 +94,8 @@ import { ThemeProvider, ThemeToggle, useTheme } from './components/ui/Theme';
 import { ToastProvider, useToasts } from './components/ui/Toast';
 const MarketView = lazy(() => import('./views/MarketView').then((m) => ({ default: m.MarketView })));
 const BudgetCalculatorView = lazy(() => import('./views/BudgetCalculatorView').then((m) => ({ default: m.BudgetCalculatorView })));
-import { LandingPage } from './views/LandingPage';
-import { AboutPage } from './views/AboutPage';
+const LandingPage = lazy(() => import('./views/LandingPage').then((m) => ({ default: m.LandingPage })));
+const AboutPage = lazy(() => import('./views/AboutPage').then((m) => ({ default: m.AboutPage })));
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { EmptyState } from './components/ui/EmptyState';
 import { SkeletonCard } from './components/ui/SkeletonCard';
@@ -3972,7 +3971,12 @@ const App = () => {
               </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-              <button onClick={() => {
+              <button onClick={async () => {
+                // Dynamic import — jsPDF only loaded when user clicks PDF button
+                const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+                  import('jspdf'),
+                  import('jspdf-autotable'),
+                ]);
                 const doc = new jsPDF();
                 doc.setFontSize(18);
                 doc.text('AgriPresyo Market Report', 14, 22);
@@ -4150,6 +4154,7 @@ const App = () => {
   );
 
   if (!isAuthenticated) return (
+    <Suspense fallback={<AgriLoader message="Loading..." />}>
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/about" element={<AboutPage />} />
@@ -4167,6 +4172,7 @@ const App = () => {
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 
   return (

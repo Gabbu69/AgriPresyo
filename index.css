@@ -763,6 +763,9 @@ button.btn-signout:active:not(:disabled) {
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    contain: content;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
 }
 
 .dark .glass-card {
