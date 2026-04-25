@@ -33,20 +33,25 @@ export const LandingPage = () => {
       <FuturisticVinesBackground interactive={true} />
 
       {/* Top Navigation */}
-      <nav className="relative z-20 flex items-center justify-between px-4 py-4 sm:p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
-        <div className="flex items-center gap-3">
-          <Logo size={40} className="text-green-500" />
-          <h1 className="text-lg sm:text-2xl font-black tracking-tighter">
+      <nav className="relative z-20 flex items-center justify-between px-3 py-4 sm:p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+          <div className="sm:hidden flex items-center shrink-0">
+            <Logo size={28} className="text-green-500" />
+          </div>
+          <div className="hidden sm:flex items-center shrink-0">
+            <Logo size={40} className="text-green-500" />
+          </div>
+          <h1 className="text-base sm:text-2xl font-black tracking-tighter hidden min-[360px]:block truncate">
             <span className="text-green-500">Agri</span>
             <span className="text-zinc-700 dark:text-white/80">Presyo</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <LanguageToggle />
           <button
             onClick={handleLoginClick}
             disabled={isNavigatingLogin}
-            className={`flex items-center justify-center gap-2 text-black w-[100px] sm:w-[140px] h-[32px] sm:h-[36px] rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all duration-300
+            className={`flex items-center justify-center gap-2 text-black w-[80px] sm:w-[140px] h-[32px] sm:h-[36px] rounded-full font-black uppercase tracking-widest text-[9px] sm:text-xs transition-all duration-300 shrink-0
               ${!isNavigatingLogin ? 'bg-green-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] active:scale-95' : 'bg-green-600 scale-95 opacity-90 shadow-inner'}
             `}
           >

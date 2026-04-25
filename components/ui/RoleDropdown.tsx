@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ShoppingCart, Store, Crown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { UserRole } from '../../types';
 
 const ROLE_LABELS: Record<UserRole, { label: string; icon: React.ReactNode; desc: string }> = {
-  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: <ShoppingCart className="w-6 h-6 text-emerald-500" />, desc: 'Browse prices & build budgets' },
-  [UserRole.VENDOR]: { label: 'VENDOR', icon: <Store className="w-6 h-6 text-amber-500" />, desc: 'Manage your shop & inventory' },
-  [UserRole.ADMIN]: { label: 'ADMIN', icon: <Crown className="w-6 h-6 text-yellow-500" />, desc: 'System administration & analytics' },
+  [UserRole.CONSUMER]: { label: 'CONSUMER', icon: '🛒', desc: 'Browse prices & build budgets' },
+  [UserRole.VENDOR]: { label: 'VENDOR', icon: '🏪', desc: 'Manage your shop & inventory' },
+  [UserRole.ADMIN]: { label: 'ADMIN', icon: '🛡️', desc: 'System administration & analytics' },
 };
 
 export const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRole; setRole: (r: UserRole) => void; isAdminUnlocked: boolean }) => {
@@ -37,9 +37,7 @@ export const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRol
         className="w-full flex items-center justify-between bg-stone-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-3.5 hover:border-green-500/40 transition-all group shadow-sm"
       >
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-zinc-100 dark:bg-zinc-900 rounded-xl shadow-inner">
-            {current.icon}
-          </div>
+          <span className="text-xl">{current.icon}</span>
           <div className="text-left">
             <p className="text-xs font-black text-green-500 tracking-widest">{current.label}</p>
             <p className="text-[10px] text-zinc-500 mt-0.5">{current.desc}</p>
@@ -66,11 +64,9 @@ export const RoleDropdown = ({ role, setRole, isAdminUnlocked }: { role: UserRol
               setRole(key);
               setIsOpen(false);
             }}
-            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-zinc-50 dark:hover:bg-green-500/10 transition-colors text-left border-b border-zinc-100 dark:border-zinc-800/50 last:border-b-0 group"
+            className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-zinc-50 dark:hover:bg-green-500/10 transition-colors text-left border-b border-zinc-100 dark:border-zinc-800/50 last:border-b-0"
           >
-            <div className="flex items-center justify-center w-10 h-10 bg-zinc-100 dark:bg-zinc-900 rounded-xl shadow-inner shrink-0 group-hover:bg-white dark:group-hover:bg-zinc-800 transition-colors">
-              {info.icon}
-            </div>
+            <span className="text-xl">{info.icon}</span>
             <div>
               <p className="text-xs font-black text-zinc-900 dark:text-zinc-400 tracking-widest">{info.label}</p>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-600 mt-0.5">{info.desc}</p>

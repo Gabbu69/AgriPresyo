@@ -6180,7 +6180,7 @@ const App = () => {
                 size={56}
                 className="text-green-500 transition-all transform group-hover:scale-110 group-hover:rotate-6 hidden sm:block"
               />
-              <h1 className="text-sm sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white flex items-center whitespace-nowrap">
+              <h1 className="text-sm sm:text-3xl font-black tracking-tighter text-zinc-900 dark:text-white items-center whitespace-nowrap hidden min-[360px]:flex truncate">
                 <span className="text-green-500">Agri</span>
                 <span className="text-zinc-500 dark:text-zinc-400">Presyo</span>
               </h1>
