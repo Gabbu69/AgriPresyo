@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Lock, Mail, Upload, X, FileText, ShieldCheck, CheckCircle, Loader2 } from 'lucide-react';
 import FuturisticVinesBackground from '../components/ui/FuturisticVinesBackground';
@@ -130,6 +130,7 @@ export const LoginPage = ({
         setOtpError('');
         setIsLoading(false);
         onUnlock();
+        setRole(UserRole.ADMIN);
         setShowUnlockedModal(true);
         setTimeout(() => setShowUnlockedModal(false), 3500);
       } else {

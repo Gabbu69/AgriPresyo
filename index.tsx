@@ -364,7 +364,7 @@ const RoleDropdown = ({
   const current = ROLE_LABELS[role];
   const otherRoles = Object.entries(ROLE_LABELS)
     .filter(([key]) => key !== role)
-    .filter(([key]) => isAdminUnlocked || key !== UserRole.ADMIN) as [
+    .filter(([key]) => key !== UserRole.ADMIN) as [
     UserRole,
     typeof current,
   ][];
