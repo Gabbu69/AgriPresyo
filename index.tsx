@@ -267,7 +267,7 @@ const Logo = ({
 
 const formatPrice = (price: number) => {
   const value = price;
-  const symbol = "â‚±";
+  const symbol = "₱";
   return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
@@ -429,7 +429,7 @@ const RoleDropdown = ({
 const App = () => {
   const { t } = useTranslation();
 
-  // â”€â”€ Supabase hooks â”€â”€
+  // ── Supabase hooks ──
   const sbAuth = useSupabaseAuth();
   const sbProfiles = useProfiles();
   const sbAuditLog = useAuditLog();
@@ -439,7 +439,7 @@ const App = () => {
   const sbVendorRatings = useVendorRatingsHook();
   const sbSettings = useUserSettings();
 
-  // â”€â”€ Auth state (driven by Supabase session) â”€â”€
+  // ── Auth state (driven by Supabase session) ──
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
@@ -480,10 +480,10 @@ const App = () => {
 
   const [users, setUsers] = useState<UserRecord[]>([]);
 
-  // â”€â”€ Load all data from Supabase on auth change â”€â”€
+  // ── Load all data from Supabase on auth change ──
   const loadSupabaseData = useCallback(
     async (userId: string) => {
-      // Profiles â†’ users
+      // Profiles → users
       const profiles = await sbProfiles.fetchAllProfiles();
       const userRecords = profiles.map((p) => profileToUserRecord(p));
       setUsers(userRecords);
@@ -540,7 +540,7 @@ const App = () => {
     ],
   );
 
-  // â”€â”€ Restore session on mount â”€â”€
+  // ── Restore session on mount ──
   useEffect(() => {
     if (sbAuth.loading) return;
     if (sbAuth.user && sbAuth.session) {
@@ -843,7 +843,7 @@ const App = () => {
     img.src = cropImageSrc;
   };
 
-  // (Persistence is handled by Supabase â€” no localStorage sync needed)
+  // (Persistence is handled by Supabase — no localStorage sync needed)
 
   const handleDismissAnnouncement = (id: string) => {
     setDismissedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
@@ -1554,7 +1554,7 @@ const App = () => {
         "This will permanently delete all user accounts. This action cannot be undone.",
       onConfirm: () => {
         setUsers([]);
-        // Note: Supabase profiles are tied to auth users â€” this only clears local state
+        // Note: Supabase profiles are tied to auth users — this only clears local state
         triggerGraphicAlert(
           "REJECT",
           "Registry Cleared",
@@ -1811,7 +1811,7 @@ const App = () => {
           currentPrice: price,
           change7d: 0,
           demand: "Medium",
-          icon: "ðŸŒ±",
+          icon: "🌱",
           weightPerUnit: 1,
           history: [{ date: now.slice(0, 10), price }],
           lastUpdated: now,
@@ -2398,7 +2398,7 @@ const App = () => {
                   fontFamily: "Inter",
                   padding: "10px",
                 }}
-                formatter={(value: any) => [`â‚±${value}`, "Avg"]}
+                formatter={(value: any) => [`₱${value}`, "Avg"]}
                 labelFormatter={(label: any) => `Period: ${label}`}
               />
               <Line
@@ -2436,7 +2436,7 @@ const App = () => {
               <p className="text-lg sm:text-2xl font-mono font-black text-green-400">
                 <AnimatedCounter
                   value={aggregateVolatilityData.stats.price}
-                  prefix="â‚±"
+                  prefix="₱"
                 />
               </p>
             </div>
@@ -2445,7 +2445,7 @@ const App = () => {
                 Price Range
               </p>
               <p className="text-sm font-mono text-zinc-900 dark:text-white">
-                â‚±{aggregateVolatilityData.stats.min} - â‚±
+                ₱{aggregateVolatilityData.stats.min} - ₱
                 {aggregateVolatilityData.stats.max}
               </p>
             </div>
@@ -2824,7 +2824,7 @@ const App = () => {
                         const ampm = h >= 12 ? "PM" : "AM";
                         return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${ampm}`;
                       };
-                      return `${fmt(ot)} â€” ${fmt(ct)}`;
+                      return `${fmt(ot)} — ${fmt(ct)}`;
                     })()}
                   </p>
                   <span
@@ -2840,7 +2840,7 @@ const App = () => {
                 </div>
                 {!currentUser?.openTime && !currentUser?.closeTime && (
                   <p className="text-[9px] text-zinc-400 mt-0.5">
-                    Default hours â€¢ Edit to customize
+                    Default hours • Edit to customize
                   </p>
                 )}
               </div>
@@ -2899,9 +2899,9 @@ const App = () => {
               </h3>
               <p className="text-zinc-600 dark:text-zinc-500 text-xs font-bold">
                 {currentUser?.verificationStatus === "verified"
-                  ? "Your identity and business have been verified âœ”"
+                  ? "Your identity and business have been verified ✔"
                   : currentUser?.verificationStatus === "pending_review"
-                    ? `Documents submitted${currentUser?.verificationSubmittedAt ? ` on ${new Date(currentUser.verificationSubmittedAt).toLocaleDateString()}` : ""} â€” awaiting admin review`
+                    ? `Documents submitted${currentUser?.verificationSubmittedAt ? ` on ${new Date(currentUser.verificationSubmittedAt).toLocaleDateString()}` : ""} — awaiting admin review`
                     : currentUser?.verificationStatus === "rejected"
                       ? "Your verification request was declined, you can re-submit new documents"
                       : "Submit documents to get a verified badge and build trust with customers"}
@@ -3148,7 +3148,7 @@ const App = () => {
                   {formatPrice(portfolioValue)}
                 </p>
                 <p className="text-[10px] text-zinc-600 dark:text-zinc-500 font-bold mt-2 uppercase tracking-widest">
-                  Price Ã— Stock
+                  Price × Stock
                 </p>
               </div>
               <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-2xl sm:rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl relative overflow-hidden group">
@@ -3440,7 +3440,7 @@ const App = () => {
                       {otherVendors.length > 0 ? (
                         <>
                           <p className="font-mono text-xs text-zinc-400">
-                            {formatPrice(minPrice)} â€” {formatPrice(maxPrice)}
+                            {formatPrice(minPrice)} — {formatPrice(maxPrice)}
                           </p>
                           <p className="text-[10px] text-zinc-600 font-bold uppercase">
                             Price Range
@@ -3541,7 +3541,7 @@ const App = () => {
                         padding: "10px",
                       }}
                       formatter={(value: any, name: string) => [
-                        `â‚±${value}`,
+                        `₱${value}`,
                         name,
                       ]}
                     />
@@ -3667,7 +3667,7 @@ const App = () => {
                             {formatPrice(profit)}
                           </span>
                         ) : (
-                          <span className="text-zinc-700 text-xs">â€”</span>
+                          <span className="text-zinc-700 text-xs">—</span>
                         )}
                       </td>
                     </tr>
@@ -3999,7 +3999,7 @@ const App = () => {
                 pomelo:
                   "Davao pomelo, naturally sweet citrus with thick protective rind.",
                 "mango-carabao":
-                  "World-famous Carabao mango â€” the sweetest mango variety in the world.",
+                  "World-famous Carabao mango — the sweetest mango variety in the world.",
                 "banana-lakatan":
                   "Lakatan banana, golden yellow with rich sweet flavor and aroma.",
                 calamansi:
@@ -4135,7 +4135,7 @@ const App = () => {
                         />
                       ) : (
                         <span className="text-8xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                          {crop.icon || "ðŸ“¦"}
+                          {crop.icon || "📦"}
                         </span>
                       )}
                     </div>
@@ -4143,17 +4143,17 @@ const App = () => {
                     {/* Bottom gradient fade into card body */}
                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-zinc-900/80 to-transparent" />
 
-                    {/* Stock badge â€” top left (frosted glass) */}
+                    {/* Stock badge — top left (frosted glass) */}
                     <div
                       className={`absolute top-3.5 left-3.5 flex items-center gap-2 px-3 py-2 rounded-2xl border backdrop-blur-xl text-[10px] font-black uppercase tracking-widest ${stockBadgeClass}`}
                     >
                       <div
                         className={`w-2 h-2 rounded-full ${stockDotClass}`}
                       />
-                      {stockLevel} Â· {myEntry.stock.toLocaleString()} kg
+                      {stockLevel} · {myEntry.stock.toLocaleString()} kg
                     </div>
 
-                    {/* Price badge â€” top right (frosted glass) */}
+                    {/* Price badge — top right (frosted glass) */}
                     <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-500/15 border border-emerald-400/25 backdrop-blur-xl">
                       <span className="text-emerald-300 font-mono font-black text-sm tracking-tight">
                         {formatPrice(myEntry.price)}
@@ -4226,7 +4226,7 @@ const App = () => {
                       {description}
                     </p>
 
-                    {/* 3-column stats row â€” richer tiles */}
+                    {/* 3-column stats row — richer tiles */}
                     <div className="grid grid-cols-3 gap-2.5">
                       <div className="bg-gradient-to-br from-green-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-green-950/20 p-3 sm:p-3.5 rounded-2xl border border-green-200/50 dark:border-emerald-800/40 text-center">
                         <div className="flex items-center justify-center gap-1 mb-1.5">
@@ -4263,7 +4263,7 @@ const App = () => {
                       </div>
                     </div>
 
-                    {/* Action buttons â€” polished */}
+                    {/* Action buttons — polished */}
                     <div className="grid grid-cols-2 gap-3 pt-1">
                       <button
                         onClick={() => setEditingInventoryCrop(crop)}
@@ -4611,7 +4611,7 @@ const App = () => {
             </div>
           )}
 
-          {/* Approved Photos â€” with delete option */}
+          {/* Approved Photos — with delete option */}
           {(() => {
             const approvedPhotos = crops.flatMap((c) =>
               c.vendors
@@ -5509,7 +5509,7 @@ const App = () => {
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={async () => {
-                  // Dynamic import â€” jsPDF only loaded when user clicks PDF button
+                  // Dynamic import — jsPDF only loaded when user clicks PDF button
                   const [{ default: jsPDF }, { default: autoTable }] =
                     await Promise.all([
                       import("jspdf"),
@@ -5785,16 +5785,16 @@ const App = () => {
                           }`}
                         >
                           {user.verificationStatus === "verified"
-                            ? "âœ“ Verified"
+                            ? "✔ Verified"
                             : user.verificationStatus === "pending_review"
-                              ? "â³ Pending"
+                              ? "⏳ Pending"
                               : user.verificationStatus === "rejected"
-                                ? "âœ— Rejected"
+                                ? "✗ Rejected"
                                 : "None"}
                         </span>
                       ) : (
                         <span className="text-zinc-300 dark:text-zinc-700">
-                          â€”
+                          —
                         </span>
                       )}
                     </td>
@@ -6028,7 +6028,7 @@ const App = () => {
     <div
       className={`min-h-screen bg-stone-50 dark:bg-black text-zinc-900 dark:text-white flex flex-col selection:bg-green-400/30 ${isLoggingOut ? "page-exit-animation" : "modal-overlay-enter"}`}
     >
-      {/* Static vine background â€” no animations, GPU-friendly */}
+      {/* Static vine background — no animations, GPU-friendly */}
       <FuturisticVinesBackground animated={false} interactive={false} />
       <a href="#main-content" className="skip-link">
         Skip to content
@@ -6859,7 +6859,7 @@ const App = () => {
             </a>
           </div>
           <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">
-            Â© {new Date().getFullYear()} AgriPresyoâ„¢
+            © {new Date().getFullYear()} AgriPresyo™
           </p>
         </div>
         {/* Full Desktop Footer */}
@@ -6882,7 +6882,7 @@ const App = () => {
               </p>
               <div className="flex items-center gap-6 mt-6">
                 <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest shrink-0">
-                  Â© {new Date().getFullYear()} AgriPresyoâ„¢
+                  © {new Date().getFullYear()} AgriPresyo™
                 </span>
                 <a
                   href="https://www.facebook.com/share/18M4UkCV77/"
@@ -7134,7 +7134,7 @@ const App = () => {
                   Crop Profile Photo
                 </h3>
                 <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">
-                  Drag to reposition â€¢ Zoom to resize
+                  Drag to reposition • Zoom to resize
                 </p>
               </div>
               <button
@@ -7334,7 +7334,7 @@ const App = () => {
                             ? "Open Now"
                             : "Closed"}
                           <span className="text-zinc-500 font-bold normal-case">
-                            ({selectedVendor.openTime || "06:00"} â€“{" "}
+                            ({selectedVendor.openTime || "06:00"} –{" "}
                             {selectedVendor.closeTime || "18:00"})
                           </span>
                         </span>
@@ -7487,13 +7487,13 @@ const App = () => {
                       `crops.${selectedCrop.id}`,
                       selectedCrop.name,
                     );
-                    const shareText = `${cropName} â€” â‚±${selectedCrop.currentPrice.toFixed(2)}/kg (${selectedCrop.change7d > 0 ? "+" : ""}${selectedCrop.change7d}% this week) on AgriPresyo`;
+                    const shareText = `${cropName} — ₱${selectedCrop.currentPrice.toFixed(2)}/kg (${selectedCrop.change7d > 0 ? "+" : ""}${selectedCrop.change7d}% this week) on AgriPresyo`;
                     const shareUrl = "https://agri-presyo.vercel.app/market";
 
                     if (navigator.share) {
                       try {
                         await navigator.share({
-                          title: `${cropName} Price â€” AgriPresyo`,
+                          title: `${cropName} Price — AgriPresyo`,
                           text: shareText,
                           url: shareUrl,
                         });
@@ -7566,7 +7566,7 @@ const App = () => {
                     </span>
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-600 mt-4 font-bold uppercase tracking-widest">
-                    Projection: 1 unit â‰ˆ {selectedCrop.weightPerUnit}kg
+                    Projection: 1 unit ≈ {selectedCrop.weightPerUnit}kg
                   </p>
                   {selectedCrop.lastUpdated && (
                     <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-3 flex items-center gap-1.5 font-mono">
@@ -7642,7 +7642,7 @@ const App = () => {
                             tick={{ fontSize: 9, fill: "#71717a" }}
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={(v: number) => `â‚±${v}`}
+                            tickFormatter={(v: number) => `₱${v}`}
                             domain={["auto", "auto"]}
                             width={50}
                           />
@@ -7661,7 +7661,7 @@ const App = () => {
                               textTransform: "uppercase",
                             }}
                             formatter={(value: number) => [
-                              `â‚±${value.toFixed(2)}`,
+                              `₱${value.toFixed(2)}`,
                               "Price",
                             ]}
                           />
@@ -7725,12 +7725,12 @@ const App = () => {
                                 <span
                                   className={`text-[10px] font-black ${change >= 0 ? "text-green-500" : "text-red-500"}`}
                                 >
-                                  {change >= 0 ? "â–²" : "â–¼"}{" "}
+                                  {change >= 0 ? "▲" : "▼"}{" "}
                                   {Math.abs(change).toFixed(1)}%
                                 </span>
                               )}
                               <p className="font-mono font-black text-green-600 text-sm">
-                                â‚±{pt.price.toFixed(2)}
+                                ₱{pt.price.toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -7932,7 +7932,7 @@ const App = () => {
                       <span className="font-black">
                         Photo will be checked by admin.
                       </span>{" "}
-                      Please use your real photo of the crop â€” photos taken
+                      Please use your real photo of the crop — photos taken
                       from the internet will be rejected. Take a picture of your
                       actual product at your stall.
                     </p>
@@ -8000,7 +8000,7 @@ const App = () => {
                       <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 ml-2 tracking-widest uppercase">
                         Product Name{" "}
                         {!addCropModalSelection
-                          ? "(Required â€” type your crop name)"
+                          ? "(Required — type your crop name)"
                           : "(Optional)"}
                       </label>
                       <input
@@ -8016,7 +8016,7 @@ const App = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 ml-2 tracking-widest uppercase">
-                        Price per kg (â‚±)
+                        Price per kg (₱)
                       </label>
                       <input
                         id="admin-p"
@@ -8062,7 +8062,7 @@ const App = () => {
                       and add a photo later using "Edit Listing"
                     </li>
                     <li>
-                      âœ… <strong>Real photos only</strong> â€” Admin will check
+                      ✅ <strong>Real photos only</strong> — Admin will check
                       that photos are real and not from the internet
                     </li>
                   </ul>
@@ -8233,7 +8233,7 @@ const App = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">
-                  Price per kg (â‚±)
+                  Price per kg (₱)
                 </label>
                 <input
                   id="upd-p"
@@ -8520,7 +8520,7 @@ const App = () => {
                       addAuditEntry(
                         "RESOLVE_COMPLAINT",
                         comp.subject,
-                        `Resolved from ${comp.from}${adminNoteText.trim() ? ` â€” Note: ${adminNoteText.trim()}` : ""}`,
+                        `Resolved from ${comp.from}${adminNoteText.trim() ? ` — Note: ${adminNoteText.trim()}` : ""}`,
                       );
                     setAdminNoteComplaintId(null);
                     setAdminNoteText("");

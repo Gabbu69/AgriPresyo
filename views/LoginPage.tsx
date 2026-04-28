@@ -88,7 +88,7 @@ export const LoginPage = ({
       setError(result.error || 'Sign-in failed. Please try again.');
       setOauthLoadingProvider(null);
     }
-    // If ok, the browser will redirect to the OAuth provider â€” no need to clear loading
+    // If ok, the browser will redirect to the OAuth provider — no need to clear loading
   };
 
   const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,7 +294,7 @@ export const LoginPage = ({
                 {/* Vendor Document Upload */}
                 {role === UserRole.VENDOR && (
                   <div className="space-y-3">
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload your ID or documents (JPEG, PNG, PDF) â€” You can do this now or later</p>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload your ID or documents (JPEG, PNG, PDF) — You can do this now or later</p>
                     <label className="flex items-center justify-center gap-3 w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
                       <Upload className="w-5 h-5 text-zinc-600 group-hover:text-green-400 transition-colors" />
                       <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files</span>
