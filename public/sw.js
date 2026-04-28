@@ -1,7 +1,6 @@
-const CACHE_NAME = 'agripresyo-v1';
+const CACHE_NAME = 'agripresyo-v2';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/AgriPresyo_logoFinal.webp',
   '/AgriPresyo_logoFinal.png',
   '/manifest.json',
@@ -92,7 +91,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           return response;
         })
-        .catch(() => caches.match('/index.html'))
+        .catch(() => caches.match('/'))
     );
     return;
   }
