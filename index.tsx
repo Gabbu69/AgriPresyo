@@ -265,10 +265,11 @@ const Logo = ({
   );
 };
 
+const PESO = String.fromCharCode(8369);
+
 const formatPrice = (price: number) => {
   const value = price;
-  const symbol = "₱";
-  return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${PESO}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const timeAgo = (isoString: string): string => {
@@ -2398,7 +2399,7 @@ const App = () => {
                   fontFamily: "Inter",
                   padding: "10px",
                 }}
-                formatter={(value: any) => [`₱${value}`, "Avg"]}
+                                formatter={(value: any) => [`${PESO}${value}`, "Avg"]}
                 labelFormatter={(label: any) => `Period: ${label}`}
               />
               <Line
@@ -2436,7 +2437,7 @@ const App = () => {
               <p className="text-lg sm:text-2xl font-mono font-black text-green-400">
                 <AnimatedCounter
                   value={aggregateVolatilityData.stats.price}
-                  prefix="₱"
+                                    prefix={PESO}
                 />
               </p>
             </div>
@@ -2445,7 +2446,7 @@ const App = () => {
                 Price Range
               </p>
               <p className="text-sm font-mono text-zinc-900 dark:text-white">
-                ₱{aggregateVolatilityData.stats.min} - ₱
+                                {PESO}{aggregateVolatilityData.stats.min} - {PESO}
                 {aggregateVolatilityData.stats.max}
               </p>
             </div>
@@ -3541,7 +3542,7 @@ const App = () => {
                         padding: "10px",
                       }}
                       formatter={(value: any, name: string) => [
-                        `₱${value}`,
+                        `${PESO}${value}`,
                         name,
                       ]}
                     />
@@ -7487,7 +7488,7 @@ const App = () => {
                       `crops.${selectedCrop.id}`,
                       selectedCrop.name,
                     );
-                    const shareText = `${cropName} — ₱${selectedCrop.currentPrice.toFixed(2)}/kg (${selectedCrop.change7d > 0 ? "+" : ""}${selectedCrop.change7d}% this week) on AgriPresyo`;
+                    const shareText = `${cropName} \u2014 ${PESO}${selectedCrop.currentPrice.toFixed(2)}/kg (${selectedCrop.change7d > 0 ? "+" : ""}${selectedCrop.change7d}% this week) on AgriPresyo`;
                     const shareUrl = "https://agri-presyo.vercel.app/market";
 
                     if (navigator.share) {
@@ -7642,7 +7643,7 @@ const App = () => {
                             tick={{ fontSize: 9, fill: "#71717a" }}
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={(v: number) => `₱${v}`}
+                                                        tickFormatter={(v: number) => `${PESO}${v}`}
                             domain={["auto", "auto"]}
                             width={50}
                           />
@@ -7661,7 +7662,7 @@ const App = () => {
                               textTransform: "uppercase",
                             }}
                             formatter={(value: number) => [
-                              `₱${value.toFixed(2)}`,
+                              `${PESO}${value.toFixed(2)}`,
                               "Price",
                             ]}
                           />
@@ -7730,7 +7731,7 @@ const App = () => {
                                 </span>
                               )}
                               <p className="font-mono font-black text-green-600 text-sm">
-                                ₱{pt.price.toFixed(2)}
+                                                                {PESO}{pt.price.toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -8016,7 +8017,7 @@ const App = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 ml-2 tracking-widest uppercase">
-                        Price per kg (₱)
+                                                Price per kg ({PESO})
                       </label>
                       <input
                         id="admin-p"
@@ -8233,7 +8234,7 @@ const App = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase ml-3 tracking-widest">
-                  Price per kg (₱)
+                                    Price per kg ({PESO})
                 </label>
                 <input
                   id="upd-p"

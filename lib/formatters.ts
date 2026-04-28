@@ -1,5 +1,5 @@
 export const formatPrice = (price: number) => {
-  const symbol = '₱';
+  const symbol = String.fromCharCode(8369);
   return `${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
