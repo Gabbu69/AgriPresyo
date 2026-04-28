@@ -6860,7 +6860,7 @@ const App = () => {
             </a>
           </div>
           <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">
-            © {new Date().getFullYear()} AgriPresyo™
+            © {new Date().getFullYear()} AgriPresyo{"\u2122"}
           </p>
         </div>
         {/* Full Desktop Footer */}
@@ -6883,7 +6883,7 @@ const App = () => {
               </p>
               <div className="flex items-center gap-6 mt-6">
                 <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest shrink-0">
-                  © {new Date().getFullYear()} AgriPresyo™
+                  © {new Date().getFullYear()} AgriPresyo{"\u2122"}
                 </span>
                 <a
                   href="https://www.facebook.com/share/18M4UkCV77/"
@@ -7567,7 +7567,7 @@ const App = () => {
                     </span>
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-600 mt-4 font-bold uppercase tracking-widest">
-                    Projection: 1 unit ≈ {selectedCrop.weightPerUnit}kg
+                    Projection: 1 unit {"\u2248"} {selectedCrop.weightPerUnit}kg
                   </p>
                   {selectedCrop.lastUpdated && (
                     <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-3 flex items-center gap-1.5 font-mono">

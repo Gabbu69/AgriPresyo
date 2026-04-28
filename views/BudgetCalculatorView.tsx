@@ -42,7 +42,7 @@ const AnimatedBudgetRow = ({ item, crop, tc, toggleBudgetUnit, updateBudgetQty, 
             </h4>
             <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
               <span>{displayQty}</span>
-              <span>≈ {weight.toFixed(2)}kg</span>
+              <span>{'\u2248'} {weight.toFixed(2)}kg</span>
             </div>
           </div>
         </div>
