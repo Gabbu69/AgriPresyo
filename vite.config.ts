@@ -19,6 +19,12 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
+      esbuild: {
+        // Force ASCII-only JS output so non-ASCII chars like ₱ (U+20B1) and ≈ (U+2248)
+        // are emitted as \uXXXX escape sequences. This prevents the browser from
+        // misinterpreting UTF-8 bytes as Latin-1 when charset headers are missing.
+        charset: 'ascii',
+      },
       build: {
         // Increase warning limit since we know about the monolith
         chunkSizeWarningLimit: 600,
