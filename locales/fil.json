@@ -104,7 +104,7 @@
     "updatePassword": "I-update ang Password",
     "close": "Isara",
     "downloadPdf": "I-download ang PDF",
-    "addToAssets": "Idagdag sa Assets",
+    "addToAssets": "Idagdag sa Budget Planner",
     "closeView": "Isara ang View"
   },
   "sections": {
@@ -115,7 +115,7 @@
     "bestValuePicks": "Pinakasulit na Produkto sa Loob ng",
     "clickToAdd": "I-click para idagdag sa badyet",
     "items": "mga item",
-    "smartAssetProjection": "Matalinong Pagtataya ng Badyet",
+    "smartAssetProjection": "Matalinong Budget Planner",
     "autoCalculating": "Awtomatikong kinakalkula ang timbang at presyo",
     "noActiveTrades": "Walang Aktibong Listahan",
     "selectProduce": "Pumili ng produkto mula sa palengke para magsimula",

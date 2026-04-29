@@ -104,7 +104,7 @@
     "updatePassword": "Update Password",
     "close": "Close",
     "downloadPdf": "Download PDF",
-    "addToAssets": "Add to Assets",
+    "addToAssets": "Add to Budget Planner",
     "closeView": "Close View"
   },
   "sections": {
@@ -115,7 +115,7 @@
     "bestValuePicks": "Best Value Picks Within",
     "clickToAdd": "Click to add to budget",
     "items": "items",
-    "smartAssetProjection": "Smart Asset Projection",
+    "smartAssetProjection": "Smart Budget Planner",
     "autoCalculating": "Auto-calculating unit weight vs market index values",
     "noActiveTrades": "No Active Trades",
     "selectProduce": "Select produce from market to begin calculating",
