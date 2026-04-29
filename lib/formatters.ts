@@ -1,5 +1,5 @@
 export const formatPrice = (price: number) => {
-  const symbol = String.fromCharCode(8369);
+  const symbol = decodeURIComponent("%E2%82%B1");
   return `${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 

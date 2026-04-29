@@ -42,7 +42,7 @@ const AnimatedBudgetRow = ({ item, crop, tc, toggleBudgetUnit, updateBudgetQty, 
             </h4>
             <div className="flex gap-3 text-xs font-mono font-bold text-zinc-500 uppercase tracking-tight">
               <span>{displayQty}</span>
-              <span>{'\u2248'} {weight.toFixed(2)}kg</span>
+              <span>{decodeURIComponent("%E2%89%88")} {weight.toFixed(2)}kg</span>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
         <div className="flex items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-800/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-700 shadow-inner w-full sm:w-auto">
           <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('sections.liquidity')}</span>
           <LiquidityControl budgetLimit={budgetLimit} setBudgetLimit={setBudgetLimit} />
-          <span className="text-sm font-black text-zinc-400 font-mono">{String.fromCharCode(8369)}</span>
+          <span className="text-sm font-black text-zinc-400 font-mono">{decodeURIComponent("%E2%82%B1")}</span>
         </div>
       </div>
     </div>

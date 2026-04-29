@@ -265,7 +265,7 @@ const Logo = ({
   );
 };
 
-const PESO = String.fromCharCode(8369);
+const PESO = decodeURIComponent("%E2%82%B1");
 
 const formatPrice = (price: number) => {
   const value = price;
@@ -7567,7 +7567,7 @@ const App = () => {
                     </span>
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-600 mt-4 font-bold uppercase tracking-widest">
-                    Projection: 1 unit {"\u2248"} {selectedCrop.weightPerUnit}kg
+                    Projection: 1 unit {decodeURIComponent("%E2%89%88")} {selectedCrop.weightPerUnit}kg
                   </p>
                   {selectedCrop.lastUpdated && (
                     <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-3 flex items-center gap-1.5 font-mono">
