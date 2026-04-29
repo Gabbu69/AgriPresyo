@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agripresyo-v2';
+const CACHE_NAME = 'agripresyo-v3';
 const STATIC_ASSETS = [
   '/',
   '/AgriPresyo_logoFinal.webp',
