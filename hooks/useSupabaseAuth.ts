@@ -91,7 +91,10 @@ export function useSupabaseAuth() {
   }, []);
   const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook', role?: string) => {
     const redirectUrl = new URL(`${window.location.origin}/login`);
-    if (role) redirectUrl.searchParams.set('role', role);
+    if (role) {
+      redirectUrl.searchParams.set('role', role);
+      localStorage.setItem('oauth_pending_role', role);
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

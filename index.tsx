@@ -547,7 +547,13 @@ const App = () => {
     if (sbAuth.loading) return;
     if (sbAuth.user && sbAuth.session) {
       const urlParams = new URLSearchParams(window.location.search);
-      const urlRole = urlParams.get('role') as UserRole | null;
+      let urlRole = urlParams.get('role') as UserRole | null;
+
+      const pendingRole = localStorage.getItem('oauth_pending_role') as UserRole | null;
+      if (pendingRole) {
+        urlRole = pendingRole;
+        localStorage.removeItem('oauth_pending_role');
+      }
 
       const meta = sbAuth.user.user_metadata;
       let userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
