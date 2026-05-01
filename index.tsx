@@ -549,18 +549,32 @@ const App = () => {
       const urlParams = new URLSearchParams(window.location.search);
       let urlRole = urlParams.get('role') as UserRole | null;
 
-      let pendingRole = localStorage.getItem('oauth_pending_role') as UserRole | null;
+      let pendingRole: UserRole | null = null;
+      try {
+        pendingRole = localStorage.getItem('oauth_pending_role') as UserRole | null;
+      } catch (e) {
+        console.warn('localStorage is not available');
+      }
+      
       if (!pendingRole) {
-        const match = document.cookie.match(/(?:^|; )oauth_pending_role=([^;]*)/);
-        if (match && match[1]) {
-          pendingRole = match[1] as UserRole;
+        try {
+          const match = document.cookie.match(/(?:^|; )oauth_pending_role=([^;]*)/);
+          if (match && match[1]) {
+            pendingRole = match[1] as UserRole;
+          }
+        } catch (e) {
+          console.warn('document.cookie is not available');
         }
       }
       
       if (pendingRole) {
         urlRole = pendingRole;
-        localStorage.removeItem('oauth_pending_role');
-        document.cookie = 'oauth_pending_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        try {
+          localStorage.removeItem('oauth_pending_role');
+        } catch (e) {}
+        try {
+          document.cookie = 'oauth_pending_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        } catch (e) {}
       }
 
       const meta = sbAuth.user.user_metadata;
