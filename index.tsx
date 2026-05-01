@@ -577,39 +577,41 @@ const App = () => {
         } catch (e) {}
       }
 
-      const meta = sbAuth.user.user_metadata;
-      let userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
+      const initializeSession = async () => {
+        const meta = sbAuth.user.user_metadata;
+        let userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
 
-      let didForceRoleUpdate = false;
+        let didForceRoleUpdate = false;
 
-      if (urlRole && (urlRole === UserRole.CONSUMER || urlRole === UserRole.VENDOR) && userRole !== urlRole) {
-        userRole = urlRole;
-        didForceRoleUpdate = true;
-        supabase.auth.updateUser({ data: { role: urlRole } });
-        if (sbAuth.user.email) {
-          sbProfiles.updateProfileByEmail(sbAuth.user.email, { role: urlRole });
+        if (urlRole && (urlRole === UserRole.CONSUMER || urlRole === UserRole.VENDOR) && userRole !== urlRole) {
+          userRole = urlRole;
+          didForceRoleUpdate = true;
+          // Await these updates so they are guaranteed to reach the database
+          await supabase.auth.updateUser({ data: { role: urlRole } });
+          await sbProfiles.updateProfile(sbAuth.user.id, { role: urlRole });
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
 
-      setIsAuthenticated(true);
-      setRole(userRole);
-      setCurrentUserEmail(sbAuth.user.email || "");
-      loadSupabaseData(sbAuth.user.id);
+        setIsAuthenticated(true);
+        setRole(userRole);
+        setCurrentUserEmail(sbAuth.user.email || "");
+        loadSupabaseData(sbAuth.user.id);
 
-      // Fail-safe: Always ensure the UI role matches the database profile
-      // ONLY if we didn't just force an update to prevent reverting due to DB trigger race conditions
-      if (!didForceRoleUpdate) {
-        sbProfiles.fetchProfile(sbAuth.user.id).then((profile) => {
+        // Fail-safe: Always ensure the UI role matches the database profile
+        // ONLY if we didn't just force an update to prevent reverting due to DB trigger race conditions
+        if (!didForceRoleUpdate) {
+          const profile = await sbProfiles.fetchProfile(sbAuth.user.id);
           if (profile && profile.role && profile.role !== userRole && profile.role !== role) {
             setRole(profile.role as UserRole);
             // Also sync the JWT metadata if it was stale
             if (profile.role !== userRole) {
-              supabase.auth.updateUser({ data: { role: profile.role } });
+              await supabase.auth.updateUser({ data: { role: profile.role } });
             }
           }
-        });
-      }
+        }
+      };
+
+      initializeSession();
     } else {
       setIsAuthenticated(false);
       setRole(UserRole.CONSUMER);
