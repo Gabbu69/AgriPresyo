@@ -571,6 +571,17 @@ const App = () => {
       setRole(userRole);
       setCurrentUserEmail(sbAuth.user.email || "");
       loadSupabaseData(sbAuth.user.id);
+
+      // Fail-safe: Always ensure the UI role matches the database profile
+      sbProfiles.fetchProfile(sbAuth.user.id).then((profile) => {
+        if (profile && profile.role && profile.role !== userRole && profile.role !== role) {
+          setRole(profile.role as UserRole);
+          // Also sync the JWT metadata if it was stale
+          if (profile.role !== userRole) {
+            supabase.auth.updateUser({ data: { role: profile.role } });
+          }
+        }
+      });
     } else {
       setIsAuthenticated(false);
       setRole(UserRole.CONSUMER);
