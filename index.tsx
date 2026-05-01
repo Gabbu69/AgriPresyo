@@ -549,10 +549,18 @@ const App = () => {
       const urlParams = new URLSearchParams(window.location.search);
       let urlRole = urlParams.get('role') as UserRole | null;
 
-      const pendingRole = localStorage.getItem('oauth_pending_role') as UserRole | null;
+      let pendingRole = localStorage.getItem('oauth_pending_role') as UserRole | null;
+      if (!pendingRole) {
+        const match = document.cookie.match(/(?:^|; )oauth_pending_role=([^;]*)/);
+        if (match && match[1]) {
+          pendingRole = match[1] as UserRole;
+        }
+      }
+      
       if (pendingRole) {
         urlRole = pendingRole;
         localStorage.removeItem('oauth_pending_role');
+        document.cookie = 'oauth_pending_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       }
 
       const meta = sbAuth.user.user_metadata;

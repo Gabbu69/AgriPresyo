@@ -94,6 +94,7 @@ export function useSupabaseAuth() {
     if (role) {
       redirectUrl.searchParams.set('role', role);
       localStorage.setItem('oauth_pending_role', role);
+      document.cookie = `oauth_pending_role=${role}; path=/; max-age=600; SameSite=Lax`;
     }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
