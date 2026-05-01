@@ -156,6 +156,7 @@ import { useComplaints as useComplaintsHook } from "./hooks/useComplaints";
 import { useFavorites as useFavoritesHook } from "./hooks/useFavorites";
 import { useVendorRatings as useVendorRatingsHook } from "./hooks/useVendorRatings";
 import { useUserSettings } from "./hooks/useUserSettings";
+import { supabase } from "./lib/supabaseClient";
 
 // Simulated Intelligence Engine
 const mockSystemCheck = (users: any[], crops: any[]): SystemAlert | null => {
@@ -545,8 +546,21 @@ const App = () => {
   useEffect(() => {
     if (sbAuth.loading) return;
     if (sbAuth.user && sbAuth.session) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRole = urlParams.get('role') as UserRole | null;
+
       const meta = sbAuth.user.user_metadata;
-      const userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
+      let userRole = (meta?.role as UserRole) || UserRole.CONSUMER;
+
+      if (urlRole && (urlRole === UserRole.CONSUMER || urlRole === UserRole.VENDOR) && userRole !== urlRole) {
+        userRole = urlRole;
+        supabase.auth.updateUser({ data: { role: urlRole } });
+        if (sbAuth.user.email) {
+          sbProfiles.updateProfileByEmail(sbAuth.user.email, { role: urlRole });
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       setIsAuthenticated(true);
       setRole(userRole);
       setCurrentUserEmail(sbAuth.user.email || "");
@@ -1663,6 +1677,16 @@ const App = () => {
     const profiles = await sbProfiles.fetchAllProfiles();
     const profile = profiles.find((p) => p.email === email);
     if (profile && profile.status === "banned") return "banned";
+    
+    if (result.user && userRole !== UserRole.ADMIN) {
+      if (profile && profile.role !== userRole) {
+        await sbProfiles.updateProfileByEmail(email, { role: userRole });
+      }
+      if (result.user.user_metadata?.role !== userRole) {
+        await supabase.auth.updateUser({ data: { role: userRole } });
+      }
+    }
+    
     return "ok";
   };
 
