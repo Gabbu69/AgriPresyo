@@ -6853,8 +6853,11 @@ const App = () => {
             {/* About Page for authenticated users */}
             <Route path="/about" element={<AboutPage />} />
 
-            {/* Default redirect */}
-            <Route path="*" element={<Navigate to="/market" replace />} />
+            {/* Default redirect based on role */}
+            <Route 
+              path="*" 
+              element={<Navigate to={role === UserRole.VENDOR ? "/" : role === UserRole.ADMIN && isAdminUnlocked ? "/admin" : "/market"} replace />} 
+            />
           </Routes>
         </div>
       </main>
