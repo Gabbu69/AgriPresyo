@@ -2369,7 +2369,7 @@ const App = () => {
                     <CropIcon crop={crop} size="md" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-zinc-900 dark:text-white text-sm break-words leading-snug">
+                    <h4 className="font-black text-zinc-900 dark:text-white text-sm truncate leading-snug">
                       {t(`crops.${crop.id}`, crop.name)}
                     </h4>
                   </div>
