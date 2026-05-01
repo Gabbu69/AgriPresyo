@@ -650,7 +650,7 @@ const App = () => {
   const [vendorShopType, setVendorShopType] = useState<"Fruit" | "Vegetable">(
     "Fruit",
   );
-  const [shopFilter, setShopFilter] = useState<"All" | "Fruit" | "Vegetable">(
+  const [shopFilter, setShopFilter] = useState<"All" | "Fruit" | "Vegetable" | "Spice" | "Root">(
     "All",
   );
   const [shopSearch, setShopSearch] = useState("");
@@ -1508,7 +1508,7 @@ const App = () => {
   const [addCropPhoto, setAddCropPhoto] = useState<string | null>(null);
   const [isAddingNewListing, setIsAddingNewListing] = useState(false);
   const [processingPhotos, setProcessingPhotos] = useState<
-    Record<string, "approving" | "rejecting">
+    Record<string, "approving" | "rejecting" | "deleting">
   >({});
   const [editingInventoryCrop, setEditingInventoryCrop] = useState<Crop | null>(
     null,
@@ -1726,7 +1726,7 @@ const App = () => {
     const profile = profiles.find((p) => p.email === email);
     if (profile && profile.status === "banned") return "banned";
     
-    if (result.user && userRole !== UserRole.ADMIN) {
+    if (result.user) {
       if (profile && profile.role !== userRole) {
         await sbProfiles.updateProfileByEmail(email, { role: userRole });
       }
@@ -2300,7 +2300,7 @@ const App = () => {
           <EmptyState
             icon={Store}
             title={`No ${shopFilter} Shops`}
-            subtitle={`There are no ${shopFilter.toLowerCase()} shops registered right now. Check back later!`}
+            subtitle={`There are no ${(shopFilter as string).toLowerCase()} shops registered right now. Check back later!`}
           />
         )}
     </div>

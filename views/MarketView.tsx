@@ -34,6 +34,7 @@ interface MarketViewProps {
   favorites: string[];
   search: string;
   activeCategory: string;
+  isInitialLoading?: boolean;
   sortBy: SortBy;
   setSearch: (v: string) => void;
   setActiveCategory: (v: string) => void;
