@@ -547,7 +547,8 @@ const App = () => {
     if (sbAuth.loading) return;
     if (sbAuth.user && sbAuth.session) {
       const urlParams = new URLSearchParams(window.location.search);
-      let urlRole = urlParams.get('role') as UserRole | null;
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      let urlRole = (urlParams.get('role') || hashParams.get('role')) as UserRole | null;
 
       let pendingRole: UserRole | null = null;
       try {
