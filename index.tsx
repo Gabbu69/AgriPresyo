@@ -443,6 +443,7 @@ const App = () => {
 
   // ── Auth state (driven by Supabase session) ──
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const [role, setRole] = useState<UserRole>(UserRole.CONSUMER);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
 
@@ -610,6 +611,7 @@ const App = () => {
             }
           }
         }
+        setIsAuthInitializing(false);
       };
 
       initializeSession();
@@ -617,6 +619,7 @@ const App = () => {
       setIsAuthenticated(false);
       setRole(UserRole.CONSUMER);
       setCurrentUserEmail("");
+      setIsAuthInitializing(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sbAuth.loading, sbAuth.user?.id]);
@@ -6064,10 +6067,10 @@ const App = () => {
   };
 
   // Full-screen login transition preloader
-  if (isLoginTransition)
+  if (isLoginTransition || sbAuth.loading || isAuthInitializing)
     return (
       <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-stone-50 dark:bg-black login-preloader-enter">
-        <AgriLoader message="Preparing your dashboard" />
+        <AgriLoader message={isLoginTransition ? "Preparing your dashboard" : "Loading..."} />
       </div>
     );
 
@@ -6509,7 +6512,7 @@ const App = () => {
                         </div>
                         <span
                           className={`w-2.5 h-2.5 rounded-full ${
-                            currentUser?.status === "active"
+                            (currentUser?.status || "active") === "active"
                               ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"
                               : currentUser?.status === "pending"
                                 ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]"
