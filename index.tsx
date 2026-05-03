@@ -6310,6 +6310,96 @@ const App = () => {
             <LanguageToggle />
             <ThemeToggle aria-label="Toggle dark mode" />
 
+            {role === UserRole.VENDOR && (
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    if (!showAnnouncementsDropdown) {
+                      const visibleIds = announcements
+                        .filter((a) => a.active)
+                        .map((a) => a.id);
+                      setSeenAnnouncementIds((prev) => [
+                        ...new Set([...prev, ...visibleIds]),
+                      ]);
+                    }
+                    setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
+                  }}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
+                  aria-label="Toggle announcements"
+                >
+                  <Bell size={22} />
+                  {announcements.filter(
+                    (a) => a.active && !seenAnnouncementIds.includes(a.id),
+                  ).length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">
+                      {Math.min(
+                        announcements.filter(
+                          (a) =>
+                            a.active && !seenAnnouncementIds.includes(a.id),
+                        ).length,
+                        9,
+                      )}
+                      {announcements.filter(
+                        (a) => a.active && !seenAnnouncementIds.includes(a.id),
+                      ).length > 9
+                        ? "+"
+                        : ""}
+                    </span>
+                  )}
+                </button>
+                {showAnnouncementsDropdown && (
+                  <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 w-auto sm:w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
+                    <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
+                      <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                        Admin Announcements
+                      </span>
+                      <button
+                        onClick={() => setShowAnnouncementsDropdown(false)}
+                        className="text-[10px] text-zinc-400 font-bold hover:text-zinc-200"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto scrollbar-hide">
+                      {announcements.filter((a) => a.active).length === 0 ? (
+                        <p className="p-6 text-center text-zinc-600 dark:text-zinc-400 text-sm">
+                          No new announcements
+                        </p>
+                      ) : (
+                        announcements
+                          .filter((a) => a.active)
+                          .map((ann) => (
+                            <div
+                              key={ann.id}
+                              className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div
+                                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${ann.priority === "high" ? "bg-red-500/10 text-red-500" : ann.priority === "medium" ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500"}`}
+                                >
+                                  <Megaphone size={14} />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-zinc-900 dark:text-white font-bold">
+                                    {ann.title}
+                                  </p>
+                                  <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
+                                    {ann.message}
+                                  </p>
+                                  <p className="text-[9px] text-zinc-400 font-mono mt-1">
+                                    {ann.timestamp}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Profile Settings Button */}
             <div className="relative">
               <button
@@ -6707,95 +6797,7 @@ const App = () => {
               )}
             </div>
 
-            {role === UserRole.VENDOR && (
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    if (!showAnnouncementsDropdown) {
-                      const visibleIds = announcements
-                        .filter((a) => a.active)
-                        .map((a) => a.id);
-                      setSeenAnnouncementIds((prev) => [
-                        ...new Set([...prev, ...visibleIds]),
-                      ]);
-                    }
-                    setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
-                  }}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
-                  aria-label="Toggle announcements"
-                >
-                  <Bell size={22} />
-                  {announcements.filter(
-                    (a) => a.active && !seenAnnouncementIds.includes(a.id),
-                  ).length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">
-                      {Math.min(
-                        announcements.filter(
-                          (a) =>
-                            a.active && !seenAnnouncementIds.includes(a.id),
-                        ).length,
-                        9,
-                      )}
-                      {announcements.filter(
-                        (a) => a.active && !seenAnnouncementIds.includes(a.id),
-                      ).length > 9
-                        ? "+"
-                        : ""}
-                    </span>
-                  )}
-                </button>
-                {showAnnouncementsDropdown && (
-                  <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 w-auto sm:w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
-                    <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
-                      <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
-                        Admin Announcements
-                      </span>
-                      <button
-                        onClick={() => setShowAnnouncementsDropdown(false)}
-                        className="text-[10px] text-zinc-400 font-bold hover:text-zinc-200"
-                      >
-                        Close
-                      </button>
-                    </div>
-                    <div className="max-h-80 overflow-y-auto scrollbar-hide">
-                      {announcements.filter((a) => a.active).length === 0 ? (
-                        <p className="p-6 text-center text-zinc-600 dark:text-zinc-400 text-sm">
-                          No new announcements
-                        </p>
-                      ) : (
-                        announcements
-                          .filter((a) => a.active)
-                          .map((ann) => (
-                            <div
-                              key={ann.id}
-                              className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div
-                                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${ann.priority === "high" ? "bg-red-500/10 text-red-500" : ann.priority === "medium" ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500"}`}
-                                >
-                                  <Megaphone size={14} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-zinc-900 dark:text-white font-bold">
-                                    {ann.title}
-                                  </p>
-                                  <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
-                                    {ann.message}
-                                  </p>
-                                  <p className="text-[9px] text-zinc-400 font-mono mt-1">
-                                    {ann.timestamp}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+
           </div>
         </div>
       </header>
