@@ -6335,7 +6335,7 @@ const App = () => {
                     className="fixed inset-0 z-40 profile-backdrop-enter"
                     onClick={() => setShowProfileModal(false)}
                   />
-                  <div className="absolute right-0 top-14 sm:top-16 w-[calc(100vw-2rem)] sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden profile-dropdown-enter max-h-[85vh] overflow-y-auto scrollbar-hide">
+                  <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-14 sm:top-16 w-auto sm:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden profile-dropdown-enter max-h-[85vh] overflow-y-auto scrollbar-hide">
                     {/* Profile Header */}
                     <div className="profile-section bg-gradient-to-br from-green-500/10 to-emerald-500/5 p-6 border-b border-zinc-200 dark:border-zinc-800">
                       <div className="flex items-center gap-4">
@@ -6745,7 +6745,7 @@ const App = () => {
                   )}
                 </button>
                 {showAnnouncementsDropdown && (
-                  <div className="absolute right-0 top-16 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
+                  <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 w-auto sm:w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
                     <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
                       <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
                         Admin Announcements
