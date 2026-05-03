@@ -8131,15 +8131,15 @@ const App = () => {
                   </p>
                   <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1.5 leading-relaxed ml-1">
                     <li>
-                      ðŸ“¸ <strong>Take a clear photo</strong> of your crop at
+                      📸 <strong>Take a clear photo</strong> of your crop at
                       your stall or farm
                     </li>
                     <li>
-                      ðŸ·ï¸ <strong>Can't find your crop?</strong> Skip the
+                      🔍 <strong>Can't find your crop?</strong> Skip the
                       selection and just type the name (e.g. "Durian", "Lychee")
                     </li>
                     <li>
-                      ðŸ“± <strong>No photo yet?</strong> You can still list now
+                      📱 <strong>No photo yet?</strong> You can still list now
                       and add a photo later using "Edit Listing"
                     </li>
                     <li>
