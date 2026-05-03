@@ -1085,8 +1085,8 @@ const App = () => {
               <Icon size={22} className={colorClass} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">{alert.title}</h2>
-              <p className="text-zinc-400 text-xs mt-0.5">{alert.subtitle}</p>
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{alert.title}</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">{alert.subtitle}</p>
             </div>
           </div>
 
@@ -1211,7 +1211,7 @@ const App = () => {
             <Icon size={20} className={colorClass} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white truncate">
+            <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
               {alert.title}
             </p>
             <p className={`text-xs ${colorClass} truncate`}>{alert.subtitle}</p>
@@ -2136,7 +2136,7 @@ const App = () => {
             </div>
           ))}
           {vendor.cropsSold.length > 7 && (
-            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-500 border border-zinc-800 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-600 dark:text-zinc-500 border border-zinc-300 dark:border-zinc-800 shrink-0">
               +{vendor.cropsSold.length - 7}
             </div>
           )}
@@ -2384,7 +2384,7 @@ const App = () => {
   );
 
   const renderAnalyticsDashboard = () => (
-    <div className="space-y-10 sm:space-y-16 animate-in fade-in duration-700 pb-24 lg:pb-20">
+    <div className="space-y-10 sm:space-y-16 animate-in fade-in duration-700 pb-32 lg:pb-20">
       <div>
         <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">
           {t("sections.priceRankings", "Price Rankings")}
@@ -3122,7 +3122,7 @@ const App = () => {
                             prev.filter((_, idx) => idx !== i),
                           )
                         }
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/doc:opacity-100 transition-opacity shadow-lg"
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover/doc:opacity-100 transition-opacity shadow-lg"
                       >
                         <X size={10} className="text-white" />
                       </button>

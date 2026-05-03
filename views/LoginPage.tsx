@@ -165,7 +165,7 @@ export const LoginPage = ({
       addToast(`Welcome back!`, 'success');
       onLogin(role, email.trim().toLowerCase());
     } else if (result === 'banned') {
-      setError('ðŸš« Your account is locked. Please send a message to our team.');
+      setError('Your account is locked. Please send a message to our team.');
     } else {
       setError('Wrong email or password. Please try again, or sign up if you are new.');
     }
@@ -295,7 +295,7 @@ export const LoginPage = ({
                 {role === UserRole.VENDOR && (
                   <div className="space-y-3">
                     <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-1">Upload your ID or documents (JPEG, PNG, PDF) — You can do this now or later</p>
-                    <label className="flex items-center justify-center gap-3 w-full bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
+                    <label className="flex items-center justify-center gap-3 w-full bg-zinc-100 dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-green-500/40 rounded-2xl py-5 cursor-pointer transition-all group">
                       <Upload className="w-5 h-5 text-zinc-600 group-hover:text-green-400 transition-colors" />
                       <span className="text-xs text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest transition-colors">Choose Files</span>
                       <input
@@ -321,7 +321,7 @@ export const LoginPage = ({
                             <button
                               type="button"
                               onClick={() => removeDoc(i)}
-                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/doc:opacity-100 transition-opacity shadow-lg"
+                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover/doc:opacity-100 transition-opacity shadow-lg"
                             >
                               <X size={10} className="text-white" />
                             </button>

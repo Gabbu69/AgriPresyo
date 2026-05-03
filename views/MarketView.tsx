@@ -246,6 +246,63 @@ export const MarketView: React.FC<MarketViewProps> = ({
         </div>
       </div>
 
+      {/* Favorites Section */}
+      {favoriteCrops.length > 0 && (
+        <div className="space-y-3" id="favorites-section">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <Heart size={18} className="text-red-500" fill="currentColor" />
+            </div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-black tracking-tight text-zinc-900 dark:text-white">
+                {t('sections.favorites', 'Your Favorites')}
+              </h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                {favoriteCrops.length} {favoriteCrops.length === 1 ? 'item' : 'items'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 scroll-smooth">
+            {favoriteCrops.map((crop) => (
+              <div
+                key={crop.id}
+                className="shrink-0 w-44 sm:w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 hover:border-red-400/40 hover:shadow-lg transition-all cursor-pointer group relative"
+                onClick={() => setSelectedCrop(crop)}
+              >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(crop.id);
+                  }}
+                  className="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-90"
+                  aria-label={`Remove ${tc(crop)} from favorites`}
+                >
+                  <X size={14} strokeWidth={2.5} />
+                </button>
+                <div className="mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <CropIcon crop={crop} size="md" />
+                </div>
+                <h4 className="font-black text-sm text-zinc-900 dark:text-white truncate leading-snug">
+                  {tc(crop)}
+                </h4>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <span className="text-lg font-black font-mono text-zinc-900 dark:text-white tracking-tighter">
+                    {formatPrice(crop.currentPrice)}
+                  </span>
+                  <span className="text-zinc-400 text-[10px] font-bold">/ kg</span>
+                </div>
+                <div className={`flex items-center gap-1 mt-1.5 text-[10px] font-mono font-black ${
+                  crop.change7d > 0 ? 'text-green-500' : crop.change7d < 0 ? 'text-red-500' : 'text-zinc-500'
+                }`}>
+                  {crop.change7d > 0 ? <ChevronUp size={12} /> : crop.change7d < 0 ? <ChevronDown size={12} /> : <Minus size={12} />}
+                  {Math.abs(crop.change7d)}% <span className="text-zinc-400 ml-1">7D</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
         {isInitialLoading ? (
           [...Array(6)].map((_, i) => <SkeletonCard key={i} />)

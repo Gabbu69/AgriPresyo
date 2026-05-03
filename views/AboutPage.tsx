@@ -14,7 +14,7 @@ export const AboutPage = () => {
       <FuturisticVinesBackground interactive={true} />
       
       {/* Top Navigation */}
-      <nav className="relative z-20 flex items-center justify-between p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
+      <nav className="relative z-20 flex items-center justify-between px-3 py-4 sm:p-6 lg:p-8 max-w-[1400px] w-full mx-auto">
         <Link to="/" className="flex items-center gap-3 group">
           <Logo size={40} className="text-green-500 group-hover:scale-105 transition-transform" />
           <h1 className="text-2xl font-black tracking-tighter">
