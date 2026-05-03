@@ -5586,11 +5586,9 @@ const App = () => {
               <button
                 onClick={async () => {
                   // Dynamic import — jsPDF only loaded when user clicks PDF button
-                  const [{ default: jsPDF }, { default: autoTable }] =
-                    await Promise.all([
-                      import("jspdf"),
-                      import("jspdf-autotable"),
-                    ]);
+                  const { jsPDF } = await import("jspdf");
+                  const autotableModule = await import("jspdf-autotable");
+                  const autoTable = autotableModule.default;
                   const doc = new jsPDF();
                   doc.setFontSize(18);
                   doc.text("AgriPresyo Market Report", 14, 22);
