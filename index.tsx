@@ -8129,19 +8129,19 @@ const App = () => {
                   </p>
                   <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1.5 leading-relaxed ml-1">
                     <li>
-                      📸 <strong>Take a clear photo</strong> of your crop at
+                      {"\uD83D\uDCF8"} <strong>Take a clear photo</strong> of your crop at
                       your stall or farm
                     </li>
                     <li>
-                      🏷️ <strong>Can't find your crop?</strong> Skip the
-                      selection and just type the name (e.g. "Durian", "Lychee")
+                      {"\uD83C\uDFF7\uFE0F"} <strong>Can&#39;t find your crop?</strong> Skip the
+                      selection and just type the name (e.g. &quot;Durian&quot;, &quot;Lychee&quot;)
                     </li>
                     <li>
-                      📱 <strong>No photo yet?</strong> You can still list now
-                      and add a photo later using "Edit Listing"
+                      {"\uD83D\uDCF1"} <strong>No photo yet?</strong> You can still list now
+                      and add a photo later using &quot;Edit Listing&quot;
                     </li>
                     <li>
-                      ✅ <strong>Real photos only</strong> — Admin will check
+                      {"\u2705"} <strong>Real photos only</strong> {"\u2014"} Admin will check
                       that photos are real and not from the internet
                     </li>
                   </ul>
