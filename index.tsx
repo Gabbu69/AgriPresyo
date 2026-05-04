@@ -8133,7 +8133,7 @@ const App = () => {
                       your stall or farm
                     </li>
                     <li>
-                      🔍 <strong>Can't find your crop?</strong> Skip the
+                      🏷️ <strong>Can't find your crop?</strong> Skip the
                       selection and just type the name (e.g. "Durian", "Lychee")
                     </li>
                     <li>
