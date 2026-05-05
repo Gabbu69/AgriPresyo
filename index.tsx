@@ -83,6 +83,8 @@ import {
   Share2,
   Copy,
   Check,
+  Tag,
+  Smartphone,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -8127,19 +8129,22 @@ const App = () => {
                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     <AlertCircle size={13} /> Helpful Tips for Sellers
                   </p>
-                  <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1.5 leading-relaxed ml-1">
-                    <li>
-                      {"\uD83D\uDCF8"} Take a clear photo of your crop at your stall or farm
+                  <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-2 leading-relaxed ml-1">
+                    <li className="flex items-start gap-1.5">
+                      <Camera size={14} className="mt-0.5 shrink-0 text-zinc-400" /> 
+                      <span>Take a clear photo of your crop at your stall or farm</span>
                     </li>
-                    <li>
-                      {"\uD83C\uDFF7\uFE0F"} Can't find your crop? Skip the selection and just type the name (e.g. "Durian", "Lychee")
+                    <li className="flex items-start gap-1.5">
+                      <Tag size={14} className="mt-0.5 shrink-0 text-zinc-400" /> 
+                      <span>Can't find your crop? Skip the selection and just type the name (e.g. "Durian", "Lychee")</span>
                     </li>
-                    <li>
-                      {"\uD83D\uDCF1"} No photo yet? You can still list now and add a photo later using "Edit Listing"
+                    <li className="flex items-start gap-1.5">
+                      <Smartphone size={14} className="mt-0.5 shrink-0 text-zinc-400" /> 
+                      <span>No photo yet? You can still list now and add a photo later using "Edit Listing"</span>
                     </li>
-                    <li>
-                      {"\u2705"} <strong>Real photos only</strong> {"\u2014"} Admin will check
-                      that photos are real and not from the internet
+                    <li className="flex items-start gap-1.5">
+                      <CheckCircle size={14} className="mt-0.5 shrink-0 text-green-500" /> 
+                      <span><strong>Real photos only</strong> {"\u2014"} Admin will check that photos are real and not from the internet</span>
                     </li>
                   </ul>
                 </div>
