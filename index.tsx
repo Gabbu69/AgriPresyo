@@ -8129,13 +8129,13 @@ const App = () => {
                   </p>
                   <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1.5 leading-relaxed ml-1">
                     <li>
-                      📸 Take a clear photo of your crop at your stall or farm
+                      {"\uD83D\uDCF8"} Take a clear photo of your crop at your stall or farm
                     </li>
                     <li>
-                      🏷️ Can't find your crop? Skip the selection and just type the name (e.g. "Durian", "Lychee")
+                      {"\uD83C\uDFF7\uFE0F"} Can't find your crop? Skip the selection and just type the name (e.g. "Durian", "Lychee")
                     </li>
                     <li>
-                      📱 No photo yet? You can still list now and add a photo later using "Edit Listing"
+                      {"\uD83D\uDCF1"} No photo yet? You can still list now and add a photo later using "Edit Listing"
                     </li>
                     <li>
                       {"\u2705"} <strong>Real photos only</strong> {"\u2014"} Admin will check
