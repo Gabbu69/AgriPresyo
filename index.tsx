@@ -756,6 +756,52 @@ const App = () => {
     ],
   );
 
+  const loadAdminSupabaseData = useCallback(async () => {
+    const profiles = await sbProfiles.fetchAllProfiles();
+    const userRecords = profiles.map((p) => profileToUserRecord(p));
+    setUsers((prev) => {
+      const merged = [...userRecords];
+      if (!merged.some((u) => u.email === SEEDED_ADMIN.email)) {
+        merged.unshift(SEEDED_ADMIN);
+      }
+      return merged.length > 0 ? merged : prev;
+    });
+
+    const logRows = await sbAuditLog.fetchAuditLog();
+    setAuditLog(
+      logRows.map((r) => ({
+        id: r.id,
+        action: r.action,
+        target: r.target,
+        details: r.details,
+        timestamp: r.created_at,
+      })),
+    );
+
+    setAnnouncements(await sbAnnouncements.fetchAnnouncements());
+    setComplaints(await sbComplaints.fetchComplaints());
+    setVendorRatingData(await sbVendorRatings.fetchAggregateRatings());
+
+    const remoteListings = await fetchRemoteVendorListings();
+    if (remoteListings.length > 0) {
+      try {
+        localStorage.setItem(
+          VENDOR_LISTINGS_STORAGE_KEY,
+          JSON.stringify(remoteListings),
+        );
+      } catch (error) {
+        console.warn("Unable to cache remote vendor listings", error);
+      }
+      setCrops((prev) => mergeVendorListings(prev));
+    }
+  }, [
+    sbProfiles,
+    sbAuditLog,
+    sbAnnouncements,
+    sbComplaints,
+    sbVendorRatings,
+  ]);
+
   // ── Restore session on mount ──
   useEffect(() => {
     if (sbAuth.loading) return;
@@ -1208,10 +1254,8 @@ const App = () => {
 
   useEffect(() => {
     persistVendorListings(crops);
-    if (sbAuth.session) {
-      saveRemoteVendorListings(crops);
-    }
-  }, [crops, sbAuth.session]);
+    saveRemoteVendorListings(crops);
+  }, [crops]);
 
   // Document lightbox state for admin review
   const [docLightbox, setDocLightbox] = useState<string | null>(null);
@@ -1909,6 +1953,7 @@ const App = () => {
         const exists = prev.some((u) => u.email === SEEDED_ADMIN.email);
         return exists ? prev : [SEEDED_ADMIN, ...prev];
       });
+      loadAdminSupabaseData();
     }
 
     // Load all persisted data from Supabase
