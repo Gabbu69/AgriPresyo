@@ -124,6 +124,93 @@ export const MarketView: React.FC<MarketViewProps> = ({
   const tc = (crop: { id: string; name: string }) => t(`crops.${crop.id}`, crop.name);
   const favoriteCrops = crops.filter((c) => favorites.includes(c.id));
 
+  const renderCropCard = (crop: Crop) => (
+    <div
+      key={crop.id}
+      className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[32px] overflow-hidden hover:border-green-400/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all cursor-pointer relative flex flex-col h-full"
+      onClick={() => setSelectedCrop(crop)}
+    >
+      <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-1" role="article" aria-label={tc(crop)}>
+        <div className="flex justify-between items-start mb-4 sm:mb-6">
+          <div className="flex items-center gap-4">
+            <div className="group-hover:scale-110 transition-transform duration-500">
+              <CropIcon crop={crop} size="lg" />
+            </div>
+            <div>
+              <h4 className="font-black text-zinc-900 dark:text-white text-lg sm:text-xl tracking-tight leading-snug">
+                {tc(crop)}
+              </h4>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                  {t(`categories.${crop.category.toLowerCase()}`)}
+                </span>
+                {getSeasonalStatus(crop).inSeason && (
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={12} className="text-orange-400" />
+                    <span className="text-[9px] font-bold text-orange-400 uppercase tracking-widest">In Season</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const isAdding = !favorites.includes(crop.id);
+              toggleFavorite(crop.id);
+              if (isAdding) {
+                setTimeout(() => {
+                  document.getElementById('favorites-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }
+            }}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+              favorites.includes(crop.id)
+                ? 'bg-red-500/10 text-red-500'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-red-400'
+            }`}
+            aria-label={favorites.includes(crop.id) ? `Remove ${tc(crop)} from favorites` : `Add ${tc(crop)} to favorites`}
+            aria-pressed={favorites.includes(crop.id)}
+          >
+            <Heart size={20} fill={favorites.includes(crop.id) ? 'currentColor' : 'none'} />
+          </button>
+        </div>
+
+        <div className="flex items-baseline gap-2 mb-1">
+          <span className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white font-mono tracking-tighter">
+            {formatPrice(crop.currentPrice)}
+          </span>
+          <span className="text-zinc-400 dark:text-zinc-600 font-bold text-xs">/ kg</span>
+        </div>
+
+        <div className="flex items-center gap-2 mb-5 sm:mb-8">
+          <div className={`flex items-center gap-1 font-mono font-black text-xs px-2 py-0.5 rounded-full ${
+            crop.change7d > 0 ? 'bg-green-500/10 text-green-500' : crop.change7d < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-500/10 text-zinc-500'
+          }`}>
+            {crop.change7d > 0 ? <ChevronUp size={14} strokeWidth={3} /> : crop.change7d < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+            <span>{Math.abs(crop.change7d)}%</span>
+          </div>
+          <span className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] uppercase tracking-widest">{t('sections.last7Days')}</span>
+        </div>
+
+        <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <Sparkline data={crop.history} color={crop.change7d > 0 ? '#22c55e' : crop.change7d < 0 ? '#ef4444' : '#a1a1aa'} />
+            </div>
+            <DebouncedAddButton
+              cropId={crop.id}
+              budgetItems={budgetItems}
+              onAdd={addToBudget}
+              t={t}
+            />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+
   return (
     <div className="space-y-4 sm:space-y-8 pb-28 lg:pb-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -210,8 +297,8 @@ export const MarketView: React.FC<MarketViewProps> = ({
               {analyticsData.topGainer?.change7d && analyticsData.topGainer.change7d < 0 ? <TrendingDown className="text-red-500" size={20} /> : analyticsData.topGainer?.change7d === 0 ? <Minus className="text-zinc-500" size={20} /> : <TrendingUp className="text-green-500" size={20} />}
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('sections.topGainer')}</p>
-              <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mt-0.5">{t('sections.todaysHighlight')}</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('sections.topGainer', 'Top Gainer')}</p>
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mt-0.5">{t('sections.todaysHighlight', 'Today\'s Highlight')}</h3>
             </div>
           </div>
           {analyticsData.topGainer ? (
@@ -248,7 +335,7 @@ export const MarketView: React.FC<MarketViewProps> = ({
 
       {/* Favorites Section */}
       {favoriteCrops.length > 0 && (
-        <div className="space-y-3" id="favorites-section">
+        <div className="space-y-3 scroll-mt-24" id="favorites-section">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
               <Heart size={18} className="text-red-500" fill="currentColor" />
@@ -303,99 +390,25 @@ export const MarketView: React.FC<MarketViewProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
-        {isInitialLoading ? (
-          [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
-        ) : filteredCrops.length === 0 ? (
-          <div className="col-span-full">
-            <EmptyState
-              icon={Search}
-              title={t('common.noResults')}
-              subtitle={t('common.noResultsSubtitle')}
-            />
-          </div>
-        ) : (
-          filteredCrops.map((crop) => (
-            <div
-              key={crop.id}
-              className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl sm:rounded-[32px] overflow-hidden hover:border-green-400/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all cursor-pointer relative flex flex-col h-full"
-              onClick={() => setSelectedCrop(crop)}
-            >
-              <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-1" role="article" aria-label={tc(crop)}>
-                <div className="flex justify-between items-start mb-4 sm:mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="group-hover:scale-110 transition-transform duration-500">
-                      <CropIcon crop={crop} size="lg" />
-                    </div>
-                    <div>
-                      <h4 className="font-black text-zinc-900 dark:text-white text-lg sm:text-xl tracking-tight leading-snug">
-                        {tc(crop)}
-                      </h4>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                          {t(`categories.${crop.category.toLowerCase()}`)}
-                        </span>
-                        {getSeasonalStatus(crop).inSeason && (
-                          <div className="flex items-center gap-1.5">
-                            <Clock size={12} className="text-orange-400" />
-                            <span className="text-[9px] font-bold text-orange-400 uppercase tracking-widest">In Season</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(crop.id);
-                    }}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                      favorites.includes(crop.id)
-                        ? 'bg-red-500/10 text-red-500'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-red-400'
-                    }`}
-                    aria-label={favorites.includes(crop.id) ? `Remove ${tc(crop)} from favorites` : `Add ${tc(crop)} to favorites`}
-                    aria-pressed={favorites.includes(crop.id)}
-                  >
-                    <Heart size={20} fill={favorites.includes(crop.id) ? 'currentColor' : 'none'} />
-                  </button>
-                </div>
-
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white font-mono tracking-tighter">
-                    {formatPrice(crop.currentPrice)}
-                  </span>
-                  <span className="text-zinc-400 dark:text-zinc-600 font-bold text-xs">/ kg</span>
-                </div>
-
-                <div className="flex items-center gap-2 mb-5 sm:mb-8">
-                  <div className={`flex items-center gap-1 font-mono font-black text-xs px-2 py-0.5 rounded-full ${
-                    crop.change7d > 0 ? 'bg-green-500/10 text-green-500' : crop.change7d < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-500/10 text-zinc-500'
-                  }`}>
-                    {crop.change7d > 0 ? <ChevronUp size={14} strokeWidth={3} /> : crop.change7d < 0 ? <ChevronDown size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
-                    <span>{Math.abs(crop.change7d)}%</span>
-                  </div>
-                  <span className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] uppercase tracking-widest">{t('sections.last7Days')}</span>
-                </div>
-
-                <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <Sparkline data={crop.history} color={crop.change7d > 0 ? '#22c55e' : crop.change7d < 0 ? '#ef4444' : '#a1a1aa'} />
-                    </div>
-                    <DebouncedAddButton
-                      cropId={crop.id}
-                      budgetItems={budgetItems}
-                      onAdd={addToBudget}
-                      t={t}
-                    />
-                  </div>
-                </div>
-              </div>
-
+      <div className="pt-4">
+        <h2 className="text-2xl sm:text-3xl font-black tracking-tighter mb-6">
+          {t('sections.marketListings', 'Market Listings')}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
+          {isInitialLoading ? (
+            [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
+          ) : filteredCrops.length === 0 ? (
+            <div className="col-span-full">
+              <EmptyState
+                icon={Search}
+                title={t('common.noResults')}
+                subtitle={t('common.noResultsSubtitle')}
+              />
             </div>
-          ))
-        )}
+          ) : (
+            filteredCrops.map(renderCropCard)
+          )}
+        </div>
       </div>
     </div>
   );
