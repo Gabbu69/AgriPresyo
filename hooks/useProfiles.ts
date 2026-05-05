@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 export interface ProfileRow {
   id: string;
@@ -48,6 +49,37 @@ export function profileToUserRecord(p: ProfileRow) {
 }
 
 export function useProfiles() {
+  const upsertMissingProfile = useCallback(async (authUser: User): Promise<ProfileRow | null> => {
+    if (!authUser.email) return null;
+
+    const metadata = authUser.user_metadata ?? {};
+    const rawRole = typeof metadata.role === 'string' ? metadata.role : 'CONSUMER';
+    const role = ['CONSUMER', 'VENDOR', 'ADMIN'].includes(rawRole) ? rawRole : 'CONSUMER';
+    const name = typeof metadata.name === 'string' ? metadata.name : '';
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: authUser.id,
+          email: authUser.email,
+          name,
+          role,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
+      .select('*')
+      .maybeSingle();
+
+    if (error) {
+      console.error('upsertMissingProfile error:', error);
+      return null;
+    }
+
+    return data;
+  }, []);
+
   const fetchAllProfiles = useCallback(async (): Promise<ProfileRow[]> => {
     const { data, error } = await supabase
       .from('profiles')
@@ -65,13 +97,23 @@ export function useProfiles() {
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     if (error) {
       console.error('fetchProfile error:', error);
       return null;
     }
+    if (!data) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('fetchProfile auth user error:', userError);
+        return null;
+      }
+      if (user?.id === userId) {
+        return upsertMissingProfile(user);
+      }
+    }
     return data;
-  }, []);
+  }, [upsertMissingProfile]);
 
   const updateProfile = useCallback(
     async (userId: string, updates: Partial<Omit<ProfileRow, 'id' | 'email' | 'created_at'>>) => {
