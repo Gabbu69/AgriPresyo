@@ -56,6 +56,22 @@ export function useProfiles() {
     const rawRole = typeof metadata.role === 'string' ? metadata.role : 'CONSUMER';
     const role = ['CONSUMER', 'VENDOR', 'ADMIN'].includes(rawRole) ? rawRole : 'CONSUMER';
     const name = typeof metadata.name === 'string' ? metadata.name : '';
+    const verificationDocs = Array.isArray(metadata.verification_docs)
+      ? metadata.verification_docs.filter((doc): doc is string => typeof doc === 'string')
+      : [];
+    const verificationStatus =
+      typeof metadata.verification_status === 'string' &&
+      ['none', 'pending_review', 'verified', 'rejected'].includes(metadata.verification_status)
+        ? metadata.verification_status
+        : verificationDocs.length > 0
+          ? 'pending_review'
+          : 'none';
+    const verificationSubmittedAt =
+      typeof metadata.verification_submitted_at === 'string'
+        ? metadata.verification_submitted_at
+        : verificationDocs.length > 0
+          ? new Date().toISOString()
+          : null;
 
     const { data, error } = await supabase
       .from('profiles')
@@ -65,6 +81,9 @@ export function useProfiles() {
           email: authUser.email,
           name,
           role,
+          verification_docs: verificationDocs.length > 0 ? verificationDocs : undefined,
+          verification_status: verificationStatus,
+          verification_submitted_at: verificationSubmittedAt,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'id' }
@@ -130,6 +149,31 @@ export function useProfiles() {
     []
   );
 
+  const upsertAuthProfile = useCallback(
+    async (authUser: User, updates: Partial<Omit<ProfileRow, 'created_at' | 'updated_at'>>) => {
+      if (!authUser.email) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: authUser.id,
+            email: authUser.email,
+            ...updates,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        )
+        .select('*')
+        .maybeSingle();
+      if (error) {
+        console.error('upsertAuthProfile error:', error);
+        return null;
+      }
+      return data;
+    },
+    []
+  );
+
   const updateProfileByEmail = useCallback(
     async (email: string, updates: Record<string, unknown>) => {
       const { error } = await supabase
@@ -183,6 +227,7 @@ export function useProfiles() {
   return {
     fetchAllProfiles,
     fetchProfile,
+    upsertAuthProfile,
     updateProfile,
     updateProfileByEmail,
     uploadAvatar,
