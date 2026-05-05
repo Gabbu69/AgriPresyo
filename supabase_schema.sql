@@ -31,12 +31,27 @@ create table if not exists public.profiles (
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, name, role)
+  insert into public.profiles (
+    id,
+    email,
+    name,
+    role,
+    verification_status,
+    verification_submitted_at,
+    verification_docs
+  )
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data->>'name', ''),
-    coalesce(new.raw_user_meta_data->>'role', 'CONSUMER')
+    coalesce(new.raw_user_meta_data->>'role', 'CONSUMER'),
+    coalesce(new.raw_user_meta_data->>'verification_status', 'none'),
+    nullif(new.raw_user_meta_data->>'verification_submitted_at', '')::timestamptz,
+    case
+      when jsonb_typeof(new.raw_user_meta_data->'verification_docs') = 'array'
+      then array(select jsonb_array_elements_text(new.raw_user_meta_data->'verification_docs'))
+      else null
+    end
   );
   return new;
 end;
@@ -100,6 +115,20 @@ create table if not exists public.vendor_ratings (
   unique(user_id, vendor_id)
 );
 
+-- 7. VENDOR CROP LISTINGS / PHOTO MODERATION
+create table if not exists public.vendor_crop_listings (
+  id text primary key,
+  crop_id text not null,
+  crop_name text not null,
+  category text not null check (category in ('Vegetable','Fruit','Spice','Root')),
+  current_price numeric not null default 0,
+  last_updated timestamptz,
+  vendor_id text not null,
+  vendor_data jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 -- 7. DISMISSED ANNOUNCEMENTS
 create table if not exists public.dismissed_announcements (
   id uuid primary key default gen_random_uuid(),
@@ -137,39 +166,46 @@ alter table public.announcements enable row level security;
 alter table public.complaints enable row level security;
 alter table public.favorites enable row level security;
 alter table public.vendor_ratings enable row level security;
+alter table public.vendor_crop_listings enable row level security;
 alter table public.dismissed_announcements enable row level security;
 alter table public.seen_announcements enable row level security;
 alter table public.user_settings enable row level security;
 
+grant select, update on public.profiles to anon, authenticated;
+grant select, insert on public.audit_logs to anon, authenticated;
+grant select, insert, update on public.announcements to anon, authenticated;
+grant select, insert, update on public.complaints to anon, authenticated;
+grant select, insert, update, delete on public.vendor_crop_listings to anon, authenticated;
+
 -- PROFILES
-create policy "Profiles are viewable by authenticated users" on public.profiles
-  for select using (auth.role() = 'authenticated');
-create policy "Users can update own profile" on public.profiles
-  for update using (auth.uid() = id);
+create policy "Profiles are viewable by app users" on public.profiles
+  for select using (auth.role() in ('anon', 'authenticated'));
+create policy "Profiles are updatable by app users" on public.profiles
+  for update using (auth.role() in ('anon', 'authenticated'));
 create policy "Users can insert own profile" on public.profiles
   for insert with check (auth.uid() = id);
 
--- AUDIT LOGS  (read/write for all authenticated — admin check done in app)
-create policy "Audit logs viewable by authenticated" on public.audit_logs
-  for select using (auth.role() = 'authenticated');
-create policy "Audit logs insertable by authenticated" on public.audit_logs
-  for insert with check (auth.role() = 'authenticated');
+-- AUDIT LOGS  (read/write for app users — admin check done in app)
+create policy "Audit logs viewable by app users" on public.audit_logs
+  for select using (auth.role() in ('anon', 'authenticated'));
+create policy "Audit logs insertable by app users" on public.audit_logs
+  for insert with check (auth.role() in ('anon', 'authenticated'));
 
 -- ANNOUNCEMENTS
-create policy "Announcements viewable by all authenticated" on public.announcements
-  for select using (auth.role() = 'authenticated');
-create policy "Announcements insertable by authenticated" on public.announcements
-  for insert with check (auth.role() = 'authenticated');
-create policy "Announcements updatable by authenticated" on public.announcements
-  for update using (auth.role() = 'authenticated');
+create policy "Announcements viewable by app users" on public.announcements
+  for select using (auth.role() in ('anon', 'authenticated'));
+create policy "Announcements insertable by app users" on public.announcements
+  for insert with check (auth.role() in ('anon', 'authenticated'));
+create policy "Announcements updatable by app users" on public.announcements
+  for update using (auth.role() in ('anon', 'authenticated'));
 
 -- COMPLAINTS
-create policy "Users can view own complaints" on public.complaints
-  for select using (auth.role() = 'authenticated');
+create policy "Complaints viewable by app users" on public.complaints
+  for select using (auth.role() in ('anon', 'authenticated'));
 create policy "Users can insert complaints" on public.complaints
-  for insert with check (auth.role() = 'authenticated');
-create policy "Complaints updatable by authenticated" on public.complaints
-  for update using (auth.role() = 'authenticated');
+  for insert with check (auth.role() in ('anon', 'authenticated'));
+create policy "Complaints updatable by app users" on public.complaints
+  for update using (auth.role() in ('anon', 'authenticated'));
 
 -- FAVORITES
 create policy "Users can view own favorites" on public.favorites
@@ -188,6 +224,16 @@ create policy "Users can update own ratings" on public.vendor_ratings
   for update using (auth.uid() = user_id);
 create policy "Users can delete own ratings" on public.vendor_ratings
   for delete using (auth.uid() = user_id);
+
+-- VENDOR CROP LISTINGS
+create policy "Vendor crop listings viewable by app users" on public.vendor_crop_listings
+  for select using (auth.role() in ('anon', 'authenticated'));
+create policy "Vendor crop listings insertable by app users" on public.vendor_crop_listings
+  for insert with check (auth.role() in ('anon', 'authenticated'));
+create policy "Vendor crop listings updatable by app users" on public.vendor_crop_listings
+  for update using (auth.role() in ('anon', 'authenticated'));
+create policy "Vendor crop listings deletable by app users" on public.vendor_crop_listings
+  for delete using (auth.role() in ('anon', 'authenticated'));
 
 -- DISMISSED / SEEN ANNOUNCEMENTS
 create policy "Users manage own dismissed" on public.dismissed_announcements

@@ -52,11 +52,23 @@ export function useSupabaseAuth() {
       role: string,
       extraMeta?: Record<string, unknown>
     ) => {
+      const verificationDocs = Array.isArray(extraMeta?.verification_docs)
+        ? extraMeta.verification_docs
+        : [];
+      const shouldSubmitVerification =
+        role === 'VENDOR' && verificationDocs.length > 0;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name, role, ...extraMeta },
+          data: {
+            name,
+            role,
+            ...extraMeta,
+            verification_status: shouldSubmitVerification ? 'pending_review' : 'none',
+            verification_submitted_at: shouldSubmitVerification ? new Date().toISOString() : null,
+          },
         },
       });
       if (error) {

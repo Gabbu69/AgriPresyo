@@ -121,6 +121,203 @@ import {
 } from "./components/ui/NavIcons";
 import { Ticker } from "./components/ui/Ticker";
 
+const VENDOR_LISTINGS_STORAGE_KEY = "AP_vendor_crop_listings_v1";
+
+type PersistedVendorListing = {
+  cropId: string;
+  cropName: string;
+  category: Crop["category"];
+  currentPrice: number;
+  lastUpdated?: string;
+  vendor: Vendor;
+};
+
+type VendorListingRow = {
+  crop_id: string;
+  crop_name: string;
+  category: Crop["category"];
+  current_price: number;
+  last_updated: string | null;
+  vendor_id: string;
+  vendor_data: Vendor;
+};
+
+const isRegisteredVendorId = (id: string) => id.includes("@");
+
+const readVendorListings = (): PersistedVendorListing[] => {
+  try {
+    const raw = localStorage.getItem(VENDOR_LISTINGS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const mergeVendorListings = (baseCrops: Crop[]): Crop[] => {
+  const persisted = readVendorListings();
+  if (persisted.length === 0) return baseCrops;
+
+  const cropMap = new Map(baseCrops.map((crop) => [crop.id, { ...crop, vendors: [...crop.vendors] }]));
+
+  persisted.forEach((entry) => {
+    if (!entry?.cropId || !entry?.vendor?.id) return;
+
+    const existingCrop = cropMap.get(entry.cropId);
+    const crop: Crop =
+      existingCrop ??
+      ({
+        id: entry.cropId,
+        name: entry.cropName || entry.vendor.listingName || "Custom Crop",
+        category: entry.category || "Vegetable",
+        currentPrice: entry.currentPrice || entry.vendor.price || 0,
+        change7d: 0,
+        demand: "Medium",
+        icon: "🌱",
+        weightPerUnit: 1,
+        history: [
+          {
+            date: (entry.lastUpdated || new Date().toISOString()).slice(0, 10),
+            price: entry.currentPrice || entry.vendor.price || 0,
+          },
+        ],
+        lastUpdated: entry.lastUpdated,
+        vendors: [],
+      } as Crop);
+
+    const vendorIndex = crop.vendors.findIndex((v) => v.id === entry.vendor.id);
+    if (vendorIndex >= 0) {
+      crop.vendors[vendorIndex] = { ...crop.vendors[vendorIndex], ...entry.vendor };
+    } else {
+      crop.vendors.push(entry.vendor);
+    }
+    crop.currentPrice = entry.currentPrice || crop.currentPrice;
+    crop.lastUpdated = entry.lastUpdated || crop.lastUpdated;
+    cropMap.set(entry.cropId, crop);
+  });
+
+  return Array.from(cropMap.values());
+};
+
+const persistVendorListings = (crops: Crop[]) => {
+  const listings = crops.flatMap((crop) =>
+    crop.vendors
+      .filter((vendor) => isRegisteredVendorId(vendor.id))
+      .map((vendor) => ({
+        cropId: crop.id,
+        cropName: crop.name,
+        category: crop.category,
+        currentPrice: vendor.price || crop.currentPrice,
+        lastUpdated: crop.lastUpdated,
+        vendor,
+      })),
+  );
+
+  try {
+    localStorage.setItem(VENDOR_LISTINGS_STORAGE_KEY, JSON.stringify(listings));
+  } catch (error) {
+    console.warn("Unable to persist vendor crop listings", error);
+  }
+};
+
+const vendorListingsFromRows = (rows: VendorListingRow[]): PersistedVendorListing[] =>
+  rows
+    .filter((row) => row.crop_id && row.vendor_id && row.vendor_data)
+    .map((row) => ({
+      cropId: row.crop_id,
+      cropName: row.crop_name,
+      category: row.category,
+      currentPrice: row.current_price,
+      lastUpdated: row.last_updated ?? undefined,
+      vendor: row.vendor_data,
+    }));
+
+const fetchRemoteVendorListings = async (): Promise<PersistedVendorListing[]> => {
+  const { data, error } = await supabase
+    .from("vendor_crop_listings")
+    .select("crop_id,crop_name,category,current_price,last_updated,vendor_id,vendor_data");
+
+  if (error) {
+    console.warn("Unable to fetch remote vendor listings", error.message);
+    return [];
+  }
+
+  return vendorListingsFromRows((data ?? []) as VendorListingRow[]);
+};
+
+const saveRemoteVendorListings = async (crops: Crop[]) => {
+  const rows = crops.flatMap((crop) =>
+    crop.vendors
+      .filter((vendor) => isRegisteredVendorId(vendor.id))
+      .map((vendor) => ({
+        id: `${crop.id}__${vendor.id}`,
+        crop_id: crop.id,
+        crop_name: crop.name,
+        category: crop.category,
+        current_price: vendor.price || crop.currentPrice,
+        last_updated: crop.lastUpdated ?? new Date().toISOString(),
+        vendor_id: vendor.id,
+        vendor_data: vendor,
+        updated_at: new Date().toISOString(),
+      })),
+  );
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase
+    .from("vendor_crop_listings")
+    .upsert(rows, { onConflict: "id" });
+
+  if (error) {
+    console.warn("Unable to save remote vendor listings", error.message);
+  }
+};
+
+const deleteRemoteVendorListing = async (cropId: string, vendorId: string) => {
+  const { error } = await supabase
+    .from("vendor_crop_listings")
+    .delete()
+    .eq("id", `${cropId}__${vendorId}`);
+
+  if (error) {
+    console.warn("Unable to delete remote vendor listing", error.message);
+  }
+};
+
+const normalizeCropPhoto = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Please upload an image file."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Unable to read the image."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("Unable to load the image."));
+      image.onload = () => {
+        const maxSide = 1280;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Unable to process the image."));
+          return;
+        }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+
 // jsPDF + autoTable are loaded on demand (dynamic import) to avoid 200KB in the initial bundle
 import FuturisticVinesBackground from "./components/ui/FuturisticVinesBackground";
 import { AnimatedCounter } from "./components/ui/AnimatedCounter";
@@ -533,6 +730,20 @@ const App = () => {
       const settings = await sbSettings.fetchSettings(userId);
       setNotificationsEnabled(settings.notifications_enabled);
       setPriceAlertThreshold(settings.price_alert_threshold);
+
+      // Vendor crop listings/photos, including pending moderation requests
+      const remoteListings = await fetchRemoteVendorListings();
+      if (remoteListings.length > 0) {
+        try {
+          localStorage.setItem(
+            VENDOR_LISTINGS_STORAGE_KEY,
+            JSON.stringify(remoteListings),
+          );
+        } catch (error) {
+          console.warn("Unable to cache remote vendor listings", error);
+        }
+        setCrops((prev) => mergeVendorListings(prev));
+      }
     },
     [
       sbProfiles,
@@ -544,6 +755,52 @@ const App = () => {
       sbSettings,
     ],
   );
+
+  const loadAdminSupabaseData = useCallback(async () => {
+    const profiles = await sbProfiles.fetchAllProfiles();
+    const userRecords = profiles.map((p) => profileToUserRecord(p));
+    setUsers((prev) => {
+      const merged = [...userRecords];
+      if (!merged.some((u) => u.email === SEEDED_ADMIN.email)) {
+        merged.unshift(SEEDED_ADMIN);
+      }
+      return merged.length > 0 ? merged : prev;
+    });
+
+    const logRows = await sbAuditLog.fetchAuditLog();
+    setAuditLog(
+      logRows.map((r) => ({
+        id: r.id,
+        action: r.action,
+        target: r.target,
+        details: r.details,
+        timestamp: r.created_at,
+      })),
+    );
+
+    setAnnouncements(await sbAnnouncements.fetchAnnouncements());
+    setComplaints(await sbComplaints.fetchComplaints());
+    setVendorRatingData(await sbVendorRatings.fetchAggregateRatings());
+
+    const remoteListings = await fetchRemoteVendorListings();
+    if (remoteListings.length > 0) {
+      try {
+        localStorage.setItem(
+          VENDOR_LISTINGS_STORAGE_KEY,
+          JSON.stringify(remoteListings),
+        );
+      } catch (error) {
+        console.warn("Unable to cache remote vendor listings", error);
+      }
+      setCrops((prev) => mergeVendorListings(prev));
+    }
+  }, [
+    sbProfiles,
+    sbAuditLog,
+    sbAnnouncements,
+    sbComplaints,
+    sbVendorRatings,
+  ]);
 
   // ── Restore session on mount ──
   useEffect(() => {
@@ -964,7 +1221,9 @@ const App = () => {
   };
 
   // Local Market State
-  const [crops, setCrops] = useState<Crop[]>(MOCK_CROPS);
+  const [crops, setCrops] = useState<Crop[]>(() =>
+    mergeVendorListings(MOCK_CROPS),
+  );
 
   // Header scroll shadow
   const [isScrolled, setIsScrolled] = useState(false);
@@ -982,7 +1241,7 @@ const App = () => {
         const response = await fetch("/api/prices");
         const json = await response.json();
         if (json.success && json.data) {
-          setCrops(json.data);
+          setCrops(mergeVendorListings(json.data));
         }
       } catch (err) {
         console.error("Failed to fetch live prices from API", err);
@@ -992,6 +1251,11 @@ const App = () => {
     };
     fetchLivePrices();
   }, []);
+
+  useEffect(() => {
+    persistVendorListings(crops);
+    saveRemoteVendorListings(crops);
+  }, [crops]);
 
   // Document lightbox state for admin review
   const [docLightbox, setDocLightbox] = useState<string | null>(null);
@@ -1689,6 +1953,7 @@ const App = () => {
         const exists = prev.some((u) => u.email === SEEDED_ADMIN.email);
         return exists ? prev : [SEEDED_ADMIN, ...prev];
       });
+      loadAdminSupabaseData();
     }
 
     // Load all persisted data from Supabase
@@ -1756,6 +2021,11 @@ const App = () => {
       email,
       password,
       userRole as string,
+      userRole === UserRole.VENDOR && docs && docs.length > 0
+        ? {
+            verification_docs: docs,
+          }
+        : undefined,
     );
     if (!result.ok) {
       if (result.code === "exists") return "exists";
@@ -1768,11 +2038,29 @@ const App = () => {
       docs.length > 0 &&
       result.user
     ) {
-      await sbProfiles.updateProfile(result.user.id, {
+      const submittedAt = new Date().toISOString();
+      await sbProfiles.upsertAuthProfile(result.user, {
+        name,
+        role: userRole,
+        status: "active",
+        is_verified: false,
         verification_docs: docs,
         verification_status: "pending_review",
-        verification_submitted_at: new Date().toISOString(),
+        verification_submitted_at: submittedAt,
       } as any);
+      setUsers((prev) => [
+        {
+          name,
+          email,
+          role: userRole,
+          status: "active",
+          isVerified: false,
+          verificationStatus: "pending_review",
+          verificationSubmittedAt: submittedAt,
+          verificationDocs: docs,
+        },
+        ...prev.filter((u) => u.email !== email),
+      ]);
     }
     // Reload profiles
     const profiles = await sbProfiles.fetchAllProfiles();
@@ -1833,6 +2121,26 @@ const App = () => {
         return c;
       }),
     );
+    if (isRegisteredVendorId(currentVendorId)) {
+      try {
+        const nextListings = readVendorListings().filter(
+          (listing) =>
+            !(
+              listing.cropId === cropId &&
+              listing.vendor.id === currentVendorId
+            ),
+        );
+        localStorage.setItem(
+          VENDOR_LISTINGS_STORAGE_KEY,
+          JSON.stringify(nextListings),
+        );
+      } catch (error) {
+        console.warn("Unable to remove local vendor listing", error);
+      }
+      if (sbAuth.session) {
+        deleteRemoteVendorListing(cropId, currentVendorId);
+      }
+    }
   };
 
   const handleAddCropToVendor = (
@@ -7947,15 +8255,19 @@ const App = () => {
                     id="upload-add-crop"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          if (event.target?.result) {
-                            setAddCropPhoto(event.target.result as string);
-                          }
-                        };
-                        reader.readAsDataURL(e.target.files[0]);
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        setAddCropPhoto(await normalizeCropPhoto(file));
+                      } catch (error) {
+                        alert(
+                          error instanceof Error
+                            ? error.message
+                            : "Unable to process the image.",
+                        );
+                      } finally {
+                        e.target.value = "";
                       }
                     }}
                   />
@@ -8246,15 +8558,19 @@ const App = () => {
                   id="upload-edit-crop"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        if (event.target?.result) {
-                          setEditCropPhoto(event.target.result as string);
-                        }
-                      };
-                      reader.readAsDataURL(e.target.files[0]);
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      setEditCropPhoto(await normalizeCropPhoto(file));
+                    } catch (error) {
+                      alert(
+                        error instanceof Error
+                          ? error.message
+                          : "Unable to process the image.",
+                      );
+                    } finally {
+                      e.target.value = "";
                     }
                   }}
                 />
