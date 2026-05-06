@@ -485,6 +485,7 @@ const App = () => {
   // ── Load all data from Supabase on auth change ──
   const loadSupabaseData = useCallback(
     async (userId: string) => {
+      setAnnouncementPrefsLoaded(false);
       // Profiles → users
       const profiles = await sbProfiles.fetchAllProfiles();
       const userRecords = profiles.map((p) => profileToUserRecord(p));
@@ -515,6 +516,7 @@ const App = () => {
       setDismissedIds(dismissed);
       const seen = await sbAnnouncements.fetchSeenIds(userId);
       setSeenAnnouncementIds(seen);
+      setAnnouncementPrefsLoaded(true);
 
       // Favorites
       const favs = await sbFavorites.fetchFavorites(userId);
@@ -617,6 +619,9 @@ const App = () => {
       setIsAuthenticated(false);
       setRole(UserRole.CONSUMER);
       setCurrentUserEmail("");
+      setDismissedIds([]);
+      setSeenAnnouncementIds([]);
+      setAnnouncementPrefsLoaded(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sbAuth.loading, sbAuth.user?.id]);
@@ -627,6 +632,7 @@ const App = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
   const [seenAnnouncementIds, setSeenAnnouncementIds] = useState<string[]>([]);
+  const [announcementPrefsLoaded, setAnnouncementPrefsLoaded] = useState(false);
 
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
@@ -1301,9 +1307,7 @@ const App = () => {
     (a) => a.active && !dismissedIds.includes(a.id),
   );
 
-  const unreadAnnouncementCount = visibleAnnouncements.filter(
-    (a) => !seenAnnouncementIds.includes(a.id),
-  ).length;
+  const unreadAnnouncementCount = visibleAnnouncements.length;
 
   // Simulated order notifications for vendors
   useEffect(() => {
@@ -6861,17 +6865,6 @@ const App = () => {
               <div className="relative">
                 <button
                   onClick={() => {
-                    if (!showAnnouncementsDropdown) {
-                      const visibleIds = visibleAnnouncements.map((a) => a.id);
-                      setSeenAnnouncementIds((prev) => [
-                        ...new Set([...prev, ...visibleIds]),
-                      ]);
-                      if (sbAuth.user) {
-                        visibleIds.forEach((id) =>
-                          sbAnnouncements.markSeen(sbAuth.user!.id, id),
-                        );
-                      }
-                    }
                     setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
                   }}
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-yellow-400 transition-all hover:border-yellow-400/30 shadow-xl relative"
@@ -6954,7 +6947,7 @@ const App = () => {
         className="flex-1 px-3 py-3 sm:p-6 lg:p-12 max-w-[1400px] mx-auto w-full"
         role="main"
       >
-        {isAuthenticated && (
+        {isAuthenticated && announcementPrefsLoaded && (
           <AnnouncementBanner
             announcements={announcements}
             dismissedIds={dismissedIds}
