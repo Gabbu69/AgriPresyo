@@ -1297,8 +1297,12 @@ const App = () => {
   const adminNotificationCount =
     pendingPhotosCount + pendingVerifications.length + openComplaintsCount;
 
-  const unreadAnnouncementCount = announcements.filter(
-    (a) => a.active && !seenAnnouncementIds.includes(a.id),
+  const visibleAnnouncements = announcements.filter(
+    (a) => a.active && !dismissedIds.includes(a.id),
+  );
+
+  const unreadAnnouncementCount = visibleAnnouncements.filter(
+    (a) => !seenAnnouncementIds.includes(a.id),
   ).length;
 
   // Simulated order notifications for vendors
@@ -6858,12 +6862,15 @@ const App = () => {
                 <button
                   onClick={() => {
                     if (!showAnnouncementsDropdown) {
-                      const visibleIds = announcements
-                        .filter((a) => a.active)
-                        .map((a) => a.id);
+                      const visibleIds = visibleAnnouncements.map((a) => a.id);
                       setSeenAnnouncementIds((prev) => [
                         ...new Set([...prev, ...visibleIds]),
                       ]);
+                      if (sbAuth.user) {
+                        visibleIds.forEach((id) =>
+                          sbAnnouncements.markSeen(sbAuth.user!.id, id),
+                        );
+                      }
                     }
                     setShowAnnouncementsDropdown(!showAnnouncementsDropdown);
                   }}
@@ -6893,13 +6900,12 @@ const App = () => {
                       </button>
                     </div>
                     <div className="max-h-80 overflow-y-auto scrollbar-hide">
-                      {announcements.filter((a) => a.active).length === 0 ? (
+                      {visibleAnnouncements.length === 0 ? (
                         <p className="p-6 text-center text-zinc-600 dark:text-zinc-400 text-sm">
                           No new announcements
                         </p>
                       ) : (
-                        announcements
-                          .filter((a) => a.active)
+                        visibleAnnouncements
                           .map((ann) => (
                             <div
                               key={ann.id}
@@ -6911,7 +6917,7 @@ const App = () => {
                                 >
                                   <Megaphone size={14} />
                                 </div>
-                                <div>
+                                <div className="min-w-0 flex-1">
                                   <p className="text-sm text-zinc-900 dark:text-white font-bold">
                                     {ann.title}
                                   </p>
@@ -6922,6 +6928,14 @@ const App = () => {
                                     {ann.timestamp}
                                   </p>
                                 </div>
+                                <button
+                                  onClick={() => handleDismissAnnouncement(ann.id)}
+                                  className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                  aria-label={`Delete announcement: ${ann.title}`}
+                                  title="Delete announcement"
+                                >
+                                  <X size={14} />
+                                </button>
                               </div>
                             </div>
                           ))
