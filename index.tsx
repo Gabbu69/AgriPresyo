@@ -700,6 +700,8 @@ const App = () => {
   const [bulkAdjustPercent, setBulkAdjustPercent] = useState<number>(0);
   const [showAnnouncementsDropdown, setShowAnnouncementsDropdown] =
     useState(false);
+  const [showAdminNotificationsDropdown, setShowAdminNotificationsDropdown] =
+    useState(false);
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [complaintForm, setComplaintForm] = useState({
     subject: "",
@@ -1257,6 +1259,47 @@ const App = () => {
   const vendorInventory = useMemo(() => {
     return crops.filter((c) => c.vendors.some((v) => v.id === currentVendorId));
   }, [crops, currentVendorId]);
+
+  const pendingVerifications = useMemo(
+    () =>
+      users.filter(
+        (u) =>
+          u.role === UserRole.VENDOR &&
+          u.verificationStatus === "pending_review",
+      ),
+    [users],
+  );
+
+  const verifiedVendors = useMemo(
+    () =>
+      users.filter(
+        (u) => u.role === UserRole.VENDOR && u.verificationStatus === "verified",
+      ),
+    [users],
+  );
+
+  const pendingPhotosCount = useMemo(
+    () =>
+      crops.reduce(
+        (acc, crop) =>
+          acc +
+          crop.vendors.filter((v) => v.customPhotoStatus === "pending").length,
+        0,
+      ),
+    [crops],
+  );
+
+  const openComplaintsCount = useMemo(
+    () => complaints.filter((c) => c.status === "open").length,
+    [complaints],
+  );
+
+  const adminNotificationCount =
+    pendingPhotosCount + pendingVerifications.length + openComplaintsCount;
+
+  const unreadAnnouncementCount = announcements.filter(
+    (a) => a.active && !seenAnnouncementIds.includes(a.id),
+  ).length;
 
   // Simulated order notifications for vendors
   useEffect(() => {
@@ -4364,19 +4407,6 @@ const App = () => {
   );
 
   const renderAdminView = () => {
-    const pendingVerifications = users.filter(
-      (u) =>
-        u.role === UserRole.VENDOR && u.verificationStatus === "pending_review",
-    );
-    const verifiedVendors = users.filter(
-      (u) => u.role === UserRole.VENDOR && u.verificationStatus === "verified",
-    );
-    const pendingPhotosCount = crops.reduce(
-      (acc, crop) =>
-        acc +
-        crop.vendors.filter((v) => v.customPhotoStatus === "pending").length,
-      0,
-    );
     return (
       <div className="space-y-12 pb-32 lg:pb-12 animate-in slide-in-from-bottom duration-700">
         <div>
@@ -6704,6 +6734,125 @@ const App = () => {
               )}
             </div>
 
+            {role === UserRole.ADMIN && (
+              <div className="relative">
+                <button
+                  onClick={() =>
+                    setShowAdminNotificationsDropdown(
+                      !showAdminNotificationsDropdown,
+                    )
+                  }
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition-all hover:border-red-400/30 shadow-xl relative"
+                  aria-label={`Admin notifications: ${adminNotificationCount} pending`}
+                >
+                  <Bell size={22} />
+                  {adminNotificationCount > 0 && (
+                    <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1.5 bg-red-500 rounded-full text-[10px] font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                      {adminNotificationCount > 99
+                        ? "99+"
+                        : adminNotificationCount}
+                    </span>
+                  )}
+                </button>
+                {showAdminNotificationsDropdown && (
+                  <div className="absolute right-0 top-16 w-[calc(100vw-2rem)] sm:w-[22rem] max-w-sm bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
+                    <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
+                      <div>
+                        <span className="text-xs font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                          Admin Notifications
+                        </span>
+                        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold mt-0.5">
+                          {adminNotificationCount} pending action
+                          {adminNotificationCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowAdminNotificationsDropdown(false)}
+                        className="text-[10px] text-zinc-400 font-bold hover:text-zinc-900 dark:hover:text-zinc-200"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="p-2 space-y-1">
+                      {adminNotificationCount === 0 ? (
+                        <p className="p-6 text-center text-zinc-500 dark:text-zinc-400 text-sm">
+                          No pending admin actions
+                        </p>
+                      ) : (
+                        [
+                          {
+                            id: "admin-photo-verification",
+                            label: "Photo moderation",
+                            count: pendingPhotosCount,
+                            detail: "New seller crop photos",
+                            icon: Camera,
+                            color: "text-emerald-500 bg-emerald-500/10",
+                          },
+                          {
+                            id: "admin-verification-requests",
+                            label: "Document reviews",
+                            count: pendingVerifications.length,
+                            detail: "Vendor verification requests",
+                            icon: Clock,
+                            color: "text-yellow-500 bg-yellow-500/10",
+                          },
+                          {
+                            id: "admin-complaints",
+                            label: "Open complaints",
+                            count: openComplaintsCount,
+                            detail: "Buyer or seller reports",
+                            icon: MessageSquare,
+                            color: "text-red-500 bg-red-500/10",
+                          },
+                        ]
+                          .filter((item) => item.count > 0)
+                          .map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  setShowAdminNotificationsDropdown(false);
+                                  navigate("/admin");
+                                  setTimeout(
+                                    () =>
+                                      document
+                                        .getElementById(item.id)
+                                        ?.scrollIntoView({
+                                          behavior: "smooth",
+                                          block: "start",
+                                        }),
+                                    0,
+                                  );
+                                }}
+                                className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-left"
+                              >
+                                <span
+                                  className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${item.color}`}
+                                >
+                                  <Icon size={18} />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block text-sm font-black text-zinc-900 dark:text-white">
+                                    {item.label}
+                                  </span>
+                                  <span className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 truncate">
+                                    {item.detail}
+                                  </span>
+                                </span>
+                                <span className="min-w-8 h-8 px-2 rounded-full bg-red-500 text-white text-xs font-black flex items-center justify-center">
+                                  {item.count > 99 ? "99+" : item.count}
+                                </span>
+                              </button>
+                            );
+                          })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {role === UserRole.VENDOR && (
               <div className="relative">
                 <button
@@ -6722,22 +6871,11 @@ const App = () => {
                   aria-label="Toggle announcements"
                 >
                   <Bell size={22} />
-                  {announcements.filter(
-                    (a) => a.active && !seenAnnouncementIds.includes(a.id),
-                  ).length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">
-                      {Math.min(
-                        announcements.filter(
-                          (a) =>
-                            a.active && !seenAnnouncementIds.includes(a.id),
-                        ).length,
-                        9,
-                      )}
-                      {announcements.filter(
-                        (a) => a.active && !seenAnnouncementIds.includes(a.id),
-                      ).length > 9
-                        ? "+"
-                        : ""}
+                  {unreadAnnouncementCount > 0 && (
+                    <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1.5 bg-red-500 rounded-full text-[10px] font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                      {unreadAnnouncementCount > 99
+                        ? "99+"
+                        : unreadAnnouncementCount}
                     </span>
                   )}
                 </button>
