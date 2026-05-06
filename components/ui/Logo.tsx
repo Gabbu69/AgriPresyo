@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 
 export const Logo = ({ size = 100, className = "", onUnlock }: { size?: number, className?: string, onUnlock?: () => void }) => {
-  const [clicks, setClicks] = useState(0);
+  const clicksRef = useRef(0);
+  const resetTimerRef = useRef<number | null>(null);
 
   const handleClick = () => {
-    setClicks(prev => {
-      const next = prev + 1;
-      if (next === 5) {
-        onUnlock?.();
-        return 0;
-      }
-      return next;
-    });
+    clicksRef.current += 1;
 
-    // Reset clicks if not continued quickly
-    setTimeout(() => setClicks(0), 2000);
+    if (resetTimerRef.current) {
+      window.clearTimeout(resetTimerRef.current);
+    }
+
+    if (clicksRef.current >= 5) {
+      clicksRef.current = 0;
+      onUnlock?.();
+      return;
+    }
+
+    resetTimerRef.current = window.setTimeout(() => {
+      clicksRef.current = 0;
+    }, 2000);
   };
 
   return (

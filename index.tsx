@@ -140,9 +140,36 @@ type VendorListingRow = {
   last_updated: string | null;
   vendor_id: string;
   vendor_data: Vendor;
+  approval_status: Vendor["approvalStatus"] | null;
 };
 
 const isRegisteredVendorId = (id: string) => id.includes("@");
+
+const getVendorApprovalStatus = (vendor: Vendor): NonNullable<Vendor["approvalStatus"]> => {
+  if (!isRegisteredVendorId(vendor.id)) return "approved";
+  if (vendor.approvalStatus) return vendor.approvalStatus;
+  if (vendor.customPhotoStatus === "approved") return "approved";
+  return "pending";
+};
+
+const getMarketVisibleCrops = (sourceCrops: Crop[]): Crop[] =>
+  sourceCrops
+    .map((crop) => {
+      const visibleVendors = crop.vendors.filter(
+        (vendor) => getVendorApprovalStatus(vendor) === "approved",
+      );
+      if (visibleVendors.length === crop.vendors.length) return crop;
+      if (visibleVendors.length === 0) return null;
+      const visibleAveragePrice =
+        visibleVendors.reduce((sum, vendor) => sum + vendor.price, 0) /
+        visibleVendors.length;
+      return {
+        ...crop,
+        vendors: visibleVendors,
+        currentPrice: Number(visibleAveragePrice.toFixed(2)),
+      };
+    })
+    .filter((crop): crop is Crop => Boolean(crop));
 
 const readVendorListings = (): PersistedVendorListing[] => {
   try {
@@ -230,13 +257,16 @@ const vendorListingsFromRows = (rows: VendorListingRow[]): PersistedVendorListin
       category: row.category,
       currentPrice: row.current_price,
       lastUpdated: row.last_updated ?? undefined,
-      vendor: row.vendor_data,
+      vendor: {
+        ...row.vendor_data,
+        approvalStatus: row.approval_status ?? row.vendor_data.approvalStatus,
+      },
     }));
 
 const fetchRemoteVendorListings = async (): Promise<PersistedVendorListing[]> => {
   const { data, error } = await supabase
     .from("vendor_crop_listings")
-    .select("crop_id,crop_name,category,current_price,last_updated,vendor_id,vendor_data");
+    .select("crop_id,crop_name,category,current_price,last_updated,vendor_id,vendor_data,approval_status");
 
   if (error) {
     console.warn("Unable to fetch remote vendor listings", error.message);
@@ -247,6 +277,11 @@ const fetchRemoteVendorListings = async (): Promise<PersistedVendorListing[]> =>
 };
 
 const saveRemoteVendorListings = async (crops: Crop[]) => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return;
+
   const rows = crops.flatMap((crop) =>
     crop.vendors
       .filter((vendor) => isRegisteredVendorId(vendor.id))
@@ -259,6 +294,7 @@ const saveRemoteVendorListings = async (crops: Crop[]) => {
         last_updated: crop.lastUpdated ?? new Date().toISOString(),
         vendor_id: vendor.id,
         vendor_data: vendor,
+        approval_status: getVendorApprovalStatus(vendor),
         updated_at: new Date().toISOString(),
       })),
   );
@@ -1162,8 +1198,23 @@ const App = () => {
       // Advanced render mapping for high-DPI clarity
       ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
 
-      setProfilePicture(canvas.toDataURL("image/jpeg", 1.0));
+      const previewUrl = canvas.toDataURL("image/jpeg", 0.95);
+      setProfilePicture(previewUrl);
       setCropImageSrc(null);
+
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob || !sbAuth.user) return;
+          const publicUrl = await sbProfiles.uploadAvatar(
+            sbAuth.user.id,
+            blob,
+            `avatar-${Date.now()}.jpg`,
+          );
+          if (publicUrl) setProfilePicture(publicUrl);
+        },
+        "image/jpeg",
+        0.95,
+      );
     };
     img.src = cropImageSrc;
   };
@@ -1239,6 +1290,10 @@ const App = () => {
     const fetchLivePrices = async () => {
       try {
         const response = await fetch("/api/prices");
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("application/json")) {
+          return;
+        }
         const json = await response.json();
         if (json.success && json.data) {
           setCrops(mergeVendorListings(json.data));
@@ -1270,6 +1325,10 @@ const App = () => {
     type: "BAN" | "WARN" | "UNBAN" | "VERIFY" | "REJECT";
     title: string;
     subtitle: string;
+    reasonRequired?: boolean;
+    reasonLabel?: string;
+    reasonPlaceholder?: string;
+    confirmLabel?: string;
     onConfirm: (reason?: string) => void;
   } | null>(null);
   const [actionReason, setActionReason] = useState("");
@@ -1283,6 +1342,10 @@ const App = () => {
       type: string;
       title: string;
       subtitle: string;
+      reasonRequired?: boolean;
+      reasonLabel?: string;
+      reasonPlaceholder?: string;
+      confirmLabel?: string;
       onConfirm: (reason?: string) => void;
     } | null;
     onCancel: () => void;
@@ -1294,7 +1357,8 @@ const App = () => {
     let accentBorder = "";
     let btnClass = "";
     let iconBg = "";
-    const showReasonField = ["BAN", "REJECT", "WARN"].includes(alert.type);
+    const showReasonField =
+      alert.reasonRequired ?? ["BAN", "WARN"].includes(alert.type);
 
     switch (alert.type) {
       case "BAN":
@@ -1360,14 +1424,17 @@ const App = () => {
           {showReasonField && (
             <div className="px-6 pb-4" onClick={(e) => e.stopPropagation()}>
               <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">
-                Reason (Required)
+                {alert.reasonLabel || "Reason (Required)"}
               </p>
               <textarea
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
                 onFocus={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
-                placeholder="e.g. Terms of Service violation..."
+                placeholder={
+                  alert.reasonPlaceholder ||
+                  "e.g. Terms of Service violation..."
+                }
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-zinc-600 resize-none h-20 transition-colors"
                 autoFocus
               />
@@ -1399,7 +1466,7 @@ const App = () => {
               }}
               className={`flex-1 ${btnClass} py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed`}
             >
-              Confirm
+              {alert.confirmLabel || "Confirm"}
             </button>
           </div>
         </div>
@@ -1522,6 +1589,8 @@ const App = () => {
     if (role === UserRole.VENDOR && currentUserEmail) return currentUserEmail;
     return "v_admin_node";
   }, [role, currentUserEmail]);
+
+  const marketCrops = useMemo(() => getMarketVisibleCrops(crops), [crops]);
 
   const vendorInventory = useMemo(() => {
     return crops.filter((c) => c.vendors.some((v) => v.id === currentVendorId));
@@ -1691,10 +1760,10 @@ const App = () => {
   }, [allVendors, selectedVendor?.id]);
 
   const analyticsData = useMemo(() => {
-    const topGainer = [...crops].sort((a, b) => b.change7d - a.change7d)[0];
+    const topGainer = [...marketCrops].sort((a, b) => b.change7d - a.change7d)[0];
 
-    const fruits = crops.filter((c) => c.category === "Fruit");
-    const veggies = crops.filter((c) => c.category === "Vegetable");
+    const fruits = marketCrops.filter((c) => c.category === "Fruit");
+    const veggies = marketCrops.filter((c) => c.category === "Vegetable");
 
     const expFruits = [...fruits]
       .sort((a, b) => b.currentPrice - a.currentPrice)
@@ -1711,14 +1780,14 @@ const App = () => {
       .slice(0, 3);
 
     return { topGainer, expFruits, cheapFruits, expVeggies, cheapVeggies };
-  }, [crops]);
+  }, [marketCrops]);
 
   const aggregateVolatilityData = useMemo(() => {
-    if (!crops.length || !crops[0]?.history) return { data: [], stats: null };
+    if (!marketCrops.length || !marketCrops[0]?.history) return { data: [], stats: null };
 
     // Aggregate all crops' histories into monthly buckets
     const months: { [key: string]: { prices: number[] } } = {};
-    crops.forEach((crop) => {
+    marketCrops.forEach((crop) => {
       crop.history.forEach((point) => {
         const date = new Date(point.date);
         const monthYear = date.toLocaleString("default", {
@@ -1771,7 +1840,7 @@ const App = () => {
       data.find((d) => d.fullKey === selectedPeriod) ||
       (data.length > 0 ? data[data.length - 1] : null);
     return { data, stats: selectedData };
-  }, [crops, selectedPeriod, volatilityRange]);
+  }, [marketCrops, selectedPeriod, volatilityRange]);
 
   const [isAddCropModalOpen, setIsAddCropModalOpen] = useState(false);
   const [addCropPhoto, setAddCropPhoto] = useState<string | null>(null);
@@ -1785,7 +1854,7 @@ const App = () => {
   const [editCropPhoto, setEditCropPhoto] = useState<string | null>(null);
 
   const filteredCrops = useMemo(() => {
-    let result = crops.filter((c) => {
+    let result = marketCrops.filter((c) => {
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
       const matchesCat =
         activeCategory === "All" || c.category === activeCategory;
@@ -1814,13 +1883,13 @@ const App = () => {
         break;
     }
     return result;
-  }, [search, crops, activeCategory, sortBy]);
+  }, [search, marketCrops, activeCategory, sortBy]);
 
   const budgetStats = useMemo(() => {
     let totalCost = 0;
     let totalWeight = 0;
     budgetItems.forEach((item) => {
-      const crop = crops.find((c) => c.id === item.cropId);
+      const crop = marketCrops.find((c) => c.id === item.cropId);
       if (crop) {
         const weight =
           item.unit === "kg"
@@ -1831,7 +1900,7 @@ const App = () => {
       }
     });
     return { totalCost, totalWeight };
-  }, [budgetItems, crops]);
+  }, [budgetItems, marketCrops]);
 
   const addToBudget = (cropId: string, addedQty: number = 1) => {
     setBudgetItems((prev) => {
@@ -2166,6 +2235,7 @@ const App = () => {
         isHot: true,
         listingName:
           listingName && listingName.trim() ? listingName.trim() : undefined,
+        approvalStatus: "pending",
         customPhoto,
         customPhotoStatus: customPhoto ? "pending" : undefined,
         openTime: currentUser?.openTime,
@@ -2296,6 +2366,9 @@ const App = () => {
                   listingName: newListingName?.trim()
                     ? newListingName
                     : v.listingName,
+                  approvalStatus: isRegisteredVendorId(v.id)
+                    ? "pending"
+                    : v.approvalStatus,
                   customPhoto: newCustomPhoto || v.customPhoto,
                   customPhotoStatus: newCustomPhoto
                     ? "pending"
@@ -4687,7 +4760,9 @@ const App = () => {
     const pendingPhotosCount = crops.reduce(
       (acc, crop) =>
         acc +
-        crop.vendors.filter((v) => v.customPhotoStatus === "pending").length,
+        crop.vendors.filter(
+          (v) => getVendorApprovalStatus(v) === "pending",
+        ).length,
       0,
     );
     return (
@@ -4804,7 +4879,7 @@ const App = () => {
               size={48}
             />
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-3">
-              Photo Moderation
+              Listing Review
             </p>
             <p className="text-3xl font-black font-mono text-emerald-500 tracking-tight">
               {pendingPhotosCount}
@@ -4826,10 +4901,10 @@ const App = () => {
             </div>
             <div>
               <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
-                Photo Moderation
+                Listing Moderation
               </h3>
               <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
-                {pendingPhotosCount} photos waiting for review
+                {pendingPhotosCount} listings waiting for review
               </p>
             </div>
           </div>
@@ -4837,10 +4912,10 @@ const App = () => {
             <div className="text-center py-12 text-zinc-400">
               <Camera size={40} className="mx-auto mb-3 opacity-30" />
               <p className="font-black uppercase tracking-widest text-sm">
-                No Pending Photos
+                No Pending Listings
               </p>
               <p className="text-xs text-zinc-500 mt-1">
-                Vendor uploaded crop photos will appear here
+                Vendor crop listings will appear here before going live
               </p>
             </div>
           ) : (
@@ -4848,7 +4923,7 @@ const App = () => {
               {crops
                 .flatMap((c) =>
                   c.vendors
-                    .filter((v) => v.customPhotoStatus === "pending")
+                    .filter((v) => getVendorApprovalStatus(v) === "pending")
                     .map((v) => ({ crop: c, vendor: v })),
                 )
                 .map((item, idx) => {
@@ -4865,11 +4940,20 @@ const App = () => {
                       className={`bg-zinc-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden group transition-all duration-500 ${processingState ? "opacity-50 scale-95 pointer-events-none" : ""}`}
                     >
                       <div className="h-40 w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 relative">
-                        <img
-                          src={item.vendor.customPhoto}
-                          alt="Uploaded Crop"
-                          className={`w-full h-full object-cover ${!processingState ? "group-hover:scale-105" : ""} transition-transform duration-500`}
-                        />
+                        {item.vendor.customPhoto ? (
+                          <img
+                            src={item.vendor.customPhoto}
+                            alt="Uploaded Crop"
+                            className={`w-full h-full object-cover ${!processingState ? "group-hover:scale-105" : ""} transition-transform duration-500`}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-zinc-400">
+                            <CropIcon crop={item.crop} size="lg" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                              No Photo Uploaded
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded border border-white/10 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
                           <Store size={12} /> {item.vendor.name}
                         </div>
@@ -4921,6 +5005,7 @@ const App = () => {
                                             v.id === item.vendor.id
                                               ? {
                                                   ...v,
+                                                  approvalStatus: "approved",
                                                   customPhotoStatus: "approved",
                                                 }
                                               : v,
@@ -4963,8 +5048,9 @@ const App = () => {
                                             v.id === item.vendor.id
                                               ? {
                                                   ...v,
+                                                  approvalStatus: "rejected",
                                                   customPhoto: undefined,
-                                                  customPhotoStatus: undefined,
+                                                  customPhotoStatus: "rejected",
                                                 }
                                               : v,
                                           ),
@@ -5146,7 +5232,7 @@ const App = () => {
             </div>
             <div>
               <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
-                Document Verification
+                Business Permit Verification
               </h3>
               <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
                 {pendingVerifications.length} pending review &bull;{" "}
@@ -5237,9 +5323,17 @@ const App = () => {
                         onClick={() =>
                           setActiveConfirmAlert({
                             type: "REJECT",
-                            title: "Decline Documents?",
-                            subtitle: `Reject verification documents from ${user.name || user.email}? Please provide a reason.`,
+                            title: "Decline Business Permit?",
+                            subtitle: `Explain why the business permit or documents from ${user.name || user.email} are not approved.`,
+                            reasonRequired: true,
+                            reasonLabel: "Reason for not approving",
+                            reasonPlaceholder:
+                              "Example: Business permit is expired, unreadable, mismatched with the shop name, or missing required details.",
+                            confirmLabel: "Decline Permit",
                             onConfirm: (reason) => {
+                              const rejectionReason =
+                                reason ||
+                                "Business permit or documents did not meet requirements";
                               setUsers((prev) => {
                                 const next = prev.map((u) =>
                                   u.email === user.email
@@ -5248,8 +5342,7 @@ const App = () => {
                                         isVerified: false,
                                         verificationStatus: "rejected" as const,
                                         verificationRejectedReason:
-                                          reason ||
-                                          "Documents did not meet requirements",
+                                          rejectionReason,
                                       }
                                     : u,
                                 );
@@ -5258,18 +5351,16 @@ const App = () => {
                               sbProfiles.updateProfileByEmail(user.email, {
                                 is_verified: false,
                                 verification_status: "rejected",
-                                verification_rejected_reason:
-                                  reason ||
-                                  "Documents did not meet requirements",
+                                verification_rejected_reason: rejectionReason,
                               });
                               addAuditEntry(
                                 "REJECT_VERIFICATION",
                                 user.email,
-                                `Rejected documents for: ${user.name || user.email}. Reason: ${reason}`,
+                                `Rejected business permit/documents for: ${user.name || user.email}. Reason: ${rejectionReason}`,
                               );
                               triggerGraphicAlert(
                                 "REJECT",
-                                "Documents Declined",
+                                "Permit Declined",
                                 `Verification denied for ${user.name || user.email}`,
                               );
                             },
@@ -6422,15 +6513,17 @@ const App = () => {
       {activeConfirmAlert &&
         (() => {
           const alert = activeConfirmAlert;
-          const onCancel = () => setActiveConfirmAlert(null);
+          const onCancel = () => {
+            setActiveConfirmAlert(null);
+            setActionReason("");
+          };
           let Icon = ShieldCheck;
           let colorClass = "";
           let accentBorder = "";
           let btnClass = "";
           let iconBg = "";
-          const showReasonField = ["BAN", "REJECT", "WARN"].includes(
-            alert.type,
-          );
+          const showReasonField =
+            alert.reasonRequired ?? ["BAN", "WARN"].includes(alert.type);
 
           switch (alert.type) {
             case "BAN":
@@ -6487,7 +6580,7 @@ const App = () => {
                     <Icon size={22} className={colorClass} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                       {alert.title}
                     </h2>
                     <p className="text-zinc-400 text-xs mt-0.5">
@@ -6503,14 +6596,17 @@ const App = () => {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">
-                      Reason (Required)
+                      {alert.reasonLabel || "Reason (Required)"}
                     </p>
                     <textarea
                       value={actionReason}
                       onChange={(e) => setActionReason(e.target.value)}
                       onFocus={(e) => e.stopPropagation()}
                       onClick={(e) => e.stopPropagation()}
-                      placeholder="e.g. Terms of Service violation..."
+                      placeholder={
+                        alert.reasonPlaceholder ||
+                        "e.g. Terms of Service violation..."
+                      }
                       className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-zinc-600 resize-none h-20 transition-colors"
                       autoFocus
                     />
@@ -6522,7 +6618,6 @@ const App = () => {
                   <button
                     onClick={() => {
                       onCancel();
-                      setActionReason("");
                     }}
                     className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
                   >
@@ -6533,18 +6628,17 @@ const App = () => {
                     onClick={() => {
                       alert.onConfirm(actionReason.trim());
                       onCancel();
-                      setActionReason("");
                     }}
                     className={`flex-1 ${btnClass} py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
-                    Confirm
+                    {alert.confirmLabel || "Confirm"}
                   </button>
                 </div>
               </div>
             </div>
           );
         })()}
-      <Ticker crops={crops} onCropClick={(crop) => setSelectedCrop(crop)} />
+      <Ticker crops={marketCrops} onCropClick={(crop) => setSelectedCrop(crop)} />
 
       <header
         className={`sticky top-10 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-8 py-3 sm:py-5 transition-shadow duration-300 ${isScrolled ? "header-scrolled border-transparent dark:border-transparent" : ""}`}
@@ -7133,7 +7227,7 @@ const App = () => {
                     fallback={<AgriLoader message="Loading Market..." />}
                   >
                     <MarketView
-                      crops={crops}
+                      crops={marketCrops}
                       filteredCrops={filteredCrops}
                       favorites={favorites}
                       search={search}
@@ -7152,7 +7246,7 @@ const App = () => {
                       isInitialLoading={isInitialLoading}
                     />
                     <BudgetCalculatorView
-                      crops={crops}
+                      crops={marketCrops}
                       budgetItems={budgetItems}
                       budgetLimit={budgetLimit}
                       setBudgetLimit={setBudgetLimit}
@@ -7473,7 +7567,10 @@ const App = () => {
                 Cancel
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  if (sbAuth.user) {
+                    await sbProfiles.removeAvatar(sbAuth.user.id);
+                  }
                   setProfilePicture(null);
                   setShowDeleteProfilePicModal(false);
                 }}

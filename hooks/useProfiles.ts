@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import type { UserRecord } from '../types';
 
 export interface ProfileRow {
   id: string;
@@ -26,7 +27,7 @@ export interface ProfileRow {
 }
 
 /** Convert a Supabase profile row to the legacy UserRecord shape used by the UI */
-export function profileToUserRecord(p: ProfileRow) {
+export function profileToUserRecord(p: ProfileRow): UserRecord {
   return {
     name: p.name ?? undefined,
     email: p.email,

@@ -22,6 +22,7 @@ export interface Vendor {
   stock: number; // in kg
   isHot?: boolean;
   listingName?: string; // optional vendor-specific display name for a crop listing
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
   customPhoto?: string; // custom uploaded photo mapping
   customPhotoStatus?: 'pending' | 'approved' | 'rejected';
   openTime?: string;
