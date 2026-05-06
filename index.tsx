@@ -6754,14 +6754,14 @@ const App = () => {
                   aria-label={`Admin notifications: ${adminNotificationCount} pending`}
                 >
                   <Bell size={22} />
-                  {adminNotificationCount > 0 && (
-                    <span className="absolute top-1 right-1 z-10 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
-                      {adminNotificationCount > 99
-                        ? "99+"
-                        : adminNotificationCount}
-                    </span>
-                  )}
                 </button>
+                {adminNotificationCount > 0 && (
+                  <span className="pointer-events-none absolute -top-1 -right-1 z-20 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                    {adminNotificationCount > 99
+                      ? "99+"
+                      : adminNotificationCount}
+                  </span>
+                )}
                 {showAdminNotificationsDropdown && (
                   <div className="absolute right-0 top-16 w-[calc(100vw-2rem)] sm:w-[22rem] max-w-sm bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
                     <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
@@ -6871,14 +6871,14 @@ const App = () => {
                   aria-label="Toggle announcements"
                 >
                   <Bell size={22} />
-                  {unreadAnnouncementCount > 0 && (
-                    <span className="absolute top-1 right-1 z-10 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
-                      {unreadAnnouncementCount > 99
-                        ? "99+"
-                        : unreadAnnouncementCount}
-                    </span>
-                  )}
                 </button>
+                {unreadAnnouncementCount > 0 && (
+                  <span className="pointer-events-none absolute -top-1 -right-1 z-20 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                    {unreadAnnouncementCount > 99
+                      ? "99+"
+                      : unreadAnnouncementCount}
+                  </span>
+                )}
                 {showAnnouncementsDropdown && (
                   <div className="absolute right-0 top-16 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-50">
                     <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
