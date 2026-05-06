@@ -6755,7 +6755,7 @@ const App = () => {
                 >
                   <Bell size={22} />
                   {adminNotificationCount > 0 && (
-                    <span className="absolute top-0 right-0 z-10 min-w-5 h-5 px-1 -translate-y-1/3 translate-x-1/3 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                    <span className="absolute top-1 right-1 z-10 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
                       {adminNotificationCount > 99
                         ? "99+"
                         : adminNotificationCount}
@@ -6872,7 +6872,7 @@ const App = () => {
                 >
                   <Bell size={22} />
                   {unreadAnnouncementCount > 0 && (
-                    <span className="absolute top-0 right-0 z-10 min-w-5 h-5 px-1 -translate-y-1/3 translate-x-1/3 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
+                    <span className="absolute top-1 right-1 z-10 min-w-5 h-5 px-1 bg-red-500 rounded-full text-[10px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-lg">
                       {unreadAnnouncementCount > 99
                         ? "99+"
                         : unreadAnnouncementCount}
