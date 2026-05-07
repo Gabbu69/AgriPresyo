@@ -144,10 +144,11 @@ type VendorListingRow = {
 };
 
 const isRegisteredVendorId = (id: string) => id.includes("@");
+const isSeededVendorId = (id: string) => /^v_(fruit|veg)_\d+$/.test(id);
 
 const getVendorApprovalStatus = (vendor: Vendor): NonNullable<Vendor["approvalStatus"]> => {
-  if (!isRegisteredVendorId(vendor.id)) return "approved";
   if (vendor.approvalStatus) return vendor.approvalStatus;
+  if (isSeededVendorId(vendor.id)) return "approved";
   if (vendor.customPhotoStatus === "approved") return "approved";
   return "pending";
 };
