@@ -103,7 +103,9 @@ export const CropIcon = ({ crop, size = 'md' }: CropIconProps) => {
   let isCustomPhoto = false;
   
   if (!imgSrc && crop.vendors && crop.vendors.length > 0) {
-    const vendorWithPhoto = crop.vendors.find(v => v.customPhoto);
+    const vendorWithPhoto = crop.vendors.find(
+      (v) => v.customPhoto && v.customPhotoStatus === 'approved',
+    );
     if (vendorWithPhoto) {
       imgSrc = vendorWithPhoto.customPhoto;
       isCustomPhoto = true;
