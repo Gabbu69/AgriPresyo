@@ -102,10 +102,7 @@ export function useSupabaseAuth() {
     return { ok: true };
   }, []);
   const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook', role?: string) => {
-    const origin = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? window.location.origin 
-      : 'https://agri-presyo.vercel.app';
-    const redirectUrl = new URL(`${origin}/login`);
+    const redirectUrl = new URL(`${window.location.origin}/login`);
     if (role) {
       redirectUrl.searchParams.set('role', role);
       try {
