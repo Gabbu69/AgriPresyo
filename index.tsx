@@ -149,9 +149,13 @@ const isSeededVendorId = (id: string) => /^v_(fruit|veg)_\d+$/.test(id);
 const getVendorApprovalStatus = (vendor: Vendor): NonNullable<Vendor["approvalStatus"]> => {
   if (vendor.approvalStatus) return vendor.approvalStatus;
   if (isSeededVendorId(vendor.id)) return "approved";
-  if (vendor.customPhotoStatus === "approved") return "approved";
   return "pending";
 };
+
+const normalizeVendorApproval = (vendor: Vendor): Vendor => ({
+  ...vendor,
+  approvalStatus: getVendorApprovalStatus(vendor),
+});
 
 const getMarketVisibleCrops = (sourceCrops: Crop[]): Crop[] =>
   sourceCrops
@@ -177,7 +181,14 @@ const readVendorListings = (): PersistedVendorListing[] => {
     const raw = localStorage.getItem(VENDOR_LISTINGS_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .filter((entry) => entry?.cropId && entry?.vendor?.id)
+          .map((entry) => ({
+            ...entry,
+            vendor: normalizeVendorApproval(entry.vendor),
+          }))
+      : [];
   } catch {
     return [];
   }
@@ -214,11 +225,15 @@ const mergeVendorListings = (baseCrops: Crop[]): Crop[] => {
         vendors: [],
       } as Crop);
 
-    const vendorIndex = crop.vendors.findIndex((v) => v.id === entry.vendor.id);
+    const vendor = normalizeVendorApproval(entry.vendor);
+    const vendorIndex = crop.vendors.findIndex((v) => v.id === vendor.id);
     if (vendorIndex >= 0) {
-      crop.vendors[vendorIndex] = { ...crop.vendors[vendorIndex], ...entry.vendor };
+      crop.vendors[vendorIndex] = normalizeVendorApproval({
+        ...crop.vendors[vendorIndex],
+        ...vendor,
+      });
     } else {
-      crop.vendors.push(entry.vendor);
+      crop.vendors.push(vendor);
     }
     crop.currentPrice = entry.currentPrice || crop.currentPrice;
     crop.lastUpdated = entry.lastUpdated || crop.lastUpdated;
