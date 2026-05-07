@@ -6749,7 +6749,7 @@ const App = () => {
                   {announcements.filter(
                     (a) => a.active && !seenAnnouncementIds.includes(a.id),
                   ).length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">
+                    <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-red-500 rounded-full text-[8px] leading-none font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-black shadow-md">
                       {Math.min(
                         announcements.filter(
                           (a) =>
