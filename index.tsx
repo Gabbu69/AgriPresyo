@@ -7990,7 +7990,7 @@ const App = () => {
                       selectedCrop.name,
                     );
                     const shareText = `${cropName} \u2014 ${PESO}${selectedCrop.currentPrice.toFixed(2)}/kg (${selectedCrop.change7d > 0 ? "+" : ""}${selectedCrop.change7d}% this week) on AgriPresyo`;
-                    const shareUrl = `${window.location.origin}/market`;
+                    const shareUrl = "https://agripresyo.vercel.app/market";
 
                     if (navigator.share) {
                       try {

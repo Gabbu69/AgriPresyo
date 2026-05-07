@@ -1,5 +1,5 @@
 (async () => {
-  const origin = 'https://agri-presyo.vercel.app';
+  const origin = 'https://agripresyo.vercel.app';
 
   try {
     const res = await fetch(origin + '/');

@@ -2,6 +2,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 
+const PRODUCTION_ORIGIN = 'https://agripresyo.vercel.app';
+
+const getRedirectOrigin = () =>
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? window.location.origin
+    : PRODUCTION_ORIGIN;
+
 export interface SupabaseAuthState {
   session: Session | null;
   user: User | null;
@@ -96,13 +103,13 @@ export function useSupabaseAuth() {
 
   const resetPassword = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${getRedirectOrigin()}/login`,
     });
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   }, []);
   const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook', role?: string) => {
-    const redirectUrl = new URL(`${window.location.origin}/login`);
+    const redirectUrl = new URL(`${getRedirectOrigin()}/login`);
     if (role) {
       redirectUrl.searchParams.set('role', role);
       try {
