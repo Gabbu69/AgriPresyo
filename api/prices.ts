@@ -454,6 +454,8 @@ export default function handler(req, res) {
 
   res.status(200).json({
     success: true,
+    data_mode: "simulation",
+    source: "date-seeded generated data; not a verified market feed",
     region: "SOCCSARGEN (Region 12)",
     timestamp: today.toISOString(),
     data: apiPrices,

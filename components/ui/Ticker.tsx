@@ -5,6 +5,7 @@ import { formatPrice } from '../utils/helpers';
 export const Ticker = ({ crops, onCropClick }: { crops: Crop[], onCropClick?: (crop: Crop) => void }) => {
   return (
     <div className="bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-900 h-11 flex items-center overflow-hidden whitespace-nowrap sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.3)] antialiased">
+      <strong className="px-3 text-xs text-amber-700">SIMULATION</strong>
       <div className="ticker-mask w-full h-full flex items-center">
         <div
           className="animate-marquee flex px-4 hover:[animation-play-state:paused]"

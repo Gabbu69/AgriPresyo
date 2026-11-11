@@ -1,3 +1,4 @@
+import { simulationCsv } from '../lib/simulation';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calculator, Package, Plus, Minus, Trash2, Download, ChevronUp, ChevronDown } from 'lucide-react';
@@ -205,19 +206,19 @@ export const BudgetCalculatorView: React.FC<BudgetCalculatorViewProps> = ({
   const handleDownloadCSV = () => {
     if (budgetItems.length === 0) return;
 
-    const headers = ['Crop,Category,Quantity,Unit,Weight (kg),Unit Price (php),Total Price (php)'];
+    const headers = ['Crop','Category','Quantity','Unit','Weight (kg)','Simulated price (PHP/kg)','Estimated total (PHP)'];
     const rows = budgetItems.map((item) => {
       const crop = crops.find(c => c.id === item.cropId);
-      if (!crop) return '';
+      if (!crop) return null;
       const weight = item.unit === 'kg' ? item.quantity : item.quantity * crop.weightPerUnit;
       const totalPrice = weight * crop.currentPrice;
-      const cropName = t(`crops.${crop.id}`, crop.name).replace(/,/g, '');
-      const category = t(`categories.${crop.category.toLowerCase()}`).replace(/,/g, '');
+      const cropName = t(`crops.${crop.id}`, crop.name);
+      const category = t(`categories.${crop.category.toLowerCase()}`);
 
-      return `${cropName},${category},${item.quantity},${item.unit},${weight.toFixed(2)},${crop.currentPrice},${totalPrice.toFixed(2)}`;
+      return [cropName,category,item.quantity,item.unit,weight.toFixed(2),crop.currentPrice,totalPrice.toFixed(2)];
     });
 
-    const csvContent = headers.concat(rows.filter(Boolean)).join('\n');
+    const csvContent = simulationCsv([headers, ...rows.filter((row): row is NonNullable<typeof row> => row !== null)]);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     

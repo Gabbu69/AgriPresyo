@@ -1,3 +1,5 @@
+import { SimulationNotice } from './components/ui/SimulationNotice';
+import { simulationCsv } from './lib/simulation';
 import React, {
   useState,
   useMemo,
@@ -6008,8 +6010,9 @@ const App = () => {
                   const autoTable = autotableModule.default;
                   const doc = new jsPDF();
                   doc.setFontSize(18);
-                  doc.text("AgriPresyo Market Report", 14, 22);
+                  doc.text("AgriPresyo Simulation Report", 14, 22);
                   doc.setFontSize(11);
+                  doc.text("SIMULATED prices and offers - not verified market data", 14, 15);
                   doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
 
                   doc.setLineWidth(0.5);
@@ -6103,7 +6106,7 @@ const App = () => {
                       avg,
                     ];
                   });
-                  const csv = [
+                  const csv = simulationCsv([
                     headers,
                     ...rows,
                     [],
@@ -6121,9 +6124,7 @@ const App = () => {
                       "Banned",
                       users.filter((u) => u.status === "banned").length,
                     ],
-                  ]
-                    .map((r) => r.join(","))
-                    .join("\n");
+                  ]);
                   const blob = new Blob([csv], { type: "text/csv" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
@@ -7375,7 +7376,7 @@ const App = () => {
                 </h3>
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed max-w-sm">
-                Your real-time agricultural price monitoring platform.
+                Your agricultural market-interface simulation.
                 Connecting Philippine farmers, vendors and consumers with
                 transparent market data.
               </p>
@@ -9096,6 +9097,7 @@ root.render(
   <BrowserRouter>
     <ToastProvider>
       <ThemeProvider>
+        <SimulationNotice />
         <App />
       </ThemeProvider>
     </ToastProvider>

@@ -1,3 +1,11 @@
+> **Current scope: market-interface simulation.** Prices, history, vendor offers,
+> and stock returned by the included price endpoint are generated. They are not
+> verified live market information, verified seller availability, or evidence of
+> completed transactions. The interface and exported reports retain this context.
+>
+> Guided example: choose a commodity → compare illustrative offers on the same
+> quantity basis → set purchase quantities → export a labeled sample budget.
+
 <div align="center">
   <img src="public/AgriPresyo_logoFinal.png" alt="AgriPresyo™" width="160" />
 
